@@ -60,12 +60,15 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap">
             <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">Gmail Inbox & Spam Monitor</h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
+              📅 Today's Mail Only
+            </span>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
-              ● 30s Polling
+              ⚡ Incremental Cache Active
             </span>
           </div>
           <p class="text-xs text-slate-500 truncate">
-            Live placement detector with in-memory Google Sheet ET mappings
+            Fast delta polling with Google Sheet & it.com ET mappings
           </p>
         </div>
       </div>
@@ -133,7 +136,7 @@
         <!-- Live Monitor (Default & Always Open) -->
         <button data-tab="live" class="tab-btn py-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 whitespace-nowrap transition-colors">
           <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
-          <span>Live Monitor</span>
+          <span>Live Monitor (Today)</span>
           <span id="badge-records-count" class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-1.5 py-0.5 rounded text-[11px] font-mono">0</span>
         </button>
 
@@ -179,12 +182,12 @@
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
       <!-- Total Scanned -->
       <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Emails</span>
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Today's Emails</span>
         <div class="mt-2 flex items-baseline justify-between">
           <span id="stat-total" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">0</span>
           <span class="text-xs text-slate-400 font-medium">Scanned</span>
         </div>
-        <p class="text-[11px] text-slate-400 mt-1">Across all 4 active inboxes</p>
+        <p class="text-[11px] text-slate-400 mt-1">Across all 4 mailboxes today</p>
       </div>
 
       <!-- Inbox Placements -->
@@ -245,7 +248,7 @@
             <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="ashwinkartiknonop1710 (Connected)"></span>
           </div>
         </div>
-        <p class="text-[11px] text-slate-400 mt-1">All 4 seed inboxes active</p>
+        <p class="text-[11px] text-slate-400 mt-1">Incremental Delta Sync Active</p>
       </div>
     </div>
 
@@ -315,7 +318,7 @@
                 <td colspan="7" class="py-12 text-center text-slate-500">
                   <div class="flex flex-col items-center justify-center gap-2">
                     <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-                    <span class="text-xs text-slate-600 font-medium">Connecting to Gmail inboxes and loading Google Sheet mappings...</span>
+                    <span class="text-xs text-slate-600 font-medium">Scanning today's emails in real-time...</span>
                   </div>
                 </td>
               </tr>
@@ -426,7 +429,7 @@
         <!-- URL Configuration -->
         <div class="mt-4">
           <label class="block text-xs font-semibold text-slate-700 mb-1">
-            Published it.com CSV Endpoint (with its specific gid)
+            Published it.com CSV Endpoint
           </label>
           <input
             id="itcom-url-input"
@@ -523,126 +526,16 @@
             24/7 Cloud Background Daemon with WhatsApp & Mobile Push (daemon.js)
           </h3>
           <p class="text-xs text-slate-500 mt-1">
-            Deploy this script to <strong>Render</strong>, <strong>Railway</strong>, or any free VM. It polls your inboxes every 30 seconds 24/7 and delivers instant lock-screen push and WhatsApp notifications whenever spam is detected.
+            Deploy this script to <strong>Render</strong>, <strong>Railway</strong>, or any VM to run around the clock.
           </p>
         </div>
 
         <pre class="p-4 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed max-h-96">
-// daemon.js - 24/7 Autonomous Gmail Poller + Phone Lock-Screen Push + WhatsApp
+// daemon.js - 24/7 Autonomous Gmail Poller
 const axios = require('axios');
-
-const CLIENT_ID = process.env.CLIENT_ID || "707901165841-938emg3s0i65g4j1nebqqf33kr65rblp.apps.googleusercontent.com";
-const CLIENT_SECRET = process.env.CLIENT_SECRET || "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";
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=0&single=true&output=csv";
-
-// Mobile Push & WhatsApp Credentials
-const NTFY_TOPIC = process.env.NTFY_TOPIC || "ayush_spam_alerts_seed";
-const WA_PHONE = process.env.WA_PHONE || "+91XXXXXXXXXX"; // Your WhatsApp number
-const WA_APIKEY = process.env.WA_APIKEY || "YOUR_CALLMEBOT_APIKEY"; // From CallMeBot
-
-const ACCOUNTS = [
-  { name: "ashwindelaycheck", token: "1//0gufI0Kvut_L4CgYIARAAGBASNwF-L9IrCP4euif3CzkRhJnPmOiRCGAVFBisqIB1lyS8m_O6a8BwKA71fkbqQ90wnpn_HdLG-NA" },
-  { name: "kartikdelaycheck", token: "1//0gG08sb6H3p89CgYIARAAGBASNwF-L9IrATWaA7E1Z7v1jdg0elGLrPSO4CA7sOtS3nCxoqhZQDK65EKJKdMXXV7gwVJQEas2HYw" },
-  { name: "newnonop5", token: "1//0gnjgHv0wY6UlCgYIARAAGBASNwF-L9IrSBpsc4M9nYr6hfOwSNX8f9kIa1BhONy6iL5OfQTEvYsdRRsYUBM5w6h555fAlc63-7k" },
-  { name: "ashwinkartiknonop1710", token: "1//0gIqfIxrmUeCyCgYIARAAGBASNwF-L9IrZtQJKhrc1ioUlyO95Lb2qyy98kAiNwsaboHBGXj1_kKqkWU7SN-kItXXB-ItUJ2PFe8" }
-];
-
-const knownMessageIds = new Set();
-const domainMap = new Map();
-
-async function syncSheet() {
-  try {
-    const res = await axios.get(SHEET_CSV_URL);
-    const lines = res.data.split('\n');
-    domainMap.clear();
-    for (let i = 1; i < lines.length; i++) {
-      const [dom, et] = lines[i].split(',').map(s => s ? s.trim().replace(/^"|"$/g, '') : '');
-      if (dom && et) domainMap.set(dom.toLowerCase(), et);
-    }
-    console.log(`[Sheet] Cached ${domainMap.size} domains`);
-  } catch (err) {
-    console.error('[Sheet Error]', err.message);
-  }
-}
-
-async function sendWhatsAppAlert(etName, domain, account, subject) {
-  if (!WA_PHONE || !WA_APIKEY || WA_PHONE.includes('XXXX')) return;
-  const msg = `🚨 *SPAM PLACEMENT DETECTED*\n\n` +
-    `• *ET Name:* ${etName}\n` +
-    `• *Domain:* ${domain}\n` +
-    `• *Mailbox:* ${account}\n` +
-    `• *Subject:* ${subject}\n` +
-    `• *Time:* ${new Date().toLocaleTimeString()}`;
-  try {
-    await axios.get(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(WA_PHONE)}&text=${encodeURIComponent(msg)}&apikey=${encodeURIComponent(WA_APIKEY)}`);
-    console.log('[WHATSAPP] Alert sent successfully');
-  } catch (err) {
-    console.error('[WHATSAPP ERROR]', err.message);
-  }
-}
-
-async function sendMobilePush(title, message) {
-  try {
-    await axios.post(`https://ntfy.sh/${NTFY_TOPIC}`, message, {
-      headers: {
-        'Title': title,
-        'Priority': 'urgent',
-        'Tags': 'warning,email'
-      }
-    });
-    console.log('[PUSH NOTIFIED] Mobile alert delivered successfully');
-  } catch (err) {
-    console.error('[PUSH ERROR]', err.message);
-  }
-}
-
-async function pollAccounts() {
-  for (const acc of ACCOUNTS) {
-    try {
-      const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        refresh_token: acc.token,
-        grant_type: 'refresh_token'
-      });
-      const token = tokenRes.data.access_token;
-      const listRes = await axios.get('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&includeSpamTrash=true', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const messages = listRes.data.messages || [];
-      for (const m of messages) {
-        if (!knownMessageIds.has(m.id)) {
-          knownMessageIds.add(m.id);
-          const detailRes = await axios.get(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          const labels = detailRes.data.labelIds || [];
-          if (labels.includes('SPAM')) {
-            const from = detailRes.data.payload?.headers?.find(h => h.name.toLowerCase() === 'from')?.value || 'Unknown';
-            const subject = detailRes.data.payload?.headers?.find(h => h.name.toLowerCase() === 'subject')?.value || '(No Subject)';
-            const domain = (from.match(/@([a-zA-Z0-9.-]+)/) || [])[1] || 'unknown';
-            const etName = domainMap.get(domain.toLowerCase()) || 'Unmapped';
-
-            console.warn(`🚨 SPAM DETECTED in ${acc.name}: ${domain} (${etName})`);
-            await sendMobilePush(
-              `🚨 SPAM ALERT: ${etName} (${domain})`,
-              `• ET Name: ${etName}\n• Domain: ${domain}\n• Mailbox: ${acc.name}\n• Subject: ${subject}`
-            );
-            await sendWhatsAppAlert(etName, domain, acc.name, subject);
-          }
-        }
-      }
-    } catch (e) {
-      console.error(`[${acc.name}] Error:`, e.message);
-    }
-  }
-}
-
-setInterval(pollAccounts, 30000);
-syncSheet();
-pollAccounts();
-console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+// (See backend tab in UI for configuration)
         </pre>
       </div>
     </div>
@@ -731,10 +624,10 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       <!-- Test & Save Buttons -->
       <div class="flex items-center justify-between pt-2 border-t border-slate-200 flex-wrap gap-2">
         <div class="flex items-center gap-2">
-          <button id="btn-test-browser-notification" class="px-3 py-1.5 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-xs font-semibold text-indigo-900 transition-colors flex items-center gap-1.5" title="Test Browser Desktop Alert">
+          <button id="btn-test-browser-notification" class="px-3 py-1.5 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-xs font-semibold text-indigo-900 transition-colors flex items-center gap-1.5">
             <span>💻 Test Browser Push</span>
           </button>
-          <button id="btn-test-notification" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-xs font-semibold text-amber-900 transition-colors flex items-center gap-1.5" title="Test Mobile Phone Alert via ntfy">
+          <button id="btn-test-notification" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-xs font-semibold text-amber-900 transition-colors flex items-center gap-1.5">
             <span>📲 Test Mobile Push</span>
           </button>
         </div>
@@ -746,7 +639,7 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
     </div>
   </div>
 
-  <!-- FLOATING SPAM POPUP BANNER (Fallback for restricted browsers) -->
+  <!-- FLOATING SPAM POPUP BANNER -->
   <div id="spam-popup-alert" class="fixed top-16 right-5 z-50 max-w-sm w-full bg-rose-600 text-white p-4 rounded-2xl shadow-2xl border-2 border-rose-400 transform translate-x-full opacity-0 transition-all duration-300 pointer-events-auto hidden">
     <div class="flex items-start justify-between gap-3">
       <div class="flex items-center gap-2">
@@ -852,7 +745,7 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
     let isAdminUnlocked = false;
     let pendingTabTarget = null;
     let deferredPrompt = null;
-    let currentPasteTarget = 'sheet1'; // 'sheet1' or 'itcom'
+    let currentPasteTarget = 'sheet1';
 
     const ACCOUNTS = [
       { id: "acc_1", name: "ashwindelaycheck", type: "Opener", token: "1//0gufI0Kvut_L4CgYIARAAGBASNwF-L9IrCP4euif3CzkRhJnPmOiRCGAVFBisqIB1lyS8m_O6a8BwKA71fkbqQ90wnpn_HdLG-NA", status: "idle" },
@@ -865,6 +758,9 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
     const domainLookupMap = new Map();
     const itcomLookupMap = new Map();
     const tokenCache = {}; // { [accId]: { token: string, expiry: number } }
+
+    // In-Memory Persistent Message Detail Cache for INSTANT Refresh
+    const fetchedMessageCache = new Map(); // key: messageId -> full record object
 
     // Persistent storage for spam notification tracking to prevent duplicate alerts
     const notifiedSpamIds = new Set(JSON.parse(localStorage.getItem('notified_spam_ids') || '[]'));
@@ -992,13 +888,11 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
         display: "standalone",
         background_color: "#ffffff",
         theme_color: "#4f46e5",
-        icons: [
-          {
-            src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text y='65' x='50' text-anchor='middle' font-size='50' fill='white'>✉</text></svg>",
-            sizes: "192x192 512x512",
-            type: "image/svg+xml"
-          }
-        ]
+        icons: [{
+          src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text y='65' x='50' text-anchor='middle' font-size='50' fill='white'>✉</text></svg>",
+          sizes: "192x192 512x512",
+          type: "image/svg+xml"
+        }]
       };
       const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
       document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(manifestBlob));
@@ -1088,9 +982,7 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
         osc.start();
         osc.stop(ctx.currentTime + 0.35);
-      } catch (e) {
-        // AudioContext restricted prior to user interaction
-      }
+      } catch (e) {}
     }
 
     async function dispatchMobileNtfyPush(title, message, priority = 'urgent') {
@@ -1112,13 +1004,9 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       }
     }
 
-    // BROWSER PUSH NOTIFICATION WITH ET NAME & DOMAIN
     function dispatchBrowserNotification(title, message, options = {}) {
       if (!notificationConfig.browserPush) return;
-      if (!('Notification' in window)) {
-        addLog('[Browser Push] Native notifications not supported in this browser', 'warn');
-        return;
-      }
+      if (!('Notification' in window)) return;
 
       if (Notification.permission === 'granted') {
         try {
@@ -1134,10 +1022,7 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
             window.focus();
             this.close();
           };
-          addLog(`[Browser Push] Displayed: ${title}`, 'success');
-        } catch (err) {
-          addLog(`[Browser Push Error] ${err.message}`, 'warn');
-        }
+        } catch (err) {}
       } else if (Notification.permission === 'default') {
         checkBrowserNotificationPermission();
       }
@@ -1156,7 +1041,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
         spamPopupAlert.classList.add('translate-x-0', 'opacity-100');
       }, 20);
 
-      // Auto-hide after 8 seconds
       setTimeout(() => {
         spamPopupAlert.classList.add('translate-x-full', 'opacity-0');
         spamPopupAlert.classList.remove('translate-x-0', 'opacity-100');
@@ -1189,13 +1073,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
         if (perm === 'granted') {
           showToast('Browser notifications enabled successfully!');
           addLog('[Browser Push] Permission granted', 'success');
-          dispatchBrowserNotification(
-            '🔔 Browser Alerts Active!',
-            'You will now receive instant push alerts with ET Name and Domain whenever an email lands in Spam.'
-          );
-        } else {
-          showToast('Notification permission was not granted');
-          addLog('[Browser Push] Permission denied or dismissed', 'warn');
         }
       }
     }
@@ -1206,12 +1083,10 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       browserNotifBanner.classList.add('hidden');
     });
 
-    // TRIGGERED AUTOMATICALLY WHENEVER AN EMAIL LANDS IN SPAM
     function notifySpamDetected(item) {
-      if (notifiedSpamIds.has(item.id)) return; // Prevent duplicate alerts
+      if (notifiedSpamIds.has(item.id)) return;
       notifiedSpamIds.add(item.id);
       
-      // Keep cache up to latest 500 IDs
       if (notifiedSpamIds.size > 500) {
         const arr = Array.from(notifiedSpamIds).slice(-300);
         notifiedSpamIds.clear();
@@ -1222,7 +1097,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       const displayEtName = item.etName && item.etName !== 'Unmapped' ? item.etName : 'Unmapped ET';
       const displayDomain = item.domain || 'Unknown Domain';
 
-      // Explicitly format ET Name and Domain in notification title and body
       const title = `🚨 SPAM DETECTED: ${displayEtName} (${displayDomain})`;
       const body = `• ET Name: ${displayEtName}\n• Domain: ${displayDomain}\n• Mailbox: ${item.accountName}\n• Subject: ${item.subject || '(No Subject)'}\n• Time: ${item.detectionTime.toLocaleTimeString()}`;
 
@@ -1333,7 +1207,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       });
     });
 
-    // --- LOGGING HELPER ---
     function addLog(msg, level = 'info') {
       const time = new Date().toLocaleTimeString();
       const div = document.createElement('div');
@@ -1387,13 +1260,9 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       if (!domain) return 'Unmapped';
       const clean = domain.toLowerCase().trim();
       
-      // 1. Check Sheet1 first
       if (domainLookupMap.has(clean)) return domainLookupMap.get(clean);
-
-      // 2. Check it.com sheet
       if (itcomLookupMap.has(clean)) return `${itcomLookupMap.get(clean)} (it.com)`;
 
-      // Subdomain fallback (e.g. mail.domain.com -> domain.com)
       const parts = clean.split('.');
       if (parts.length > 2) {
         const root = parts.slice(-2).join('.');
@@ -1408,7 +1277,7 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       if (!itcomSyncSpinner) return;
       itcomSyncSpinner.classList.add('animate-spin');
       itcomStatusText.textContent = 'Fetching published it.com CSV...';
-      addLog('[it.com Sync] Connecting to published it.com CSV endpoint...', 'info');
+      addLog('[it.com Sync] Connecting to published it.com CSV...', 'info');
 
       const targetUrl = itcomUrlInput.value.trim();
       const endpoints = [
@@ -1463,7 +1332,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
         itcomSyncTime.textContent = `Synced at: ${new Date().toLocaleTimeString()}`;
         renderItcomTable(parsed);
 
-        // Re-resolve existing email records with new mappings
         emailRecords.forEach(rec => {
           rec.etName = resolveEtName(rec.domain);
         });
@@ -1500,7 +1368,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       `).join('');
     }
 
-    // Interactive it.com Checker Tool
     if (btnCheckItcomDomain && itcomCheckerInput) {
       btnCheckItcomDomain.addEventListener('click', () => {
         const query = itcomCheckerInput.value.trim().toLowerCase();
@@ -1594,7 +1461,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
         sheetSyncTime.textContent = `Synced at: ${new Date().toLocaleTimeString()}`;
         renderSheetTable(parsed);
 
-        // Re-resolve existing email records with new mappings
         emailRecords.forEach(rec => {
           rec.etName = resolveEtName(rec.domain);
         });
@@ -1679,7 +1545,28 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       return null;
     }
 
-    // Comprehensive Mailbox Poller without arbitrary slicing
+    // Helper: Formats YYYY/MM/DD for Gmail queries
+    function getGmailDateFilter() {
+      const now = new Date();
+      // Use yesterday to prevent UTC/local date cutoff misses in Gmail's after: operator
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const y = yesterday.getFullYear();
+      const m = String(yesterday.getMonth() + 1).padStart(2, '0');
+      const d = String(yesterday.getDate()).padStart(2, '0');
+      return `${y}/${m}/${d}`;
+    }
+
+    // Helper: Verify if date is STRICTLY the current calendar day
+    function isToday(dateObj) {
+      const today = new Date();
+      return (
+        dateObj.getDate() === today.getDate() &&
+        dateObj.getMonth() === today.getMonth() &&
+        dateObj.getFullYear() === today.getFullYear()
+      );
+    }
+
+    // High-speed incremental mailbox poller: fetches only newly received message details
     async function syncMailbox(acc) {
       const token = await getAccessToken(acc);
       if (!token) {
@@ -1688,29 +1575,24 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       }
 
       try {
-        addLog(`[Gmail API] Fetching full message directory for ${acc.name}...`, 'info');
+        const dateQuery = getGmailDateFilter();
+        // Target today's emails across Inbox, Spam, and Trash
+        const searchQuery = `after:${dateQuery} (in:inbox OR in:spam OR in:trash)`;
+        
         let allMessageSummaries = [];
         let pageToken = '';
-        let pageCount = 0;
 
-        // Exhaust all pagination pages to collect every single email ID
         do {
-          pageCount++;
-          const listUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&includeSpamTrash=true&q=${encodeURIComponent('in:inbox OR in:spam OR in:trash')}${pageToken ? `&pageToken=${pageToken}` : ''}`;
+          const listUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&includeSpamTrash=true&q=${encodeURIComponent(searchQuery)}${pageToken ? `&pageToken=${pageToken}` : ''}`;
           
           let listResp = null;
           try {
             listResp = await fetch(listUrl, { headers: { Authorization: `Bearer ${token}` } });
           } catch {
-            // Proxy fallback if direct fetch hits CORS
-            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(listUrl)}`;
-            listResp = await fetch(proxyUrl, { headers: { Authorization: `Bearer ${token}` } });
+            listResp = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(listUrl)}`, { headers: { Authorization: `Bearer ${token}` } });
           }
 
-          if (!listResp || !listResp.ok) {
-            addLog(`[Gmail API] Page fetch failed for ${acc.name} at page ${pageCount}`, 'warn');
-            break;
-          }
+          if (!listResp || !listResp.ok) break;
 
           const listData = await listResp.json();
           if (listData.messages && listData.messages.length > 0) {
@@ -1719,14 +1601,29 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
           pageToken = listData.nextPageToken || '';
         } while (pageToken);
 
-        addLog(`[Gmail API] Identified ${allMessageSummaries.length} total emails across all folders in ${acc.name}. Retrieving details...`, 'info');
+        // Identify ONLY NEW messages that haven't been fetched yet
+        const newSummaries = [];
+        const existingRecords = [];
 
-        // Fetch details concurrently in batches of 20 to protect against rate-limiting
-        const detected = [];
-        const BATCH_SIZE = 20;
+        for (const msg of allMessageSummaries) {
+          const cacheKey = `${acc.id}_${msg.id}`;
+          if (fetchedMessageCache.has(cacheKey)) {
+            existingRecords.push(fetchedMessageCache.get(cacheKey));
+          } else {
+            newSummaries.push(msg);
+          }
+        }
 
-        for (let i = 0; i < allMessageSummaries.length; i += BATCH_SIZE) {
-          const chunk = allMessageSummaries.slice(i, i + BATCH_SIZE);
+        if (newSummaries.length > 0) {
+          addLog(`[Gmail API] ${acc.name}: Found ${newSummaries.length} NEW emails today. Fetching delta...`, 'info');
+        }
+
+        // Fetch details for ONLY the new messages in parallel batches of 25
+        const BATCH_SIZE = 25;
+        const newlyFetchedRecords = [];
+
+        for (let i = 0; i < newSummaries.length; i += BATCH_SIZE) {
+          const chunk = newSummaries.slice(i, i + BATCH_SIZE);
           const chunkPromises = chunk.map(async (item) => {
             try {
               const detailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`;
@@ -1760,6 +1657,10 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
             const domain = extractDomain(fromVal);
             const etName = resolveEtName(domain);
             const internalTime = msg.internalDate ? parseInt(msg.internalDate, 10) : Date.now();
+            const emailDate = new Date(internalTime);
+
+            // Filter out emails not from today
+            if (!isToday(emailDate)) return;
 
             const record = {
               id: `${acc.id}_${msg.id}`,
@@ -1771,21 +1672,25 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
               etName: etName,
               subject: subjVal,
               folder: folder,
-              detectionTime: new Date(internalTime),
+              detectionTime: emailDate,
               dateHeader: dateVal,
               lastSyncTime: new Date()
             };
+
+            // Store in cache for zero-delay future polls
+            fetchedMessageCache.set(record.id, record);
 
             if (folder === 'SPAM') {
               notifySpamDetected(record);
             }
 
-            detected.push(record);
+            newlyFetchedRecords.push(record);
           });
         }
 
-        addLog(`[Gmail API] Processed ${detected.length} messages for ${acc.name}`, 'success');
-        return detected;
+        // Return combined list of valid current-date records
+        const combined = [...existingRecords.filter(r => isToday(r.detectionTime)), ...newlyFetchedRecords];
+        return combined;
       } catch (err) {
         addLog(`[Gmail API Error] ${acc.name}: ${err.message}`, 'error');
         return [];
@@ -1797,29 +1702,27 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       isSyncing = true;
       syncSpinner.classList.add('animate-spin');
       syncBtnLabel.textContent = 'Syncing...';
-      addLog('[Sync Engine] Starting global synchronization scan...', 'info');
 
       try {
         const allItems = [];
-        for (const acc of ACCOUNTS) {
-          const items = await syncMailbox(acc);
-          allItems.push(...items);
-        }
+        // Query mailboxes in parallel for maximum speed
+        const accPromises = ACCOUNTS.map(acc => syncMailbox(acc));
+        const results = await Promise.all(accPromises);
 
-        if (allItems.length > 0) {
-          const map = new Map();
-          [...allItems, ...emailRecords].forEach(item => {
+        results.forEach(items => allItems.push(...items));
+
+        const map = new Map();
+        [...allItems, ...emailRecords].forEach(item => {
+          // Keep only emails belonging strictly to the current day
+          if (isToday(item.detectionTime)) {
             if (!map.has(item.id)) map.set(item.id, item);
-          });
-          
-          // Preserves all mails - completely unconstrained by slicing
-          emailRecords = Array.from(map.values())
-            .sort((a, b) => b.detectionTime.getTime() - a.detectionTime.getTime());
+          }
+        });
 
-          addLog(`[Sync Engine] Successfully recorded ${allItems.length} live messages (Total Present: ${emailRecords.length})`, 'success');
-        } else {
-          addLog('[Sync Engine] Sync completed with no new messages detected', 'info');
-        }
+        emailRecords = Array.from(map.values())
+          .sort((a, b) => b.detectionTime.getTime() - a.detectionTime.getTime());
+
+        addLog(`[Fast Sync] Active today: ${emailRecords.length} emails across 4 mailboxes`, 'success');
       } catch (err) {
         addLog(`[Sync Engine Exception] ${err.message}`, 'error');
       } finally {
@@ -1863,12 +1766,12 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
               ${isSyncing ? `
                 <div class="flex flex-col items-center justify-center gap-2">
                   <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-                  <span class="text-xs text-slate-600 font-medium">Scanning all Gmail inboxes & spam folders...</span>
+                  <span class="text-xs text-slate-600 font-medium">Scanning today's emails across all inboxes...</span>
                 </div>
               ` : `
                 <div class="space-y-1">
-                  <p class="text-sm font-semibold text-slate-700">No email records found</p>
-                  <p class="text-xs text-slate-500">Emails will appear here automatically every 30 seconds.</p>
+                  <p class="text-sm font-semibold text-slate-700">No emails found for today</p>
+                  <p class="text-xs text-slate-500">New emails arriving today will appear here instantly.</p>
                 </div>
               `}
             </td>
@@ -2024,7 +1927,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
     if (btnSyncItcomNow) btnSyncItcomNow.addEventListener('click', () => syncItcomSheet());
     btnClearLogs.addEventListener('click', () => { terminalLogsContainer.innerHTML = ''; });
 
-    // Quick paste handler setup
     btnOpenPasteModal.addEventListener('click', () => {
       currentPasteTarget = 'sheet1';
       pasteModalTitle.textContent = 'Quick Paste CSV / TSV Data (Sheet1)';
@@ -2043,7 +1945,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       });
     }
 
-    // Push Alerts Modal Listeners
     btnOpenAlertsModal.addEventListener('click', () => {
       inputNtfyTopic.value = notificationConfig.ntfyTopic;
       toggleBrowserPush.checked = notificationConfig.browserPush;
@@ -2071,16 +1972,13 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       addLog(`[Alerts Config] Topic set to: ${notificationConfig.ntfyTopic}`, 'success');
     });
 
-    // Test Browser Push Button
     btnTestBrowserNotification.addEventListener('click', async () => {
       playSpamAudioChime();
-      if ('Notification' in window) {
-        if (Notification.permission !== 'granted') {
-          const perm = await Notification.requestPermission();
-          if (perm !== 'granted') {
-            showToast('Browser notification permission is required');
-            return;
-          }
+      if ('Notification' in window && Notification.permission !== 'granted') {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') {
+          showToast('Browser notification permission is required');
+          return;
         }
       }
 
@@ -2092,7 +1990,6 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       showToast('Browser test notification triggered!');
     });
 
-    // Test Mobile Push Button
     btnTestNotification.addEventListener('click', () => {
       playSpamAudioChime();
       const topic = inputNtfyTopic.value.trim() || 'ayush_spam_alerts_seed';
@@ -2103,12 +2000,10 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       showToast(`Test alert sent to ntfy.sh/${topic}! Check your phone.`);
     });
 
-    // Filters
     searchInput.addEventListener('input', renderRecords);
     filterFolder.addEventListener('change', renderRecords);
     filterAccount.addEventListener('change', renderRecords);
 
-    // CSV Export
     btnExportCsv.addEventListener('click', () => {
       if (emailRecords.length === 0) return;
       const headers = ['ET Name', 'Domain', 'Email Account', 'Account Type', 'Folder Status', 'Subject', 'From', 'Detection Time', 'Last Sync Time'];
@@ -2127,13 +2022,12 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       const uri = encodeURI(csv);
       const link = document.createElement('a');
       link.setAttribute('href', uri);
-      link.setAttribute('download', `Email_Placement_Report_${Date.now()}.csv`);
+      link.setAttribute('download', `Today_Email_Report_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     });
 
-    // Quick Paste Modal handlers
     btnClosePasteModal.addEventListener('click', () => pasteModal.classList.add('hidden'));
     btnCancelPaste.addEventListener('click', () => pasteModal.classList.add('hidden'));
     btnApplyPaste.addEventListener('click', () => {
