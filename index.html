@@ -144,6 +144,13 @@
           <span id="badge-sheet-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[11px] font-mono">0</span>
         </button>
 
+        <!-- it.com Sheet Tab (Protected) -->
+        <button data-tab="itcom" class="tab-btn py-2.5 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+          <span class="tab-lock-indicator text-[11px]">🔒</span>
+          <span>it.com Sheet</span>
+          <span id="badge-itcom-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[11px] font-mono">0</span>
+        </button>
+
         <!-- Diagnostic Terminal (Protected) -->
         <button data-tab="terminal" class="tab-btn py-2.5 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap transition-colors">
           <span class="tab-lock-indicator text-[11px]">🔒</span>
@@ -391,6 +398,104 @@
       </div>
     </div>
 
+    <!-- TAB: it.com SHEET CACHE & CHECKER (Protected) -->
+    <div id="tab-content-itcom" class="tab-pane hidden space-y-4">
+      <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              <span>it.com Sheet Domain Mapping Cache</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">it.com</code> | Headers: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Domains</code> & <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">ET NAME</code>
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btn-open-itcom-paste-modal" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 shadow-xs transition-colors">
+              Quick Paste it.com CSV
+            </button>
+            <button id="btn-sync-itcom-now" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all active:scale-95">
+              <svg id="itcom-sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+              <span>Sync it.com Sheet</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- URL Configuration -->
+        <div class="mt-4">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">
+            Published it.com CSV Endpoint (with its specific gid)
+          </label>
+          <input
+            id="itcom-url-input"
+            type="text"
+            placeholder="Paste published CSV link for it.com sheet tab..."
+            value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=123456789&single=true&output=csv"
+            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+          />
+          <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-500 gap-1">
+            <span>Status: <strong id="itcom-status-text" class="text-slate-800">Ready to synchronize it.com</strong></span>
+            <span id="itcom-sync-time">Never synced</span>
+          </div>
+        </div>
+
+        <!-- Quick Domain & ET Checker Tool -->
+        <div class="mt-4 p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/40 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <span>🔍</span>
+              <span>it.com Live Domain Status Checker</span>
+            </span>
+            <span class="text-[10px] text-indigo-700 font-medium bg-indigo-100 px-2 py-0.5 rounded-full">Instant Test</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <input
+              id="itcom-checker-input"
+              type="text"
+              placeholder="Enter any domain to test (e.g. acme.it.com or brand.com)..."
+              class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            />
+            <button id="btn-check-itcom-domain" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs">
+              Check
+            </button>
+          </div>
+          <div id="itcom-checker-result" class="hidden text-xs p-2.5 rounded-lg bg-white border border-slate-200 font-mono text-slate-700"></div>
+        </div>
+      </div>
+
+      <!-- In-Memory it.com Table -->
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <span class="text-xs font-bold text-slate-800">
+            Cached it.com Domain Mappings (<span id="itcom-table-count">0</span> entries)
+          </span>
+          <span class="text-[11px] text-slate-500">
+            Cross-referenced on every 30s cycle
+          </span>
+        </div>
+        <div class="max-h-96 overflow-y-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100/80 text-slate-600 sticky top-0 border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-4 font-semibold">Domains (Column A)</th>
+                <th class="py-2.5 px-4 font-semibold">ET NAME (Column B)</th>
+                <th class="py-2.5 px-4 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody id="itcom-mappings-tbody" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="3" class="py-8 text-center text-slate-500">
+                  No cached it.com domain mappings loaded. Click "Sync it.com Sheet" or "Quick Paste it.com CSV".
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB 3: DIAGNOSTIC TERMINAL (Protected) -->
     <div id="tab-content-terminal" class="tab-pane hidden space-y-4">
       <div class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
@@ -415,23 +520,25 @@
         <div>
           <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
             <svg class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            24/7 Cloud Background Daemon with Mobile Push Alerts (daemon.js)
+            24/7 Cloud Background Daemon with WhatsApp & Mobile Push (daemon.js)
           </h3>
           <p class="text-xs text-slate-500 mt-1">
-            Deploy this script to <strong>Render</strong>, <strong>Railway</strong>, or any free VM. It polls your inboxes every 30 seconds 24/7 and delivers instant lock-screen push notifications to your phone whenever spam is detected.
+            Deploy this script to <strong>Render</strong>, <strong>Railway</strong>, or any free VM. It polls your inboxes every 30 seconds 24/7 and delivers instant lock-screen push and WhatsApp notifications whenever spam is detected.
           </p>
         </div>
 
         <pre class="p-4 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed max-h-96">
-// daemon.js - 24/7 Autonomous Gmail Poller + Phone Lock-Screen Push Notifications
+// daemon.js - 24/7 Autonomous Gmail Poller + Phone Lock-Screen Push + WhatsApp
 const axios = require('axios');
 
 const CLIENT_ID = process.env.CLIENT_ID || "707901165841-938emg3s0i65g4j1nebqqf33kr65rblp.apps.googleusercontent.com";
 const CLIENT_SECRET = process.env.CLIENT_SECRET || "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";
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=0&single=true&output=csv";
 
-// NTFY Topic for 100% Free Mobile Push Alerts
+// Mobile Push & WhatsApp Credentials
 const NTFY_TOPIC = process.env.NTFY_TOPIC || "ayush_spam_alerts_seed";
+const WA_PHONE = process.env.WA_PHONE || "+91XXXXXXXXXX"; // Your WhatsApp number
+const WA_APIKEY = process.env.WA_APIKEY || "YOUR_CALLMEBOT_APIKEY"; // From CallMeBot
 
 const ACCOUNTS = [
   { name: "ashwindelaycheck", token: "1//0gufI0Kvut_L4CgYIARAAGBASNwF-L9IrCP4euif3CzkRhJnPmOiRCGAVFBisqIB1lyS8m_O6a8BwKA71fkbqQ90wnpn_HdLG-NA" },
@@ -455,6 +562,22 @@ async function syncSheet() {
     console.log(`[Sheet] Cached ${domainMap.size} domains`);
   } catch (err) {
     console.error('[Sheet Error]', err.message);
+  }
+}
+
+async function sendWhatsAppAlert(etName, domain, account, subject) {
+  if (!WA_PHONE || !WA_APIKEY || WA_PHONE.includes('XXXX')) return;
+  const msg = `🚨 *SPAM PLACEMENT DETECTED*\n\n` +
+    `• *ET Name:* ${etName}\n` +
+    `• *Domain:* ${domain}\n` +
+    `• *Mailbox:* ${account}\n` +
+    `• *Subject:* ${subject}\n` +
+    `• *Time:* ${new Date().toLocaleTimeString()}`;
+  try {
+    await axios.get(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(WA_PHONE)}&text=${encodeURIComponent(msg)}&apikey=${encodeURIComponent(WA_APIKEY)}`);
+    console.log('[WHATSAPP] Alert sent successfully');
+  } catch (err) {
+    console.error('[WHATSAPP ERROR]', err.message);
   }
 }
 
@@ -506,6 +629,7 @@ async function pollAccounts() {
               `🚨 SPAM ALERT: ${etName} (${domain})`,
               `• ET Name: ${etName}\n• Domain: ${domain}\n• Mailbox: ${acc.name}\n• Subject: ${subject}`
             );
+            await sendWhatsAppAlert(etName, domain, acc.name, subject);
           }
         }
       }
@@ -518,7 +642,7 @@ async function pollAccounts() {
 setInterval(pollAccounts, 30000);
 syncSheet();
 pollAccounts();
-console.log('24/7 Spam Monitor Daemon active...');
+console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
         </pre>
       </div>
     </div>
@@ -738,6 +862,7 @@ console.log('24/7 Spam Monitor Daemon active...');
 
     let emailRecords = [];
     const domainLookupMap = new Map();
+    const itcomLookupMap = new Map();
     const tokenCache = {}; // { [accId]: { token: string, expiry: number } }
 
     // Persistent storage for spam notification tracking to prevent duplicate alerts
@@ -792,6 +917,20 @@ console.log('24/7 Spam Monitor Daemon active...');
     const sheetSyncSpinner = document.getElementById('sheet-sync-spinner');
     const sheetMappingsTbody = document.getElementById('sheet-mappings-tbody');
     const sheetTableCount = document.getElementById('sheet-table-count');
+
+    // it.com Elements
+    const badgeItcomCount = document.getElementById('badge-itcom-count');
+    const itcomUrlInput = document.getElementById('itcom-url-input');
+    const itcomStatusText = document.getElementById('itcom-status-text');
+    const itcomSyncTime = document.getElementById('itcom-sync-time');
+    const btnSyncItcomNow = document.getElementById('btn-sync-itcom-now');
+    const itcomSyncSpinner = document.getElementById('itcom-sync-spinner');
+    const itcomMappingsTbody = document.getElementById('itcom-mappings-tbody');
+    const itcomTableCount = document.getElementById('itcom-table-count');
+    const btnOpenItcomPasteModal = document.getElementById('btn-open-itcom-paste-modal');
+    const itcomCheckerInput = document.getElementById('itcom-checker-input');
+    const btnCheckItcomDomain = document.getElementById('btn-check-itcom-domain');
+    const itcomCheckerResult = document.getElementById('itcom-checker-result');
 
     const terminalLogsContainer = document.getElementById('terminal-logs-container');
     const btnClearLogs = document.getElementById('btn-clear-logs');
@@ -1245,15 +1384,152 @@ console.log('24/7 Spam Monitor Daemon active...');
     function resolveEtName(domain) {
       if (!domain) return 'Unmapped';
       const clean = domain.toLowerCase().trim();
+      
+      // 1. Check Sheet1 first
       if (domainLookupMap.has(clean)) return domainLookupMap.get(clean);
+
+      // 2. Check it.com sheet
+      if (itcomLookupMap.has(clean)) return `${itcomLookupMap.get(clean)} (it.com)`;
 
       // Subdomain fallback (e.g. mail.domain.com -> domain.com)
       const parts = clean.split('.');
       if (parts.length > 2) {
         const root = parts.slice(-2).join('.');
         if (domainLookupMap.has(root)) return domainLookupMap.get(root);
+        if (itcomLookupMap.has(root)) return `${itcomLookupMap.get(root)} (it.com)`;
       }
       return 'Unmapped';
+    }
+
+    // --- it.com SHEET CACHING ---
+    async function syncItcomSheet() {
+      if (!itcomSyncSpinner) return;
+      itcomSyncSpinner.classList.add('animate-spin');
+      itcomStatusText.textContent = 'Fetching published it.com CSV...';
+      addLog('[it.com Sync] Connecting to published it.com CSV endpoint...', 'info');
+
+      const targetUrl = itcomUrlInput.value.trim();
+      const endpoints = [
+        targetUrl,
+        `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+      ];
+
+      let parsed = [];
+      for (const ep of endpoints) {
+        try {
+          const resp = await fetch(ep, { cache: 'no-store' });
+          if (resp.ok) {
+            const raw = await resp.text();
+            if (raw && !raw.includes('<!DOCTYPE html>') && raw.length > 10) {
+              const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+              if (lines.length >= 2) {
+                const headerCols = parseCsvLine(lines[0]).map(h => h.toLowerCase());
+                let domainIdx = headerCols.findIndex(h => h.includes('domain'));
+                let etIdx = headerCols.findIndex(h => h.includes('et') || h.includes('name'));
+
+                if (domainIdx === -1) domainIdx = 0;
+                if (etIdx === -1) etIdx = 1;
+
+                for (let i = 1; i < lines.length; i++) {
+                  const cols = parseCsvLine(lines[i]);
+                  const d = (cols[domainIdx] || '').toLowerCase().trim();
+                  const et = (cols[etIdx] || '').trim();
+                  if (d && et && !d.includes('domain')) {
+                    parsed.push({ domain: d, etName: et });
+                  }
+                }
+
+                if (parsed.length > 0) {
+                  addLog(`[it.com Sync] Successfully parsed ${parsed.length} mappings from it.com!`, 'success');
+                  break;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          addLog(`[it.com Sync] Notice: ${err.message}`, 'warn');
+        }
+      }
+
+      itcomSyncSpinner.classList.remove('animate-spin');
+
+      if (parsed.length > 0) {
+        itcomLookupMap.clear();
+        parsed.forEach(p => itcomLookupMap.set(p.domain, p.etName));
+        itcomStatusText.textContent = `Active: ${parsed.length} domains cached from it.com`;
+        itcomSyncTime.textContent = `Synced at: ${new Date().toLocaleTimeString()}`;
+        renderItcomTable(parsed);
+
+        // Re-resolve existing email records with new mappings
+        emailRecords.forEach(rec => {
+          rec.etName = resolveEtName(rec.domain);
+        });
+        renderRecords();
+        updateStats();
+      } else {
+        itcomStatusText.textContent = 'Fetch blocked or empty. Click "Quick Paste it.com CSV".';
+        addLog('[it.com Sync] Direct fetch could not complete. Use Quick Paste fallback.', 'warn');
+      }
+    }
+
+    function renderItcomTable(mappings) {
+      if (!itcomTableCount || !badgeItcomCount || !itcomMappingsTbody) return;
+      itcomTableCount.textContent = mappings.length;
+      badgeItcomCount.textContent = mappings.length;
+
+      if (mappings.length === 0) {
+        itcomMappingsTbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="py-8 text-center text-slate-500">
+              No cached it.com domain mappings loaded. Click "Sync it.com Sheet" or "Quick Paste it.com CSV".
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      itcomMappingsTbody.innerHTML = mappings.map(m => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-4 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
+          <td class="py-2.5 px-4 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
+          <td class="py-2.5 px-4 text-emerald-700 font-medium text-[11px]">Ready (it.com)</td>
+        </tr>
+      `).join('');
+    }
+
+    // Interactive it.com Checker Tool
+    if (btnCheckItcomDomain && itcomCheckerInput) {
+      btnCheckItcomDomain.addEventListener('click', () => {
+        const query = itcomCheckerInput.value.trim().toLowerCase();
+        if (!query) {
+          showToast('Please enter a domain to check');
+          return;
+        }
+
+        const isSheet1 = domainLookupMap.has(query);
+        const isItcom = itcomLookupMap.has(query);
+        const resolved = resolveEtName(query);
+
+        const matchingEmails = emailRecords.filter(r => (r.domain || '').toLowerCase() === query);
+        const inInbox = matchingEmails.filter(r => r.folder === 'INBOX').length;
+        const inSpam = matchingEmails.filter(r => r.folder === 'SPAM').length;
+
+        itcomCheckerResult.classList.remove('hidden');
+        itcomCheckerResult.innerHTML = `
+          <div class="space-y-1">
+            <div class="font-bold text-slate-900">Domain: <span class="text-indigo-600">${escapeHtml(query)}</span></div>
+            <div>ET Name: <strong>${escapeHtml(resolved)}</strong></div>
+            <div>Mapped in it.com: <strong class="${isItcom ? 'text-emerald-600' : 'text-slate-500'}">${isItcom ? 'Yes ✓' : 'No'}</strong></div>
+            <div>Mapped in Sheet1: <strong class="${isSheet1 ? 'text-emerald-600' : 'text-slate-500'}">${isSheet1 ? 'Yes ✓' : 'No'}</strong></div>
+            <div class="pt-1 border-t border-slate-200 flex gap-3 text-[11px]">
+              <span>Detected Emails: <strong>${matchingEmails.length}</strong></span>
+              <span class="text-emerald-600">Inbox: <strong>${inInbox}</strong></span>
+              <span class="text-rose-600">Spam: <strong>${inSpam}</strong></span>
+            </div>
+          </div>
+        `;
+      });
     }
 
     // --- GOOGLE SHEET CACHING ---
@@ -1709,7 +1985,17 @@ console.log('24/7 Spam Monitor Daemon active...');
 
     btnSyncNow.addEventListener('click', () => runGlobalSync());
     btnSyncSheetNow.addEventListener('click', () => syncGoogleSheet());
+    if (btnSyncItcomNow) btnSyncItcomNow.addEventListener('click', () => syncItcomSheet());
     btnClearLogs.addEventListener('click', () => { terminalLogsContainer.innerHTML = ''; });
+
+    // Quick paste handler for it.com
+    if (btnOpenItcomPasteModal) {
+      btnOpenItcomPasteModal.addEventListener('click', () => {
+        pasteTextarea.value = '';
+        pasteTextarea.placeholder = 'Paste it.com rows:\nexample.it.com,Example Tech\nacme.com,Acme Corp';
+        pasteModal.classList.remove('hidden');
+      });
+    }
 
     // Push Alerts Modal Listeners
     btnOpenAlertsModal.addEventListener('click', () => {
@@ -1840,6 +2126,7 @@ console.log('24/7 Spam Monitor Daemon active...');
       checkBrowserNotificationPermission();
       startTimer();
       syncGoogleSheet().then(() => {
+        syncItcomSheet();
         runGlobalSync();
       });
     });
