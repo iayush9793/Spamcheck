@@ -606,7 +606,7 @@ async function pollAccounts() {
         grant_type: 'refresh_token'
       });
       const token = tokenRes.data.access_token;
-      const listRes = await axios.get('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=15&includeSpamTrash=true', {
+      const listRes = await axios.get('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&includeSpamTrash=true', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -1679,6 +1679,7 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       return null;
     }
 
+    // Comprehensive Mailbox Poller without arbitrary slicing
     async function syncMailbox(acc) {
       const token = await getAccessToken(acc);
       if (!token) {
@@ -1687,71 +1688,103 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       }
 
       try {
-        addLog(`[Gmail API] Querying messages for ${acc.name} (includeSpamTrash=true)...`, 'info');
-        const listUrl = 'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=15&includeSpamTrash=true';
-        const listResp = await fetch(listUrl, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        addLog(`[Gmail API] Fetching full message directory for ${acc.name}...`, 'info');
+        let allMessageSummaries = [];
+        let pageToken = '';
+        let pageCount = 0;
 
-        if (!listResp.ok) throw new Error(`HTTP ${listResp.status}`);
-
-        const listData = await listResp.json();
-        const summaries = listData.messages || [];
-        addLog(`[Gmail API] Found ${summaries.length} recent messages in ${acc.name}`, 'info');
-
-        const detected = [];
-        const detailPromises = summaries.slice(0, 10).map(async (item) => {
+        // Exhaust all pagination pages to collect every single email ID
+        do {
+          pageCount++;
+          const listUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&includeSpamTrash=true&q=${encodeURIComponent('in:inbox OR in:spam OR in:trash')}${pageToken ? `&pageToken=${pageToken}` : ''}`;
+          
+          let listResp = null;
           try {
-            const detailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`;
-            const r = await fetch(detailUrl, { headers: { Authorization: `Bearer ${token}` } });
-            return r.ok ? await r.json() : null;
+            listResp = await fetch(listUrl, { headers: { Authorization: `Bearer ${token}` } });
           } catch {
-            return null;
-          }
-        });
-
-        const details = await Promise.all(detailPromises);
-
-        details.forEach((msg) => {
-          if (!msg) return;
-
-          const labels = msg.labelIds || [];
-          const isSpam = labels.includes('SPAM');
-          const isInbox = labels.includes('INBOX');
-          let folder = isSpam ? 'SPAM' : isInbox ? 'INBOX' : (labels[0] || 'ARCHIVE');
-
-          const headers = msg.payload?.headers || [];
-          const fromVal = headers.find(h => h.name.toLowerCase() === 'from')?.value || 'Unknown';
-          const subjVal = headers.find(h => h.name.toLowerCase() === 'subject')?.value || '(No Subject)';
-          const dateVal = headers.find(h => h.name.toLowerCase() === 'date')?.value;
-
-          const domain = extractDomain(fromVal);
-          const etName = resolveEtName(domain);
-          const internalTime = msg.internalDate ? parseInt(msg.internalDate, 10) : Date.now();
-
-          const record = {
-            id: `${acc.id}_${msg.id}`,
-            messageId: msg.id,
-            accountName: acc.name,
-            accountType: acc.type,
-            from: fromVal,
-            domain: domain,
-            etName: etName,
-            subject: subjVal,
-            folder: folder,
-            detectionTime: new Date(internalTime),
-            dateHeader: dateVal,
-            lastSyncTime: new Date()
-          };
-
-          // Trigger automatic browser & mobile notification if email is in SPAM
-          if (folder === 'SPAM') {
-            notifySpamDetected(record);
+            // Proxy fallback if direct fetch hits CORS
+            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(listUrl)}`;
+            listResp = await fetch(proxyUrl, { headers: { Authorization: `Bearer ${token}` } });
           }
 
-          detected.push(record);
-        });
+          if (!listResp || !listResp.ok) {
+            addLog(`[Gmail API] Page fetch failed for ${acc.name} at page ${pageCount}`, 'warn');
+            break;
+          }
 
+          const listData = await listResp.json();
+          if (listData.messages && listData.messages.length > 0) {
+            allMessageSummaries.push(...listData.messages);
+          }
+          pageToken = listData.nextPageToken || '';
+        } while (pageToken);
+
+        addLog(`[Gmail API] Identified ${allMessageSummaries.length} total emails across all folders in ${acc.name}. Retrieving details...`, 'info');
+
+        // Fetch details concurrently in batches of 20 to protect against rate-limiting
+        const detected = [];
+        const BATCH_SIZE = 20;
+
+        for (let i = 0; i < allMessageSummaries.length; i += BATCH_SIZE) {
+          const chunk = allMessageSummaries.slice(i, i + BATCH_SIZE);
+          const chunkPromises = chunk.map(async (item) => {
+            try {
+              const detailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`;
+              let r = null;
+              try {
+                r = await fetch(detailUrl, { headers: { Authorization: `Bearer ${token}` } });
+              } catch {
+                r = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(detailUrl)}`, { headers: { Authorization: `Bearer ${token}` } });
+              }
+              return r && r.ok ? await r.json() : null;
+            } catch {
+              return null;
+            }
+          });
+
+          const chunkDetails = await Promise.all(chunkPromises);
+
+          chunkDetails.forEach((msg) => {
+            if (!msg) return;
+
+            const labels = msg.labelIds || [];
+            const isSpam = labels.includes('SPAM');
+            const isInbox = labels.includes('INBOX');
+            let folder = isSpam ? 'SPAM' : isInbox ? 'INBOX' : (labels[0] || 'ARCHIVE');
+
+            const headers = msg.payload?.headers || [];
+            const fromVal = headers.find(h => h.name.toLowerCase() === 'from')?.value || 'Unknown';
+            const subjVal = headers.find(h => h.name.toLowerCase() === 'subject')?.value || '(No Subject)';
+            const dateVal = headers.find(h => h.name.toLowerCase() === 'date')?.value;
+
+            const domain = extractDomain(fromVal);
+            const etName = resolveEtName(domain);
+            const internalTime = msg.internalDate ? parseInt(msg.internalDate, 10) : Date.now();
+
+            const record = {
+              id: `${acc.id}_${msg.id}`,
+              messageId: msg.id,
+              accountName: acc.name,
+              accountType: acc.type,
+              from: fromVal,
+              domain: domain,
+              etName: etName,
+              subject: subjVal,
+              folder: folder,
+              detectionTime: new Date(internalTime),
+              dateHeader: dateVal,
+              lastSyncTime: new Date()
+            };
+
+            if (folder === 'SPAM') {
+              notifySpamDetected(record);
+            }
+
+            detected.push(record);
+          });
+        }
+
+        addLog(`[Gmail API] Processed ${detected.length} messages for ${acc.name}`, 'success');
         return detected;
       } catch (err) {
         addLog(`[Gmail API Error] ${acc.name}: ${err.message}`, 'error');
@@ -1764,7 +1797,7 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
       isSyncing = true;
       syncSpinner.classList.add('animate-spin');
       syncBtnLabel.textContent = 'Syncing...';
-      addLog('[Sync Engine] Starting 30-second synchronization cycle...', 'info');
+      addLog('[Sync Engine] Starting global synchronization scan...', 'info');
 
       try {
         const allItems = [];
@@ -1778,11 +1811,12 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
           [...allItems, ...emailRecords].forEach(item => {
             if (!map.has(item.id)) map.set(item.id, item);
           });
+          
+          // Preserves all mails - completely unconstrained by slicing
           emailRecords = Array.from(map.values())
-            .sort((a, b) => b.detectionTime.getTime() - a.detectionTime.getTime())
-            .slice(0, 500);
+            .sort((a, b) => b.detectionTime.getTime() - a.detectionTime.getTime());
 
-          addLog(`[Sync Engine] Successfully recorded ${allItems.length} live messages`, 'success');
+          addLog(`[Sync Engine] Successfully recorded ${allItems.length} live messages (Total Present: ${emailRecords.length})`, 'success');
         } else {
           addLog('[Sync Engine] Sync completed with no new messages detected', 'info');
         }
@@ -1829,7 +1863,7 @@ console.log('24/7 Spam Monitor Daemon active with WhatsApp & Push alerts...');
               ${isSyncing ? `
                 <div class="flex flex-col items-center justify-center gap-2">
                   <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-                  <span class="text-xs text-slate-600 font-medium">Scanning Gmail inboxes & spam folders...</span>
+                  <span class="text-xs text-slate-600 font-medium">Scanning all Gmail inboxes & spam folders...</span>
                 </div>
               ` : `
                 <div class="space-y-1">
