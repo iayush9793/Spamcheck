@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gmail Inbox & Spam Monitor | Live Dashboard</title>
+  <!-- Mobile & PWA Configuration -->
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SpamMonitor">
+  <link rel="manifest" id="manifest-link" href="#">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +17,6 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
-    /* Subtle light scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -24,6 +29,22 @@
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white antialiased">
+
+  <!-- Browser Push Notification Permission Banner -->
+  <div id="browser-notif-banner" class="hidden bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2.5 text-xs font-medium flex items-center justify-between shadow-sm sticky top-0 z-50">
+    <div class="flex items-center gap-2 max-w-4xl">
+      <span class="text-base">🔔</span>
+      <span><strong>Enable Browser Push Notifications:</strong> Receive instant native desktop and mobile popups showing <strong>ET Name & Domain</strong> whenever an email lands in Spam.</span>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button id="btn-banner-enable-notif" class="px-3 py-1 bg-white text-amber-900 hover:bg-amber-50 font-bold rounded-lg shadow-xs transition-colors">
+        Allow Alerts
+      </button>
+      <button id="btn-banner-dismiss-notif" class="px-2 py-1 text-white/80 hover:text-white font-bold" title="Dismiss">
+        ✕
+      </button>
+    </div>
+  </div>
 
   <!-- Top Navigation Header -->
   <header class="border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-40 px-3 sm:px-6 lg:px-8 py-3 shadow-xs">
@@ -49,8 +70,27 @@
         </div>
       </div>
 
-      <!-- Sync Controls & Countdown Bar -->
-      <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+      <!-- Sync Controls & Action Bar -->
+      <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end flex-wrap">
+        <!-- Install App Button (PWA) -->
+        <button id="btn-install-app" class="hidden px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Install App</span>
+        </button>
+
+        <!-- Push Alert Configuration Button -->
+        <button id="btn-open-alerts-modal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold shadow-xs transition-colors" title="Configure 24/7 Browser & Mobile Push Alerts">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+          </span>
+          <span>🔔 Push Alerts</span>
+        </button>
+
         <!-- Circular Countdown Timer -->
         <div class="flex items-center gap-2 bg-slate-100/90 px-3 py-1.5 rounded-lg border border-slate-200 shadow-xs">
           <div class="relative w-6 h-6 flex items-center justify-center">
@@ -114,7 +154,7 @@
         <!-- Backend Reference (Protected) -->
         <button data-tab="backend" class="tab-btn py-2.5 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap transition-colors">
           <span class="tab-lock-indicator text-[11px]">🔒</span>
-          <span>Secure Node.js Server</span>
+          <span>24/7 Daemon & Backend</span>
         </button>
       </nav>
 
@@ -192,10 +232,10 @@
         <div class="mt-2 flex items-baseline justify-between">
           <span class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">4</span>
           <div class="flex items-center gap-1.5">
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="ashwinliveseedforall (Connected)"></span>
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="asharyaliveseedacc (Connected)"></span>
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="liveseedsformm (Connected)"></span>
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="arcsann6767 (Connected)"></span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="ashwindelaycheck (Connected)"></span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="kartikdelaycheck (Connected)"></span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="newnonop5 (Connected)"></span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="ashwinkartiknonop1710 (Connected)"></span>
           </div>
         </div>
         <p class="text-[11px] text-slate-400 mt-1">All 4 seed inboxes active</p>
@@ -233,10 +273,10 @@
             <!-- Account Filter -->
             <select id="filter-account" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs">
               <option value="ALL">All 4 Mailboxes</option>
-              <option value="ashwinliveseedforall">ashwinliveseedforall</option>
-              <option value="asharyaliveseedacc">asharyaliveseedacc</option>
-              <option value="liveseedsformm">liveseedsformm</option>
-              <option value="arcsann6767">arcsann6767</option>
+              <option value="ashwindelaycheck">ashwindelaycheck</option>
+              <option value="kartikdelaycheck">kartikdelaycheck</option>
+              <option value="newnonop5">newnonop5</option>
+              <option value="ashwinkartiknonop1710">ashwinkartiknonop1710</option>
             </select>
           </div>
 
@@ -375,37 +415,35 @@
         <div>
           <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
             <svg class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            Production Node.js Daemon (server.js)
+            24/7 Cloud Background Daemon with Mobile Push Alerts (daemon.js)
           </h3>
           <p class="text-xs text-slate-500 mt-1">
-            This background worker keeps your refresh tokens and client secret private while serving computed records to clients.
+            Deploy this script to <strong>Render</strong>, <strong>Railway</strong>, or any free VM. It polls your inboxes every 30 seconds 24/7 and delivers instant lock-screen push notifications to your phone whenever spam is detected.
           </p>
         </div>
 
         <pre class="p-4 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed max-h-96">
-const express = require('express');
+// daemon.js - 24/7 Autonomous Gmail Poller + Phone Lock-Screen Push Notifications
 const axios = require('axios');
-const cors = require('cors');
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-const CLIENT_ID = process.env.CLIENT_ID || "128820302240-k7bk8mui4lr16gvonbqb7qn76o9rgd1q.apps.googleusercontent.com";
-const CLIENT_SECRET = process.env.CLIENT_SECRET || "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";
+const CLIENT_ID = process.env.CLIENT_ID || "707901165841-938emg3s0i65g4j1nebqqf33kr65rblp.apps.googleusercontent.com";
+const CLIENT_SECRET = process.env.CLIENT_SECRET || "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";
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=0&single=true&output=csv";
 
+// NTFY Topic for 100% Free Mobile Push Alerts
+const NTFY_TOPIC = process.env.NTFY_TOPIC || "ayush_spam_alerts_seed";
+
 const ACCOUNTS = [
-  { name: "ashwinliveseedforall", token: "1//0gub_tDUPkLESCgYIARAAGBASNwF-L9IrVdFJ0uMmaXYM4AG01a6r7Zpo3uDchB7DNXW0Rkt4oDojH3-9HCrZX5tr8uDFmABRRY0" },
-  { name: "asharyaliveseedacc", token: "1//0guqANvb_X5K3CgYIARAAGBASNwF-L9IrqODXDbSdAtPz7GznJrXl0HXkUbcKQ9yqWwda563DfGtAbc8MlFkDZuja-SzHMG7WkXk" },
-  { name: "liveseedsformm", token: "1//0gj4AZbhLjWK0CgYIARAAGBASNwF-L9IrKfhgpAfv-20pn5NC72ByHJS-b17sGCNrkV3vTDkiVGV98aGbwn32IKXhx97d0X-KHeg" },
-  { name: "arcsann6767", token: "1//0gbQkQjqB6dmFCgYIARAAGBASNwF-L9IroUxKSF0oSj2t_9L9l7Bk7inNEepzhDA-DLrpVngouFHoyGl__nEp3OD-2SlbxAofEdM" }
+  { name: "ashwindelaycheck", token: "1//0gufI0Kvut_L4CgYIARAAGBASNwF-L9IrCP4euif3CzkRhJnPmOiRCGAVFBisqIB1lyS8m_O6a8BwKA71fkbqQ90wnpn_HdLG-NA" },
+  { name: "kartikdelaycheck", token: "1//0gG08sb6H3p89CgYIARAAGBASNwF-L9IrATWaA7E1Z7v1jdg0elGLrPSO4CA7sOtS3nCxoqhZQDK65EKJKdMXXV7gwVJQEas2HYw" },
+  { name: "newnonop5", token: "1//0gnjgHv0wY6UlCgYIARAAGBASNwF-L9IrSBpsc4M9nYr6hfOwSNX8f9kIa1BhONy6iL5OfQTEvYsdRRsYUBM5w6h555fAlc63-7k" },
+  { name: "ashwinkartiknonop1710", token: "1//0gIqfIxrmUeCyCgYIARAAGBASNwF-L9IrZtQJKhrc1ioUlyO95Lb2qyy98kAiNwsaboHBGXj1_kKqkWU7SN-kItXXB-ItUJ2PFe8" }
 ];
 
-let domainMap = new Map();
-let emailRecords = [];
+const knownMessageIds = new Set();
+const domainMap = new Map();
 
-async function refreshSheet() {
+async function syncSheet() {
   try {
     const res = await axios.get(SHEET_CSV_URL);
     const lines = res.data.split('\n');
@@ -414,13 +452,28 @@ async function refreshSheet() {
       const [dom, et] = lines[i].split(',').map(s => s ? s.trim().replace(/^"|"$/g, '') : '');
       if (dom && et) domainMap.set(dom.toLowerCase(), et);
     }
-    console.log(`[Sheet Sync] Cached ${domainMap.size} domain mappings.`);
+    console.log(`[Sheet] Cached ${domainMap.size} domains`);
   } catch (err) {
     console.error('[Sheet Error]', err.message);
   }
 }
 
-async function syncMailboxes() {
+async function sendMobilePush(title, message) {
+  try {
+    await axios.post(`https://ntfy.sh/${NTFY_TOPIC}`, message, {
+      headers: {
+        'Title': title,
+        'Priority': 'urgent',
+        'Tags': 'warning,email'
+      }
+    });
+    console.log('[PUSH NOTIFIED] Mobile alert delivered successfully');
+  } catch (err) {
+    console.error('[PUSH ERROR]', err.message);
+  }
+}
+
+async function pollAccounts() {
   for (const acc of ACCOUNTS) {
     try {
       const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
@@ -433,24 +486,166 @@ async function syncMailboxes() {
       const listRes = await axios.get('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=15&includeSpamTrash=true', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log(`[${acc.name}] Fetched ${listRes.data.messages?.length || 0} messages`);
+
+      const messages = listRes.data.messages || [];
+      for (const m of messages) {
+        if (!knownMessageIds.has(m.id)) {
+          knownMessageIds.add(m.id);
+          const detailRes = await axios.get(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const labels = detailRes.data.labelIds || [];
+          if (labels.includes('SPAM')) {
+            const from = detailRes.data.payload?.headers?.find(h => h.name.toLowerCase() === 'from')?.value || 'Unknown';
+            const subject = detailRes.data.payload?.headers?.find(h => h.name.toLowerCase() === 'subject')?.value || '(No Subject)';
+            const domain = (from.match(/@([a-zA-Z0-9.-]+)/) || [])[1] || 'unknown';
+            const etName = domainMap.get(domain.toLowerCase()) || 'Unmapped';
+
+            console.warn(`🚨 SPAM DETECTED in ${acc.name}: ${domain} (${etName})`);
+            await sendMobilePush(
+              `🚨 SPAM ALERT: ${etName} (${domain})`,
+              `• ET Name: ${etName}\n• Domain: ${domain}\n• Mailbox: ${acc.name}\n• Subject: ${subject}`
+            );
+          }
+        }
+      }
     } catch (e) {
       console.error(`[${acc.name}] Error:`, e.message);
     }
   }
 }
 
-setInterval(syncMailboxes, 30000);
-refreshSheet();
-syncMailboxes();
-
-app.get('/api/records', (req, res) => res.json(emailRecords));
-app.listen(5000, () => console.log('Monitoring server active on port 5000'));
+setInterval(pollAccounts, 30000);
+syncSheet();
+pollAccounts();
+console.log('24/7 Spam Monitor Daemon active...');
         </pre>
       </div>
     </div>
-
   </main>
+
+  <!-- PUSH NOTIFICATIONS CONFIGURATION MODAL -->
+  <div id="alerts-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 font-bold">
+            🔔
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-slate-900">Spam Notification Engine</h4>
+            <p class="text-xs text-slate-500">Browser Native Popups & Mobile Alerts</p>
+          </div>
+        </div>
+        <button id="btn-close-alerts-modal" class="text-slate-400 hover:text-slate-600 text-base font-bold p-1">✕</button>
+      </div>
+
+      <!-- Channel 1: Native Browser Push with ET Name & Domain -->
+      <div class="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/50 space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">💻</span>
+            <div>
+              <span class="text-xs font-bold text-slate-800">Browser Native Push Notifications</span>
+              <p class="text-[11px] text-slate-500">Displays ET Name & Domain on desktop/phone banner</p>
+            </div>
+          </div>
+          <input id="toggle-browser-push" type="checkbox" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer" checked />
+        </div>
+        <div class="pt-1">
+          <button id="btn-request-browser-notif-modal" class="w-full py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-colors flex items-center justify-center gap-1.5">
+            <span>Enable / Verify Browser Permission</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Channel 2: Mobile App Lock-Screen Push (100% Free via ntfy) -->
+      <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">📲</span>
+            <div>
+              <span class="text-xs font-bold text-slate-800">24/7 Phone Lock Screen Push</span>
+              <p class="text-[11px] text-slate-500">Instant vibration & sound with ET Name</p>
+            </div>
+          </div>
+          <input id="toggle-mobile-push" type="checkbox" class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500 cursor-pointer" checked />
+        </div>
+
+        <div class="space-y-1 pt-1">
+          <label class="block text-[11px] font-semibold text-slate-700">
+            Private Mobile Topic (ntfy.sh)
+          </label>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-mono text-slate-400 select-none">ntfy.sh/</span>
+            <input
+              id="input-ntfy-topic"
+              type="text"
+              value="ayush_spam_alerts_seed"
+              placeholder="unique_topic_name"
+              class="flex-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+            />
+          </div>
+          <p class="text-[10px] text-slate-500 leading-normal">
+            Install the free <strong>ntfy</strong> app on Android/iOS and subscribe to this topic to receive lock-screen alerts.
+          </p>
+        </div>
+      </div>
+
+      <!-- Channel 3: Audio Siren Chime -->
+      <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-base">🔊</span>
+          <div>
+            <span class="text-xs font-bold text-slate-800">Audio Alarm Tone</span>
+            <p class="text-[11px] text-slate-500">Synthesizes an immediate alert chime</p>
+          </div>
+        </div>
+        <input id="toggle-audio-chime" type="checkbox" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer" checked />
+      </div>
+
+      <!-- Test & Save Buttons -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-200 flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <button id="btn-test-browser-notification" class="px-3 py-1.5 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-xs font-semibold text-indigo-900 transition-colors flex items-center gap-1.5" title="Test Browser Desktop Alert">
+            <span>💻 Test Browser Push</span>
+          </button>
+          <button id="btn-test-notification" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-xs font-semibold text-amber-900 transition-colors flex items-center gap-1.5" title="Test Mobile Phone Alert via ntfy">
+            <span>📲 Test Mobile Push</span>
+          </button>
+        </div>
+
+        <button id="btn-save-alerts-modal" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white shadow-xs transition-colors">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING SPAM POPUP BANNER (Fallback for restricted browsers) -->
+  <div id="spam-popup-alert" class="fixed top-16 right-5 z-50 max-w-sm w-full bg-rose-600 text-white p-4 rounded-2xl shadow-2xl border-2 border-rose-400 transform translate-x-full opacity-0 transition-all duration-300 pointer-events-auto hidden">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🚨</span>
+        <div>
+          <h5 id="spam-popup-title" class="text-xs font-extrabold uppercase tracking-wider text-rose-100">Spam Placement Detected</h5>
+          <p id="spam-popup-et" class="text-sm font-bold text-white">ET Name: Example Tech</p>
+        </div>
+      </div>
+      <button id="btn-close-spam-popup" class="text-white/80 hover:text-white text-sm font-bold p-1">✕</button>
+    </div>
+    <div class="mt-2 text-xs bg-rose-700/60 p-2.5 rounded-xl border border-rose-500/50 space-y-1">
+      <div><strong>Domain:</strong> <span id="spam-popup-domain" class="font-mono text-rose-100">example.com</span></div>
+      <div><strong>Mailbox:</strong> <span id="spam-popup-account" class="text-rose-100">ashwindelaycheck</span></div>
+      <div class="truncate"><strong>Subject:</strong> <span id="spam-popup-subject" class="text-rose-200 truncate">Test Email</span></div>
+    </div>
+  </div>
+
+  <!-- FLOATING TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-medium px-3.5 py-2 rounded-xl shadow-lg transform translate-y-12 opacity-0 transition-all duration-300 flex items-center gap-2 pointer-events-none">
+    <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span id="toast-message">Domain copied to clipboard!</span>
+  </div>
 
   <!-- PASSWORD MODAL (Ayush9793 required for protected tabs) -->
   <div id="password-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
@@ -524,12 +719,6 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
     </div>
   </div>
 
-  <!-- FLOATING TOAST NOTIFICATION -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-medium px-3.5 py-2 rounded-xl shadow-lg transform translate-y-12 opacity-0 transition-all duration-300 flex items-center gap-2 pointer-events-none">
-    <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-    <span id="toast-message">Domain copied to clipboard!</span>
-  </div>
-
   <script>
     // --- APP STATE & CREDENTIALS ---
     const OAUTH_CLIENT_ID = "707901165841-938emg3s0i65g4j1nebqqf33kr65rblp.apps.googleusercontent.com";
@@ -538,6 +727,7 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
 
     let isAdminUnlocked = false;
     let pendingTabTarget = null;
+    let deferredPrompt = null;
 
     const ACCOUNTS = [
       { id: "acc_1", name: "ashwindelaycheck", type: "Opener", token: "1//0gufI0Kvut_L4CgYIARAAGBASNwF-L9IrCP4euif3CzkRhJnPmOiRCGAVFBisqIB1lyS8m_O6a8BwKA71fkbqQ90wnpn_HdLG-NA", status: "idle" },
@@ -549,6 +739,16 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
     let emailRecords = [];
     const domainLookupMap = new Map();
     const tokenCache = {}; // { [accId]: { token: string, expiry: number } }
+
+    // Persistent storage for spam notification tracking to prevent duplicate alerts
+    const notifiedSpamIds = new Set(JSON.parse(localStorage.getItem('notified_spam_ids') || '[]'));
+
+    let notificationConfig = {
+      browserPush: true,
+      mobilePush: true,
+      ntfyTopic: localStorage.getItem('ayush_ntfy_topic') || 'ayush_spam_alerts_seed',
+      audioChime: true
+    };
 
     let isSyncing = false;
     let isAutoSyncEnabled = true;
@@ -596,14 +796,31 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
     const terminalLogsContainer = document.getElementById('terminal-logs-container');
     const btnClearLogs = document.getElementById('btn-clear-logs');
 
-    const pasteModal = document.getElementById('paste-modal');
-    const btnOpenPasteModal = document.getElementById('btn-open-paste-modal');
-    const btnClosePasteModal = document.getElementById('btn-close-paste-modal');
-    const btnCancelPaste = document.getElementById('btn-cancel-paste');
-    const btnApplyPaste = document.getElementById('btn-apply-paste');
-    const pasteTextarea = document.getElementById('paste-textarea');
+    // Alert and Notification Elements
+    const browserNotifBanner = document.getElementById('browser-notif-banner');
+    const btnBannerEnableNotif = document.getElementById('btn-banner-enable-notif');
+    const btnBannerDismissNotif = document.getElementById('btn-banner-dismiss-notif');
+    const btnOpenAlertsModal = document.getElementById('btn-open-alerts-modal');
+    const alertsModal = document.getElementById('alerts-modal');
+    const btnCloseAlertsModal = document.getElementById('btn-close-alerts-modal');
+    const btnSaveAlertsModal = document.getElementById('btn-save-alerts-modal');
+    const toggleBrowserPush = document.getElementById('toggle-browser-push');
+    const toggleMobilePush = document.getElementById('toggle-mobile-push');
+    const toggleAudioChime = document.getElementById('toggle-audio-chime');
+    const inputNtfyTopic = document.getElementById('input-ntfy-topic');
+    const btnTestBrowserNotification = document.getElementById('btn-test-browser-notification');
+    const btnTestNotification = document.getElementById('btn-test-notification');
+    const btnRequestBrowserNotifModal = document.getElementById('btn-request-browser-notif-modal');
 
-    // Password Elements
+    // Floating Popup
+    const spamPopupAlert = document.getElementById('spam-popup-alert');
+    const spamPopupEt = document.getElementById('spam-popup-et');
+    const spamPopupDomain = document.getElementById('spam-popup-domain');
+    const spamPopupAccount = document.getElementById('spam-popup-account');
+    const spamPopupSubject = document.getElementById('spam-popup-subject');
+    const btnCloseSpamPopup = document.getElementById('btn-close-spam-popup');
+
+    // Password & Modals
     const passwordModal = document.getElementById('password-modal');
     const passwordInput = document.getElementById('password-input');
     const passwordErrorMsg = document.getElementById('password-error-msg');
@@ -614,9 +831,57 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
     const lockIcon = document.getElementById('lock-icon');
     const lockStatusLabel = document.getElementById('lock-status-label');
 
-    // Toast
+    const pasteModal = document.getElementById('paste-modal');
+    const btnOpenPasteModal = document.getElementById('btn-open-paste-modal');
+    const btnClosePasteModal = document.getElementById('btn-close-paste-modal');
+    const btnCancelPaste = document.getElementById('btn-cancel-paste');
+    const btnApplyPaste = document.getElementById('btn-apply-paste');
+    const pasteTextarea = document.getElementById('paste-textarea');
+
+    const btnInstallApp = document.getElementById('btn-install-app');
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
+
+    // --- PWA MANIFEST INJECTION ---
+    function setupPwa() {
+      const manifest = {
+        name: "Gmail Inbox & Spam Monitor",
+        short_name: "SpamMonitor",
+        start_url: window.location.href,
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: "#4f46e5",
+        icons: [
+          {
+            src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text y='65' x='50' text-anchor='middle' font-size='50' fill='white'>✉</text></svg>",
+            sizes: "192x192 512x512",
+            type: "image/svg+xml"
+          }
+        ]
+      };
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(manifestBlob));
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        btnInstallApp.classList.remove('hidden');
+      });
+
+      btnInstallApp.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            btnInstallApp.classList.add('hidden');
+            showToast('App installed successfully!');
+          }
+          deferredPrompt = null;
+        } else {
+          showToast('To install: open browser menu and select "Install App" or "Add to Home Screen"');
+        }
+      });
+    }
 
     // --- CLIPBOARD & TOAST HELPERS ---
     function showToast(msg) {
@@ -626,13 +891,11 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
       setTimeout(() => {
         toast.classList.add('translate-y-12', 'opacity-0');
         toast.classList.remove('translate-y-0', 'opacity-100');
-      }, 2000);
+      }, 2500);
     }
 
     function copyDomainText(domain, btnElement) {
       if (!domain) return;
-      
-      // Standard fallback execCommand
       const tempInput = document.createElement('textarea');
       tempInput.value = domain;
       tempInput.style.position = 'fixed';
@@ -640,7 +903,7 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
       document.body.appendChild(tempInput);
       tempInput.focus();
       tempInput.select();
-      
+
       let success = false;
       try {
         success = document.execCommand('copy');
@@ -666,6 +929,170 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
       }
     }
 
+    // --- AUDIO & PUSH NOTIFICATION ENGINE ---
+    function playSpamAudioChime() {
+      if (!notificationConfig.audioChime) return;
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      } catch (e) {
+        // AudioContext restricted prior to user interaction
+      }
+    }
+
+    async function dispatchMobileNtfyPush(title, message, priority = 'urgent') {
+      if (!notificationConfig.mobilePush) return;
+      const topic = notificationConfig.ntfyTopic || 'ayush_spam_alerts_seed';
+      try {
+        await fetch(`https://ntfy.sh/${topic}`, {
+          method: 'POST',
+          body: message,
+          headers: {
+            'Title': title,
+            'Priority': priority,
+            'Tags': 'warning,email'
+          }
+        });
+        addLog(`[Mobile Push] Dispatched alert to ntfy.sh/${topic}`, 'success');
+      } catch (err) {
+        addLog(`[Mobile Push Error] ${err.message}`, 'warn');
+      }
+    }
+
+    // BROWSER PUSH NOTIFICATION WITH ET NAME & DOMAIN
+    function dispatchBrowserNotification(title, message, options = {}) {
+      if (!notificationConfig.browserPush) return;
+      if (!('Notification' in window)) {
+        addLog('[Browser Push] Native notifications not supported in this browser', 'warn');
+        return;
+      }
+
+      if (Notification.permission === 'granted') {
+        try {
+          const notif = new Notification(title, {
+            body: message,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23e11d48"/><text y="65" x="50" text-anchor="middle" font-size="50" fill="white">⚠</text></svg>',
+            tag: options.tag || 'spam_alert',
+            renotify: true,
+            silent: false
+          });
+
+          notif.onclick = function() {
+            window.focus();
+            this.close();
+          };
+          addLog(`[Browser Push] Displayed: ${title}`, 'success');
+        } catch (err) {
+          addLog(`[Browser Push Error] ${err.message}`, 'warn');
+        }
+      } else if (Notification.permission === 'default') {
+        checkBrowserNotificationPermission();
+      }
+    }
+
+    function showInAppSpamPopup(etName, domain, account, subject) {
+      if (!spamPopupAlert) return;
+      spamPopupEt.textContent = `ET: ${etName !== 'Unmapped' ? etName : 'Unmapped'}`;
+      spamPopupDomain.textContent = domain || 'N/A';
+      spamPopupAccount.textContent = account || 'Seed Account';
+      spamPopupSubject.textContent = subject || '(No Subject)';
+
+      spamPopupAlert.classList.remove('hidden');
+      setTimeout(() => {
+        spamPopupAlert.classList.remove('translate-x-full', 'opacity-0');
+        spamPopupAlert.classList.add('translate-x-0', 'opacity-100');
+      }, 20);
+
+      // Auto-hide after 8 seconds
+      setTimeout(() => {
+        spamPopupAlert.classList.add('translate-x-full', 'opacity-0');
+        spamPopupAlert.classList.remove('translate-x-0', 'opacity-100');
+        setTimeout(() => spamPopupAlert.classList.add('hidden'), 300);
+      }, 8000);
+    }
+
+    if (btnCloseSpamPopup) {
+      btnCloseSpamPopup.addEventListener('click', () => {
+        spamPopupAlert.classList.add('translate-x-full', 'opacity-0');
+        spamPopupAlert.classList.remove('translate-x-0', 'opacity-100');
+        setTimeout(() => spamPopupAlert.classList.add('hidden'), 300);
+      });
+    }
+
+    function checkBrowserNotificationPermission() {
+      if ('Notification' in window) {
+        if (Notification.permission === 'default') {
+          browserNotifBanner.classList.remove('hidden');
+        } else {
+          browserNotifBanner.classList.add('hidden');
+        }
+      }
+    }
+
+    async function requestBrowserPermission() {
+      if ('Notification' in window) {
+        const perm = await Notification.requestPermission();
+        browserNotifBanner.classList.add('hidden');
+        if (perm === 'granted') {
+          showToast('Browser notifications enabled successfully!');
+          addLog('[Browser Push] Permission granted', 'success');
+          dispatchBrowserNotification(
+            '🔔 Browser Alerts Active!',
+            'You will now receive instant push alerts with ET Name and Domain whenever an email lands in Spam.'
+          );
+        } else {
+          showToast('Notification permission was not granted');
+          addLog('[Browser Push] Permission denied or dismissed', 'warn');
+        }
+      }
+    }
+
+    btnBannerEnableNotif.addEventListener('click', requestBrowserPermission);
+    btnRequestBrowserNotifModal.addEventListener('click', requestBrowserPermission);
+    btnBannerDismissNotif.addEventListener('click', () => {
+      browserNotifBanner.classList.add('hidden');
+    });
+
+    // TRIGGERED AUTOMATICALLY WHENEVER AN EMAIL LANDS IN SPAM
+    function notifySpamDetected(item) {
+      if (notifiedSpamIds.has(item.id)) return; // Prevent duplicate alerts
+      notifiedSpamIds.add(item.id);
+      
+      // Keep cache up to latest 500 IDs
+      if (notifiedSpamIds.size > 500) {
+        const arr = Array.from(notifiedSpamIds).slice(-300);
+        notifiedSpamIds.clear();
+        arr.forEach(id => notifiedSpamIds.add(id));
+      }
+      localStorage.setItem('notified_spam_ids', JSON.stringify(Array.from(notifiedSpamIds)));
+
+      const displayEtName = item.etName && item.etName !== 'Unmapped' ? item.etName : 'Unmapped ET';
+      const displayDomain = item.domain || 'Unknown Domain';
+
+      // Explicitly format ET Name and Domain in notification title and body
+      const title = `🚨 SPAM DETECTED: ${displayEtName} (${displayDomain})`;
+      const body = `• ET Name: ${displayEtName}\n• Domain: ${displayDomain}\n• Mailbox: ${item.accountName}\n• Subject: ${item.subject || '(No Subject)'}\n• Time: ${item.detectionTime.toLocaleTimeString()}`;
+
+      playSpamAudioChime();
+      dispatchBrowserNotification(title, body, { tag: `spam_${item.id}` });
+      dispatchMobileNtfyPush(title, body, 'urgent');
+      showInAppSpamPopup(displayEtName, displayDomain, item.accountName, item.subject);
+      showToast(`🚨 Spam alert: ${displayEtName} (${displayDomain})`);
+      addLog(`[Spam Alert] Push dispatched for ${displayEtName} | ${displayDomain} (${item.accountName})`, 'warn');
+    }
+
     // --- PASSWORD ACCESS CONTROLS ---
     function openPasswordModal(targetTab) {
       pendingTabTarget = targetTab;
@@ -687,7 +1114,6 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
         updateLockUI();
         closePasswordModal();
         showToast('Administrative tabs unlocked');
-
         if (pendingTabTarget) {
           switchToTab(pendingTabTarget);
           pendingTabTarget = null;
@@ -734,7 +1160,6 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
     btnClosePasswordModal.addEventListener('click', closePasswordModal);
     btnCancelPassword.addEventListener('click', closePasswordModal);
 
-    // Tab switcher
     function switchToTab(target) {
       document.querySelectorAll('.tab-btn').forEach(b => {
         b.classList.remove('border-indigo-600', 'text-indigo-600');
@@ -1026,7 +1451,7 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
           const etName = resolveEtName(domain);
           const internalTime = msg.internalDate ? parseInt(msg.internalDate, 10) : Date.now();
 
-          detected.push({
+          const record = {
             id: `${acc.id}_${msg.id}`,
             messageId: msg.id,
             accountName: acc.name,
@@ -1039,7 +1464,14 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
             detectionTime: new Date(internalTime),
             dateHeader: dateVal,
             lastSyncTime: new Date()
-          });
+          };
+
+          // Trigger automatic browser & mobile notification if email is in SPAM
+          if (folder === 'SPAM') {
+            notifySpamDetected(record);
+          }
+
+          detected.push(record);
         });
 
         return detected;
@@ -1279,6 +1711,66 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
     btnSyncSheetNow.addEventListener('click', () => syncGoogleSheet());
     btnClearLogs.addEventListener('click', () => { terminalLogsContainer.innerHTML = ''; });
 
+    // Push Alerts Modal Listeners
+    btnOpenAlertsModal.addEventListener('click', () => {
+      inputNtfyTopic.value = notificationConfig.ntfyTopic;
+      toggleBrowserPush.checked = notificationConfig.browserPush;
+      toggleMobilePush.checked = notificationConfig.mobilePush;
+      toggleAudioChime.checked = notificationConfig.audioChime;
+      alertsModal.classList.remove('hidden');
+    });
+
+    btnCloseAlertsModal.addEventListener('click', () => alertsModal.classList.add('hidden'));
+
+    btnSaveAlertsModal.addEventListener('click', () => {
+      notificationConfig.ntfyTopic = inputNtfyTopic.value.trim() || 'ayush_spam_alerts_seed';
+      notificationConfig.browserPush = toggleBrowserPush.checked;
+      notificationConfig.mobilePush = toggleMobilePush.checked;
+      notificationConfig.audioChime = toggleAudioChime.checked;
+
+      localStorage.setItem('ayush_ntfy_topic', notificationConfig.ntfyTopic);
+
+      if (notificationConfig.browserPush && 'Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
+      alertsModal.classList.add('hidden');
+      showToast('Push alert settings saved!');
+      addLog(`[Alerts Config] Topic set to: ${notificationConfig.ntfyTopic}`, 'success');
+    });
+
+    // Test Browser Push Button
+    btnTestBrowserNotification.addEventListener('click', async () => {
+      playSpamAudioChime();
+      if ('Notification' in window) {
+        if (Notification.permission !== 'granted') {
+          const perm = await Notification.requestPermission();
+          if (perm !== 'granted') {
+            showToast('Browser notification permission is required');
+            return;
+          }
+        }
+      }
+
+      const testTitle = '🚨 SPAM DETECTED: Example Tech (example.com)';
+      const testBody = `• ET Name: Example Tech\n• Domain: example.com\n• Mailbox: ashwindelaycheck\n• Subject: Test Spam Placement Alert\n• Time: ${new Date().toLocaleTimeString()}`;
+
+      dispatchBrowserNotification(testTitle, testBody);
+      showInAppSpamPopup('Example Tech', 'example.com', 'ashwindelaycheck', 'Test Spam Placement Alert');
+      showToast('Browser test notification triggered!');
+    });
+
+    // Test Mobile Push Button
+    btnTestNotification.addEventListener('click', () => {
+      playSpamAudioChime();
+      const topic = inputNtfyTopic.value.trim() || 'ayush_spam_alerts_seed';
+      const testTitle = '🚨 TEST SPAM ALERT: Example Tech (example.com)';
+      const testBody = `• ET Name: Example Tech\n• Domain: example.com\n• Mailbox: ashwindelaycheck\n• Subject: Test Spam Placement Alert\n• Time: ${new Date().toLocaleTimeString()}`;
+
+      dispatchMobileNtfyPush(testTitle, testBody, 'urgent');
+      showToast(`Test alert sent to ntfy.sh/${topic}! Check your phone.`);
+    });
+
     // Filters
     searchInput.addEventListener('input', renderRecords);
     filterFolder.addEventListener('change', renderRecords);
@@ -1343,7 +1835,9 @@ app.listen(5000, () => console.log('Monitoring server active on port 5000'));
 
     // --- INITIALIZATION ---
     window.addEventListener('load', () => {
+      setupPwa();
       updateLockUI();
+      checkBrowserNotificationPermission();
       startTimer();
       syncGoogleSheet().then(() => {
         runGlobalSync();
