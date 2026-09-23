@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gmail Inbox & Spam Monitor | Live Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.04); }
+    }
+    .animate-pulse-glow { animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+          <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-bold text-white tracking-tight">Gmail Inbox & Spam Monitor</h1>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            Live 30s Polling
+          </span>
+        </div>
+        <p class="text-xs text-slate-400">
+          Real-time placement detector with cached Google Sheet ET Name mapping (Sheet1)
+        </p>
+      </div>
+    </div>
+
+    <!-- Sync Controls & Countdown -->
+    <div class="flex items-center gap-3">
+      <!-- Circular Countdown Timer -->
+      <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60">
+        <div class="relative w-6 h-6 flex items-center justify-center">
+          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="14" fill="none" stroke="#334155" stroke-width="3"></circle>
+            <circle id="countdown-circle" cx="18" cy="18" r="14" fill="none" stroke="#6366f1" stroke-width="3" stroke-dasharray="88" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-1000"></circle>
+          </svg>
+          <span id="countdown-number" class="absolute text-[10px] font-bold text-slate-200">30</span>
+        </div>
+        <span class="text-xs text-slate-300 font-medium">Next Sync</span>
+      </div>
+
+      <!-- Pause / Resume Button -->
+      <button id="btn-toggle-timer" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+        <span id="timer-btn-icon">⏸</span>
+        <span id="timer-btn-text">Pause</span>
+      </button>
+
+      <!-- Sync Now Action -->
+      <button id="btn-sync-now" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all active:scale-95">
+        <svg id="sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+        </svg>
+        <span id="sync-btn-label">Sync Now</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Tab Strip -->
+  <div class="border-b border-slate-800/80 bg-slate-900/40 px-4 lg:px-8 flex items-center justify-between">
+    <nav class="flex space-x-1 sm:space-x-4">
+      <button data-tab="live" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition-colors">
+        <span>Live Monitor</span>
+        <span id="badge-records-count" class="bg-slate-800 px-1.5 py-0.5 rounded text-[11px] font-mono text-slate-300">0</span>
+      </button>
+
+      <button data-tab="sheet" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition-colors">
+        <span>Google Sheet (Sheet1)</span>
+        <span id="badge-sheet-count" class="bg-slate-800 px-1.5 py-0.5 rounded text-[11px] font-mono text-slate-300">0</span>
+      </button>
+
+      <button data-tab="terminal" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition-colors">
+        <span>Sync Terminal</span>
+        <span id="terminal-live-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      </button>
+
+      <button data-tab="backend" class="tab-btn py-3 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition-colors">
+        <span>Secure Node.js Server</span>
+      </button>
+    </nav>
+
+    <div class="hidden md:flex items-center gap-2 text-[11px] text-slate-400">
+      <span>Last Polled:</span>
+      <span id="header-last-sync" class="font-mono text-slate-300">Never</span>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+
+    <!-- Metric Summary Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm">
+        <span class="text-xs font-medium text-slate-400">Total Scanned Mails</span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="stat-total" class="text-2xl font-bold text-white tracking-tight">0</span>
+          <span class="text-xs text-slate-500">All accounts</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-emerald-900/30 rounded-xl p-4 shadow-sm">
+        <span class="text-xs font-medium text-emerald-400 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Inbox Placements
+        </span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="stat-inbox" class="text-2xl font-bold text-emerald-400 tracking-tight">0</span>
+          <span id="stat-rate" class="text-xs text-emerald-500/80 font-medium">0.0% Rate</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-rose-900/30 rounded-xl p-4 shadow-sm">
+        <span class="text-xs font-medium text-rose-400 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+          Spam Placements
+        </span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="stat-spam" class="text-2xl font-bold text-rose-400 tracking-tight">0</span>
+          <span id="stat-spam-rate" class="text-xs text-rose-500/80 font-medium">0.0%</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-indigo-900/30 rounded-xl p-4 shadow-sm">
+        <span class="text-xs font-medium text-indigo-400 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          Cached ET Domains
+        </span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="stat-sheet-count" class="text-2xl font-bold text-indigo-400 tracking-tight">0</span>
+          <span id="stat-mapped" class="text-xs text-slate-400">0 Resolved</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-4 shadow-sm col-span-2 sm:col-span-2 lg:col-span-1">
+        <span class="text-xs font-medium text-slate-400">Configured Mailboxes</span>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span class="text-2xl font-bold text-slate-200 tracking-tight">4</span>
+          <div class="flex items-center gap-1">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" title="ashwinliveseedforall"></span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" title="asharyaliveseedacc"></span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" title="liveseedsformm"></span>
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" title="arcsann6767"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: LIVE MONITOR -->
+    <div id="tab-content-live" class="tab-pane space-y-4">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl shadow-xl overflow-hidden">
+        <!-- Filter Toolbar -->
+        <div class="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+            <!-- Search -->
+            <div class="relative flex-1 min-w-[200px] max-w-md">
+              <input
+                id="search-input"
+                type="text"
+                placeholder="Search domain, ET Name, sender, or subject..."
+                class="w-full bg-slate-950/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              />
+            </div>
+
+            <!-- Folder Status Filter -->
+            <select id="filter-folder" class="bg-slate-950/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+              <option value="ALL">All Folders</option>
+              <option value="INBOX">Inbox Only</option>
+              <option value="SPAM">Spam Only</option>
+            </select>
+
+            <!-- Account Filter -->
+            <select id="filter-account" class="bg-slate-950/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+              <option value="ALL">All Mailboxes</option>
+              <option value="ashwinliveseedforall">ashwinliveseedforall</option>
+              <option value="asharyaliveseedacc">asharyaliveseedacc</option>
+              <option value="liveseedsformm">liveseedsformm</option>
+              <option value="arcsann6767">arcsann6767</option>
+            </select>
+          </div>
+
+          <!-- Export CSV -->
+          <button id="btn-export-csv" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Export CSV</span>
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 bg-slate-950/60 text-slate-400 font-semibold uppercase tracking-wider">
+                <th class="py-3 px-4">ET Name</th>
+                <th class="py-3 px-4">Domain</th>
+                <th class="py-3 px-4">Email Account</th>
+                <th class="py-3 px-4 text-center">Folder Status</th>
+                <th class="py-3 px-4">Sender & Subject</th>
+                <th class="py-3 px-4">Detection Time</th>
+                <th class="py-3 px-4">Last Sync</th>
+              </tr>
+            </thead>
+            <tbody id="records-tbody" class="divide-y divide-slate-800/60">
+              <!-- Dynamically populated rows -->
+              <tr>
+                <td colspan="7" class="py-12 text-center text-slate-500">
+                  <div class="flex flex-col items-center justify-center gap-2">
+                    <svg class="w-6 h-6 animate-spin text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+                    <span class="text-xs text-slate-400">Connecting to 4 Gmail seed inboxes and loading Sheet mappings...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: GOOGLE SHEET CACHE -->
+    <div id="tab-content-sheet" class="tab-pane hidden space-y-4">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+              Google Sheet Domain Mapping Cache
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Tab: <code class="text-indigo-300">Sheet1</code> | Headers: <code class="text-indigo-300">Domains</code> & <code class="text-indigo-300">ET NAME</code>
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btn-open-paste-modal" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition-colors">
+              Quick Paste CSV / TSV
+            </button>
+            <button id="btn-sync-sheet-now" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all active:scale-95">
+              <svg id="sheet-sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+              <span>Sync Sheet Now</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <label class="block text-xs font-medium text-slate-300 mb-1">
+            Published Google Sheet CSV Endpoint
+          </label>
+          <input
+            id="sheet-url-input"
+            type="text"
+            value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=0&single=true&output=csv"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-300 focus:outline-none focus:border-indigo-500"
+          />
+          <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+            <span>Status: <strong id="sheet-status-text" class="text-slate-300">Ready to synchronize</strong></span>
+            <span id="sheet-sync-time">Never synced</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- In-Memory Table -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-300">
+            In-Memory Cached Domain Mappings (<span id="sheet-table-count">0</span> entries)
+          </span>
+          <span class="text-[11px] text-slate-500">
+            O(1) instant memory lookup on every detected email
+          </span>
+        </div>
+        <div class="max-h-96 overflow-y-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/80 text-slate-400 sticky top-0 border-b border-slate-800">
+              <tr>
+                <th class="py-2.5 px-4 font-semibold">Domains (Column A)</th>
+                <th class="py-2.5 px-4 font-semibold">ET NAME (Column B)</th>
+                <th class="py-2.5 px-4 font-semibold">Lookup Status</th>
+              </tr>
+            </thead>
+            <tbody id="sheet-mappings-tbody" class="divide-y divide-slate-800/60">
+              <tr>
+                <td colspan="3" class="py-8 text-center text-slate-500">
+                  No cached domain mappings loaded. Click "Sync Sheet Now" or "Quick Paste CSV".
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DIAGNOSTIC TERMINAL -->
+    <div id="tab-content-terminal" class="tab-pane hidden space-y-4">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl shadow-xl overflow-hidden">
+        <div class="p-3.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+            <span class="text-xs font-bold text-slate-200">Live Polling Diagnostic Terminal</span>
+          </div>
+          <button id="btn-clear-logs" class="text-[11px] text-slate-400 hover:text-slate-200 underline">
+            Clear Logs
+          </button>
+        </div>
+        <div id="terminal-logs-container" class="p-4 font-mono text-xs max-h-[500px] overflow-y-auto space-y-2 bg-slate-950/80">
+          <div class="text-slate-600 italic">Starting up live poll monitor...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SECURE SERVER CODE -->
+    <div id="tab-content-backend" class="tab-pane hidden space-y-4">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            Production Node.js Daemon (server.js)
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">
+            If you wish to host this in production on a VPS (EC2, Render, DigitalOcean), this standalone Node.js daemon handles Google OAuth refreshes and serves pre-computed stats without exposing credentials to client browsers.
+          </p>
+        </div>
+
+        <pre class="p-4 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed max-h-96">
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const CLIENT_ID = process.env.CLIENT_ID || "128820302240-k7bk8mui4lr16gvonbqb7qn76o9rgd1q.apps.googleusercontent.com";
+const CLIENT_SECRET = process.env.CLIENT_SECRET || "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";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=0&single=true&output=csv";
+
+const ACCOUNTS = [
+  { name: "ashwinliveseedforall", token: "1//0gub_tDUPkLESCgYIARAAGBASNwF-L9IrVdFJ0uMmaXYM4AG01a6r7Zpo3uDchB7DNXW0Rkt4oDojH3-9HCrZX5tr8uDFmABRRY0" },
+  { name: "asharyaliveseedacc", token: "1//0guqANvb_X5K3CgYIARAAGBASNwF-L9IrqODXDbSdAtPz7GznJrXl0HXkUbcKQ9yqWwda563DfGtAbc8MlFkDZuja-SzHMG7WkXk" },
+  { name: "liveseedsformm", token: "1//0gj4AZbhLjWK0CgYIARAAGBASNwF-L9IrKfhgpAfv-20pn5NC72ByHJS-b17sGCNrkV3vTDkiVGV98aGbwn32IKXhx97d0X-KHeg" },
+  { name: "arcsann6767", token: "1//0gbQkQjqB6dmFCgYIARAAGBASNwF-L9IroUxKSF0oSj2t_9L9l7Bk7inNEepzhDA-DLrpVngouFHoyGl__nEp3OD-2SlbxAofEdM" }
+];
+
+let domainMap = new Map();
+let emailRecords = [];
+
+async function refreshSheet() {
+  try {
+    const res = await axios.get(SHEET_CSV_URL);
+    const lines = res.data.split('\n');
+    domainMap.clear();
+    for (let i = 1; i < lines.length; i++) {
+      const [dom, et] = lines[i].split(',').map(s => s ? s.trim().replace(/^"|"$/g, '') : '');
+      if (dom && et) domainMap.set(dom.toLowerCase(), et);
+    }
+    console.log(`[Sheet Sync] Cached ${domainMap.size} domain mappings.`);
+  } catch (err) {
+    console.error('[Sheet Error]', err.message);
+  }
+}
+
+async function syncMailboxes() {
+  for (const acc of ACCOUNTS) {
+    try {
+      const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        refresh_token: acc.token,
+        grant_type: 'refresh_token'
+      });
+      const token = tokenRes.data.access_token;
+      const listRes = await axios.get('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=15&includeSpamTrash=true', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log(`[${acc.name}] Fetched ${listRes.data.messages?.length || 0} messages`);
+    } catch (e) {
+      console.error(`[${acc.name}] Error:`, e.message);
+    }
+  }
+}
+
+setInterval(syncMailboxes, 30000);
+refreshSheet();
+syncMailboxes();
+
+app.get('/api/records', (req, res) => res.json(emailRecords));
+app.listen(5000, () => console.log('Monitoring server active on port 5000'));
+        </pre>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- QUICK PASTE CSV MODAL -->
+  <div id="paste-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+          <svg class="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          Quick Paste CSV / TSV Data
+        </h4>
+        <button id="btn-close-paste-modal" class="text-slate-400 hover:text-slate-200 text-sm font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-400">
+        Paste rows with <code class="text-indigo-300">Domains</code> and <code class="text-indigo-300">ET NAME</code>:
+      </p>
+      <textarea
+        id="paste-textarea"
+        rows="8"
+        placeholder="Domains,ET NAME&#10;example.com,Example Tech&#10;acme.org,Acme Corporation"
+        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+      ></textarea>
+      <div class="flex justify-end gap-2">
+        <button id="btn-cancel-paste" class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700">
+          Cancel
+        </button>
+        <button id="btn-apply-paste" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">
+          Apply Mappings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- APP STATE & CREDENTIALS ---
+    const OAUTH_CLIENT_ID = "128820302240-k7bk8mui4lr16gvonbqb7qn76o9rgd1q.apps.googleusercontent.com";
+    const OAUTH_CLIENT_SECRET = "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";
+
+    const ACCOUNTS = [
+      { id: "acc_1", name: "ashwinliveseedforall", type: "Opener", token: "1//0gub_tDUPkLESCgYIARAAGBASNwF-L9IrVdFJ0uMmaXYM4AG01a6r7Zpo3uDchB7DNXW0Rkt4oDojH3-9HCrZX5tr8uDFmABRRY0", status: "idle" },
+      { id: "acc_2", name: "asharyaliveseedacc", type: "Opener", token: "1//0guqANvb_X5K3CgYIARAAGBASNwF-L9IrqODXDbSdAtPz7GznJrXl0HXkUbcKQ9yqWwda563DfGtAbc8MlFkDZuja-SzHMG7WkXk", status: "idle" },
+      { id: "acc_3", name: "liveseedsformm", type: "Opener", token: "1//0gj4AZbhLjWK0CgYIARAAGBASNwF-L9IrKfhgpAfv-20pn5NC72ByHJS-b17sGCNrkV3vTDkiVGV98aGbwn32IKXhx97d0X-KHeg", status: "idle" },
+      { id: "acc_4", name: "arcsann6767", type: "Opener", token: "1//0gbQkQjqB6dmFCgYIARAAGBASNwF-L9IroUxKSF0oSj2t_9L9l7Bk7inNEepzhDA-DLrpVngouFHoyGl__nEp3OD-2SlbxAofEdM", status: "idle" }
+    ];
+
+    let emailRecords = [];
+    const domainLookupMap = new Map();
+    const tokenCache = {}; // { [accId]: { token: string, expiry: number } }
+
+    let isSyncing = false;
+    let isAutoSyncEnabled = true;
+    let countdown = 30;
+    let countdownInterval = null;
+    let lastGlobalSync = null;
+
+    // --- DOM REFERENCES ---
+    const countdownCircle = document.getElementById('countdown-circle');
+    const countdownNumber = document.getElementById('countdown-number');
+    const btnToggleTimer = document.getElementById('btn-toggle-timer');
+    const timerBtnIcon = document.getElementById('timer-btn-icon');
+    const timerBtnText = document.getElementById('timer-btn-text');
+    const btnSyncNow = document.getElementById('btn-sync-now');
+    const syncSpinner = document.getElementById('sync-spinner');
+    const syncBtnLabel = document.getElementById('sync-btn-label');
+    const headerLastSync = document.getElementById('header-last-sync');
+
+    const statTotal = document.getElementById('stat-total');
+    const statInbox = document.getElementById('stat-inbox');
+    const statRate = document.getElementById('stat-rate');
+    const statSpam = document.getElementById('stat-spam');
+    const statSpamRate = document.getElementById('stat-spam-rate');
+    const statSheetCount = document.getElementById('stat-sheet-count');
+    const statMapped = document.getElementById('stat-mapped');
+
+    const badgeRecordsCount = document.getElementById('badge-records-count');
+    const badgeSheetCount = document.getElementById('badge-sheet-count');
+    const recordsTbody = document.getElementById('records-tbody');
+    const searchInput = document.getElementById('search-input');
+    const filterFolder = document.getElementById('filter-folder');
+    const filterAccount = document.getElementById('filter-account');
+    const btnExportCsv = document.getElementById('btn-export-csv');
+
+    const sheetUrlInput = document.getElementById('sheet-url-input');
+    const sheetStatusText = document.getElementById('sheet-status-text');
+    const sheetSyncTime = document.getElementById('sheet-sync-time');
+    const btnSyncSheetNow = document.getElementById('btn-sync-sheet-now');
+    const sheetSyncSpinner = document.getElementById('sheet-sync-spinner');
+    const sheetMappingsTbody = document.getElementById('sheet-mappings-tbody');
+    const sheetTableCount = document.getElementById('sheet-table-count');
+
+    const terminalLogsContainer = document.getElementById('terminal-logs-container');
+    const btnClearLogs = document.getElementById('btn-clear-logs');
+
+    const pasteModal = document.getElementById('paste-modal');
+    const btnOpenPasteModal = document.getElementById('btn-open-paste-modal');
+    const btnClosePasteModal = document.getElementById('btn-close-paste-modal');
+    const btnCancelPaste = document.getElementById('btn-cancel-paste');
+    const btnApplyPaste = document.getElementById('btn-apply-paste');
+    const pasteTextarea = document.getElementById('paste-textarea');
+
+    // --- LOGGING HELPER ---
+    function addLog(msg, level = 'info') {
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'flex items-start gap-2 leading-relaxed';
+      
+      let colorClass = 'text-slate-300';
+      if (level === 'error') colorClass = 'text-rose-400 font-semibold';
+      else if (level === 'warn') colorClass = 'text-amber-400';
+      else if (level === 'success') colorClass = 'text-emerald-400';
+
+      div.innerHTML = `
+        <span class="text-slate-500 select-none text-[11px]">[${time}]</span>
+        <span class="break-all ${colorClass}">${escapeHtml(msg)}</span>
+      `;
+      terminalLogsContainer.prepend(div);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // --- CSV PARSING & DOMAIN HELPERS ---
+    function parseCsvLine(text) {
+      const result = [];
+      let cur = '';
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (c === '"') {
+          inQuotes = !inQuotes;
+        } else if (c === ',' && !inQuotes) {
+          result.push(cur.trim().replace(/^"|"$/g, ''));
+          cur = '';
+        } else {
+          cur += c;
+        }
+      }
+      result.push(cur.trim().replace(/^"|"$/g, ''));
+      return result;
+    }
+
+    function extractDomain(sender) {
+      if (!sender) return '';
+      const emailMatch = sender.match(/<([^>]+)>/) || sender.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      const email = emailMatch ? emailMatch[1] : sender;
+      const parts = email.split('@');
+      return parts.length > 1 ? parts[1].toLowerCase().trim() : email.toLowerCase().trim();
+    }
+
+    function resolveEtName(domain) {
+      if (!domain) return 'Unmapped';
+      const clean = domain.toLowerCase().trim();
+      if (domainLookupMap.has(clean)) return domainLookupMap.get(clean);
+
+      // Subdomain fallback (e.g. mail.domain.com -> domain.com)
+      const parts = clean.split('.');
+      if (parts.length > 2) {
+        const root = parts.slice(-2).join('.');
+        if (domainLookupMap.has(root)) return domainLookupMap.get(root);
+      }
+      return 'Unmapped';
+    }
+
+    // --- GOOGLE SHEET CACHING ---
+    async function syncGoogleSheet() {
+      sheetSyncSpinner.classList.add('animate-spin');
+      sheetStatusText.textContent = 'Fetching published Sheet1 CSV...';
+      addLog('[Sheet Sync] Connecting to published Google Sheet CSV...', 'info');
+
+      const targetUrl = sheetUrlInput.value.trim();
+      const endpoints = [
+        targetUrl,
+        `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+      ];
+
+      let parsed = [];
+      for (const ep of endpoints) {
+        try {
+          const resp = await fetch(ep, { cache: 'no-store' });
+          if (resp.ok) {
+            const raw = await resp.text();
+            if (raw && !raw.includes('<!DOCTYPE html>') && raw.length > 10) {
+              const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+              if (lines.length >= 2) {
+                const headerCols = parseCsvLine(lines[0]).map(h => h.toLowerCase());
+                let domainIdx = headerCols.findIndex(h => h.includes('domain'));
+                let etIdx = headerCols.findIndex(h => h.includes('et') || h.includes('name'));
+
+                if (domainIdx === -1) domainIdx = 0;
+                if (etIdx === -1) etIdx = 1;
+
+                for (let i = 1; i < lines.length; i++) {
+                  const cols = parseCsvLine(lines[i]);
+                  const d = (cols[domainIdx] || '').toLowerCase().trim();
+                  const et = (cols[etIdx] || '').trim();
+                  if (d && et && !d.includes('domain')) {
+                    parsed.push({ domain: d, etName: et });
+                  }
+                }
+
+                if (parsed.length > 0) {
+                  addLog(`[Sheet Sync] Successfully fetched and parsed ${parsed.length} domain mappings!`, 'success');
+                  break;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          addLog(`[Sheet Sync] Endpoint retry notice: ${err.message}`, 'warn');
+        }
+      }
+
+      sheetSyncSpinner.classList.remove('animate-spin');
+
+      if (parsed.length > 0) {
+        domainLookupMap.clear();
+        parsed.forEach(p => domainLookupMap.set(p.domain, p.etName));
+
+        sheetStatusText.textContent = `Active: ${parsed.length} domains cached in memory`;
+        sheetSyncTime.textContent = `Synced at: ${new Date().toLocaleTimeString()}`;
+        renderSheetTable(parsed);
+
+        // Re-resolve existing email records with new mappings
+        emailRecords.forEach(rec => {
+          rec.etName = resolveEtName(rec.domain);
+        });
+        renderRecords();
+        updateStats();
+      } else {
+        sheetStatusText.textContent = 'Direct fetch blocked. Click "Quick Paste CSV" to load mappings instantly.';
+        addLog('[Sheet Sync] Google Sheet fetch could not complete. Use Quick Paste fallback.', 'error');
+      }
+    }
+
+    function renderSheetTable(mappings) {
+      sheetTableCount.textContent = mappings.length;
+      badgeSheetCount.textContent = mappings.length;
+      statSheetCount.textContent = mappings.length;
+
+      if (mappings.length === 0) {
+        sheetMappingsTbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="py-8 text-center text-slate-500">
+              No cached domain mappings loaded. Click "Sync Sheet Now" or "Quick Paste CSV".
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      sheetMappingsTbody.innerHTML = mappings.map(m => `
+        <tr class="hover:bg-slate-800/30">
+          <td class="py-2.5 px-4 font-mono text-slate-300">${escapeHtml(m.domain)}</td>
+          <td class="py-2.5 px-4 font-semibold text-indigo-400">${escapeHtml(m.etName)}</td>
+          <td class="py-2.5 px-4 text-emerald-400 text-[11px]">Ready for Matching</td>
+        </tr>
+      `).join('');
+    }
+
+    // --- OAUTH & GMAIL API ENGINE ---
+    async function getAccessToken(acc) {
+      const now = Date.now();
+      if (tokenCache[acc.id] && tokenCache[acc.id].expiry > now + 60000) {
+        return tokenCache[acc.id].token;
+      }
+
+      addLog(`[OAuth2] Refreshing access token for ${acc.name}...`, 'info');
+
+      const bodyParams = new URLSearchParams({
+        client_id: OAUTH_CLIENT_ID,
+        client_secret: OAUTH_CLIENT_SECRET,
+        refresh_token: acc.token,
+        grant_type: 'refresh_token'
+      });
+
+      const tokenEndpoints = [
+        'https://oauth2.googleapis.com/token',
+        `https://corsproxy.io/?url=${encodeURIComponent('https://oauth2.googleapis.com/token')}`
+      ];
+
+      for (const ep of tokenEndpoints) {
+        try {
+          const resp = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: bodyParams.toString()
+          });
+
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.access_token) {
+              tokenCache[acc.id] = {
+                token: data.access_token,
+                expiry: now + (data.expires_in || 3600) * 1000
+              };
+              addLog(`[OAuth2] Token acquired for ${acc.name}`, 'success');
+              return data.access_token;
+            }
+          }
+        } catch (err) {
+          addLog(`[OAuth2] Token error for ${acc.name}: ${err.message}`, 'warn');
+        }
+      }
+
+      return null;
+    }
+
+    async function syncMailbox(acc) {
+      const token = await getAccessToken(acc);
+      if (!token) {
+        addLog(`[Gmail API] Failed authentication for ${acc.name}`, 'error');
+        return [];
+      }
+
+      try {
+        addLog(`[Gmail API] Querying messages for ${acc.name} (includeSpamTrash=true)...`, 'info');
+        // Fetch up to 15 recent messages including SPAM and INBOX
+        const listUrl = 'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=15&includeSpamTrash=true';
+        const listResp = await fetch(listUrl, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!listResp.ok) throw new Error(`HTTP ${listResp.status}`);
+
+        const listData = await listResp.json();
+        const summaries = listData.messages || [];
+        addLog(`[Gmail API] Found ${summaries.length} recent messages in ${acc.name}`, 'info');
+
+        const detected = [];
+        const detailPromises = summaries.slice(0, 10).map(async (item) => {
+          try {
+            const detailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`;
+            const r = await fetch(detailUrl, { headers: { Authorization: `Bearer ${token}` } });
+            return r.ok ? await r.json() : null;
+          } catch {
+            return null;
+          }
+        });
+
+        const details = await Promise.all(detailPromises);
+
+        details.forEach((msg) => {
+          if (!msg) return;
+
+          const labels = msg.labelIds || [];
+          const isSpam = labels.includes('SPAM');
+          const isInbox = labels.includes('INBOX');
+          let folder = isSpam ? 'SPAM' : isInbox ? 'INBOX' : (labels[0] || 'ARCHIVE');
+
+          const headers = msg.payload?.headers || [];
+          const fromVal = headers.find(h => h.name.toLowerCase() === 'from')?.value || 'Unknown';
+          const subjVal = headers.find(h => h.name.toLowerCase() === 'subject')?.value || '(No Subject)';
+          const dateVal = headers.find(h => h.name.toLowerCase() === 'date')?.value;
+
+          const domain = extractDomain(fromVal);
+          const etName = resolveEtName(domain);
+          const internalTime = msg.internalDate ? parseInt(msg.internalDate, 10) : Date.now();
+
+          detected.push({
+            id: `${acc.id}_${msg.id}`,
+            messageId: msg.id,
+            accountName: acc.name,
+            accountType: acc.type,
+            from: fromVal,
+            domain: domain,
+            etName: etName,
+            subject: subjVal,
+            folder: folder,
+            detectionTime: new Date(internalTime),
+            dateHeader: dateVal,
+            lastSyncTime: new Date()
+          });
+        });
+
+        return detected;
+      } catch (err) {
+        addLog(`[Gmail API Error] ${acc.name}: ${err.message}`, 'error');
+        return [];
+      }
+    }
+
+    async function runGlobalSync() {
+      if (isSyncing) return;
+      isSyncing = true;
+      syncSpinner.classList.add('animate-spin');
+      syncBtnLabel.textContent = 'Syncing...';
+      addLog('[Sync Engine] Starting 30-second synchronization cycle...', 'info');
+
+      try {
+        const allItems = [];
+        for (const acc of ACCOUNTS) {
+          const items = await syncMailbox(acc);
+          allItems.push(...items);
+        }
+
+        if (allItems.length > 0) {
+          const map = new Map();
+          [...allItems, ...emailRecords].forEach(item => {
+            if (!map.has(item.id)) map.set(item.id, item);
+          });
+          emailRecords = Array.from(map.values())
+            .sort((a, b) => b.detectionTime.getTime() - a.detectionTime.getTime())
+            .slice(0, 500);
+
+          addLog(`[Sync Engine] Successfully recorded ${allItems.length} live messages`, 'success');
+        } else {
+          addLog('[Sync Engine] Sync completed with no new messages detected', 'info');
+        }
+      } catch (err) {
+        addLog(`[Sync Engine Exception] ${err.message}`, 'error');
+      } finally {
+        isSyncing = false;
+        syncSpinner.classList.remove('animate-spin');
+        syncBtnLabel.textContent = 'Sync Now';
+        lastGlobalSync = new Date();
+        headerLastSync.textContent = lastGlobalSync.toLocaleTimeString();
+        countdown = 30;
+        updateCountdownUI();
+        renderRecords();
+        updateStats();
+      }
+    }
+
+    // --- RENDERING & UI UPDATES ---
+    function renderRecords() {
+      const q = searchInput.value.toLowerCase().trim();
+      const folderVal = filterFolder.value;
+      const accountVal = filterAccount.value;
+
+      const filtered = emailRecords.filter(rec => {
+        if (folderVal === 'INBOX' && rec.folder !== 'INBOX') return false;
+        if (folderVal === 'SPAM' && rec.folder !== 'SPAM') return false;
+        if (accountVal !== 'ALL' && rec.accountName !== accountVal) return false;
+        if (q) {
+          return rec.domain.toLowerCase().includes(q) ||
+                 rec.etName.toLowerCase().includes(q) ||
+                 rec.from.toLowerCase().includes(q) ||
+                 rec.subject.toLowerCase().includes(q);
+        }
+        return true;
+      });
+
+      badgeRecordsCount.textContent = emailRecords.length;
+
+      if (filtered.length === 0) {
+        recordsTbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-12 text-center text-slate-500">
+              ${isSyncing ? `
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <svg class="w-6 h-6 animate-spin text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+                  <span class="text-xs text-slate-400">Scanning Gmail inboxes & spam folders...</span>
+                </div>
+              ` : `
+                <div class="space-y-1">
+                  <p class="text-sm font-medium text-slate-400">No email records found</p>
+                  <p class="text-xs text-slate-500">Emails will appear here as they are retrieved every 30 seconds.</p>
+                </div>
+              `}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      recordsTbody.innerHTML = filtered.map(item => `
+        <tr class="hover:bg-slate-800/40 transition-colors">
+          <!-- ET NAME -->
+          <td class="py-3.5 px-4 font-medium">
+            ${item.etName !== 'Unmapped' ? `
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                ${escapeHtml(item.etName)}
+              </span>
+            ` : `
+              <span class="text-slate-500 italic text-[11px]">Unmapped</span>
+            `}
+          </td>
+
+          <!-- DOMAIN -->
+          <td class="py-3.5 px-4 font-mono font-medium text-slate-300">
+            ${escapeHtml(item.domain || 'N/A')}
+          </td>
+
+          <!-- EMAIL ACCOUNT -->
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-1.5">
+              <span class="font-semibold text-slate-200">${escapeHtml(item.accountName)}</span>
+              <span class="text-[10px] px-1 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                ${escapeHtml(item.accountType)}
+              </span>
+            </div>
+          </td>
+
+          <!-- FOLDER STATUS -->
+          <td class="py-3.5 px-4 text-center">
+            ${item.folder === 'INBOX' ? `
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                INBOX
+              </span>
+            ` : item.folder === 'SPAM' ? `
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-sm shadow-rose-500/10 animate-pulse">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+                SPAM
+              </span>
+            ` : `
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                ${escapeHtml(item.folder)}
+              </span>
+            `}
+          </td>
+
+          <!-- SENDER & SUBJECT -->
+          <td class="py-3.5 px-4 max-w-xs truncate">
+            <div class="font-medium text-slate-200 truncate" title="${escapeHtml(item.subject)}">
+              ${escapeHtml(item.subject)}
+            </div>
+            <div class="text-[11px] text-slate-500 truncate" title="${escapeHtml(item.from)}">
+              ${escapeHtml(item.from)}
+            </div>
+          </td>
+
+          <!-- DETECTION TIME -->
+          <td class="py-3.5 px-4 text-slate-400 whitespace-nowrap">
+            <div>${item.detectionTime.toLocaleDateString()}</div>
+            <div class="text-[11px] text-slate-500">${item.detectionTime.toLocaleTimeString()}</div>
+          </td>
+
+          <!-- LAST SYNC TIME -->
+          <td class="py-3.5 px-4 text-slate-400 whitespace-nowrap font-mono text-[11px]">
+            ${item.lastSyncTime.toLocaleTimeString()}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateStats() {
+      const total = emailRecords.length;
+      const inbox = emailRecords.filter(r => r.folder === 'INBOX').length;
+      const spam = emailRecords.filter(r => r.folder === 'SPAM').length;
+      const mapped = emailRecords.filter(r => r.etName !== 'Unmapped').length;
+
+      const inboxRate = total > 0 ? ((inbox / total) * 100).toFixed(1) : '0.0';
+      const spamRate = total > 0 ? ((spam / total) * 100).toFixed(1) : '0.0';
+
+      statTotal.textContent = total;
+      statInbox.textContent = inbox;
+      statRate.textContent = `${inboxRate}% Rate`;
+      statSpam.textContent = spam;
+      statSpamRate.textContent = `${spamRate}%`;
+      statMapped.textContent = `${mapped} Resolved`;
+    }
+
+    // --- TIMER & PROGRESS RING ---
+    function updateCountdownUI() {
+      countdownNumber.textContent = countdown;
+      const offset = 88 - (88 * countdown) / 30;
+      countdownCircle.style.strokeDashoffset = offset;
+      countdownCircle.style.stroke = countdown <= 5 ? '#f59e0b' : '#6366f1';
+    }
+
+    function startTimer() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        if (!isAutoSyncEnabled) return;
+        countdown--;
+        if (countdown <= 0) {
+          countdown = 30;
+          runGlobalSync();
+        }
+        updateCountdownUI();
+      }, 1000);
+    }
+
+    btnToggleTimer.addEventListener('click', () => {
+      isAutoSyncEnabled = !isAutoSyncEnabled;
+      if (isAutoSyncEnabled) {
+        timerBtnIcon.textContent = '⏸';
+        timerBtnText.textContent = 'Pause';
+        btnToggleTimer.className = 'px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors';
+      } else {
+        timerBtnIcon.textContent = '▶';
+        timerBtnText.textContent = 'Resume';
+        btnToggleTimer.className = 'px-3 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 text-xs font-medium flex items-center gap-1.5 transition-colors';
+      }
+    });
+
+    btnSyncNow.addEventListener('click', () => runGlobalSync());
+    btnSyncSheetNow.addEventListener('click', () => syncGoogleSheet());
+    btnClearLogs.addEventListener('click', () => { terminalLogsContainer.innerHTML = ''; });
+
+    // Filter listeners
+    searchInput.addEventListener('input', renderRecords);
+    filterFolder.addEventListener('change', renderRecords);
+    filterAccount.addEventListener('change', renderRecords);
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('border-indigo-500', 'text-indigo-400');
+          b.classList.add('border-transparent', 'text-slate-400');
+        });
+        btn.classList.remove('border-transparent', 'text-slate-400');
+        btn.classList.add('border-indigo-500', 'text-indigo-400');
+
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
+        document.getElementById(`tab-content-${target}`).classList.remove('hidden');
+      });
+    });
+
+    // CSV Export
+    btnExportCsv.addEventListener('click', () => {
+      if (emailRecords.length === 0) return;
+      const headers = ['ET Name', 'Domain', 'Email Account', 'Account Type', 'Folder Status', 'Subject', 'From', 'Detection Time', 'Last Sync Time'];
+      const rows = emailRecords.map(r => [
+        `"${r.etName}"`,
+        `"${r.domain}"`,
+        `"${r.accountName}"`,
+        `"${r.accountType}"`,
+        `"${r.folder}"`,
+        `"${(r.subject || '').replace(/"/g, '""')}"`,
+        `"${(r.from || '').replace(/"/g, '""')}"`,
+        `"${r.detectionTime.toISOString()}"`,
+        `"${r.lastSyncTime.toISOString()}"`
+      ]);
+      const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const uri = encodeURI(csv);
+      const link = document.createElement('a');
+      link.setAttribute('href', uri);
+      link.setAttribute('download', `Email_Placement_Report_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // Quick Paste Modal handlers
+    btnOpenPasteModal.addEventListener('click', () => pasteModal.classList.remove('hidden'));
+    btnClosePasteModal.addEventListener('click', () => pasteModal.classList.add('hidden'));
+    btnCancelPaste.addEventListener('click', () => pasteModal.classList.add('hidden'));
+    btnApplyPaste.addEventListener('click', () => {
+      const text = pasteTextarea.value;
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+      const parsed = [];
+      for (let i = 0; i < lines.length; i++) {
+        const parts = lines[i].includes('\t') ? lines[i].split('\t') : parseCsvLine(lines[i]);
+        const d = (parts[0] || '').toLowerCase().trim();
+        const et = (parts[1] || '').trim();
+        if (d && et && !d.includes('domain')) {
+          parsed.push({ domain: d, etName: et });
+        }
+      }
+      if (parsed.length > 0) {
+        domainLookupMap.clear();
+        parsed.forEach(p => domainLookupMap.set(p.domain, p.etName));
+        sheetStatusText.textContent = `Active: ${parsed.length} domains loaded via Quick Paste`;
+        sheetSyncTime.textContent = `Pasted at: ${new Date().toLocaleTimeString()}`;
+        renderSheetTable(parsed);
+        emailRecords.forEach(rec => { rec.etName = resolveEtName(rec.domain); });
+        renderRecords();
+        updateStats();
+        addLog(`[Quick Paste] Successfully applied ${parsed.length} domain mappings`, 'success');
+        pasteModal.classList.add('hidden');
+        pasteTextarea.value = '';
+      }
+    });
+
+    window.addEventListener('load', () => {
+      startTimer();
+      syncGoogleSheet().then(() => {
+        runGlobalSync();
+      });
+    });
+  </script>
+</body>
+</html>
