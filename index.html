@@ -60,8 +60,8 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap">
             <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">Gmail Inbox & Spam Monitor</h1>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
-              📅 Today's Mail Only
+            <span id="badge-active-scope" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
+              📅 Today's Mail
             </span>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
               ⚡ Domain Card View
@@ -103,13 +103,22 @@
             </svg>
             <span id="countdown-number" class="absolute text-[10px] font-bold text-slate-700">30</span>
           </div>
-          <span class="text-xs text-slate-600 font-medium whitespace-nowrap">Next Sync</span>
+          <span id="countdown-status-text" class="text-xs text-slate-600 font-medium whitespace-nowrap">Next Sync</span>
         </div>
 
         <!-- Pause / Resume Button -->
         <button id="btn-toggle-timer" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors">
           <span id="timer-btn-icon">⏸</span>
           <span id="timer-btn-text" class="hidden sm:inline">Pause</span>
+        </button>
+
+        <!-- NEW: Sync Yesterday Button -->
+        <button id="btn-sync-yesterday" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-300 bg-violet-50 hover:bg-violet-100 text-violet-800 text-xs font-semibold shadow-xs transition-all active:scale-95" title="Fetch yesterday's mail and pause auto-sync">
+          <svg id="yesterday-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span id="yesterday-btn-label">Sync Yesterday</span>
         </button>
 
         <!-- Sync Now Action -->
@@ -136,7 +145,7 @@
         <!-- Live Monitor (Default & Always Open) -->
         <button data-tab="live" class="tab-btn py-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 whitespace-nowrap transition-colors">
           <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
-          <span>Domain Cards (Today)</span>
+          <span id="tab-label-monitor">Domain Cards</span>
           <span id="badge-records-count" class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-1.5 py-0.5 rounded text-[11px] font-mono">0 Domains</span>
         </button>
 
@@ -182,12 +191,12 @@
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
       <!-- Total Scanned -->
       <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Today's Emails</span>
+        <span id="stat-total-title" class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Today's Emails</span>
         <div class="mt-2 flex items-baseline justify-between">
           <span id="stat-total" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">0</span>
           <span class="text-xs text-slate-400 font-medium">Scanned</span>
         </div>
-        <p class="text-[11px] text-slate-400 mt-1">Across all 4 mailboxes today</p>
+        <p id="stat-total-subtitle" class="text-[11px] text-slate-400 mt-1">Across all 4 mailboxes</p>
       </div>
 
       <!-- Inbox Placements -->
@@ -294,7 +303,7 @@
         <div class="bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-500 shadow-xs">
           <div class="flex flex-col items-center justify-center gap-2">
             <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-            <span class="text-xs text-slate-600 font-medium">Scanning today's emails across all 4 seed mailboxes...</span>
+            <span class="text-xs text-slate-600 font-medium">Scanning mailboxes...</span>
           </div>
         </div>
       </div>
@@ -731,7 +740,10 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     const itcomLookupMap = new Map();
     const tokenCache = {}; // { [accId]: { token: string, expiry: number } }
 
-    // Set of currently expanded domain cards (for maintaining open states across re-renders)
+    // Active scope: 'TODAY' or 'YESTERDAY'
+    let currentSyncScope = 'TODAY';
+
+    // Set of currently expanded domain cards
     const expandedDomainCards = new Set();
 
     // In-Memory Persistent Message Detail Cache for INSTANT Refresh
@@ -756,6 +768,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     // --- DOM REFERENCES ---
     const countdownCircle = document.getElementById('countdown-circle');
     const countdownNumber = document.getElementById('countdown-number');
+    const countdownStatusText = document.getElementById('countdown-status-text');
     const btnToggleTimer = document.getElementById('btn-toggle-timer');
     const timerBtnIcon = document.getElementById('timer-btn-icon');
     const timerBtnText = document.getElementById('timer-btn-text');
@@ -763,6 +776,15 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     const syncSpinner = document.getElementById('sync-spinner');
     const syncBtnLabel = document.getElementById('sync-btn-label');
     const headerLastSync = document.getElementById('header-last-sync');
+
+    // Scope & Yesterday Elements
+    const badgeActiveScope = document.getElementById('badge-active-scope');
+    const btnSyncYesterday = document.getElementById('btn-sync-yesterday');
+    const yesterdaySpinner = document.getElementById('yesterday-spinner');
+    const yesterdayBtnLabel = document.getElementById('yesterday-btn-label');
+    const statTotalTitle = document.getElementById('stat-total-title');
+    const statTotalSubtitle = document.getElementById('stat-total-subtitle');
+    const tabLabelMonitor = document.getElementById('tab-label-monitor');
 
     const statTotal = document.getElementById('stat-total');
     const statInbox = document.getElementById('stat-inbox');
@@ -1520,28 +1542,49 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     }
 
     // Helper: Formats YYYY/MM/DD for Gmail queries
-    function getGmailDateFilter() {
+    function formatDateYMD(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}/${m}/${day}`;
+    }
+
+    // Gmail date query constructor based on current sync scope
+    function getGmailQueryForScope(scope) {
       const now = new Date();
-      // Use yesterday to prevent UTC/local date cutoff misses in Gmail's after: operator
-      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      const y = yesterday.getFullYear();
-      const m = String(yesterday.getMonth() + 1).padStart(2, '0');
-      const d = String(yesterday.getDate()).padStart(2, '0');
-      return `${y}/${m}/${d}`;
+      if (scope === 'YESTERDAY') {
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const dayBeforeYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return `after:${formatDateYMD(dayBeforeYesterday)} before:${formatDateYMD(today)} (in:inbox OR in:spam OR in:trash)`;
+      } else {
+        // TODAY mode: query after yesterday to prevent local timezone cutoff issues
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        return `after:${formatDateYMD(yesterday)} (in:inbox OR in:spam OR in:trash)`;
+      }
     }
 
-    // Helper: Verify if date is STRICTLY the current calendar day
-    function isToday(dateObj) {
-      const today = new Date();
-      return (
-        dateObj.getDate() === today.getDate() &&
-        dateObj.getMonth() === today.getMonth() &&
-        dateObj.getFullYear() === today.getFullYear()
-      );
+    // Date validator matching the selected scope
+    function isDateMatchingScope(dateObj, scope) {
+      const now = new Date();
+      if (scope === 'YESTERDAY') {
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        return (
+          dateObj.getDate() === yesterday.getDate() &&
+          dateObj.getMonth() === yesterday.getMonth() &&
+          dateObj.getFullYear() === yesterday.getFullYear()
+        );
+      } else {
+        return (
+          dateObj.getDate() === now.getDate() &&
+          dateObj.getMonth() === now.getMonth() &&
+          dateObj.getFullYear() === now.getFullYear()
+        );
+      }
     }
 
-    // High-speed incremental mailbox poller: fetches only newly received message details
-    async function syncMailbox(acc) {
+    // High-speed incremental mailbox poller
+    async function syncMailbox(acc, scope = 'TODAY') {
       const token = await getAccessToken(acc);
       if (!token) {
         addLog(`[Gmail API] Failed authentication for ${acc.name}`, 'error');
@@ -1549,9 +1592,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       }
 
       try {
-        const dateQuery = getGmailDateFilter();
-        const searchQuery = `after:${dateQuery} (in:inbox OR in:spam OR in:trash)`;
-        
+        const searchQuery = getGmailQueryForScope(scope);
         let allMessageSummaries = [];
         let pageToken = '';
 
@@ -1574,7 +1615,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           pageToken = listData.nextPageToken || '';
         } while (pageToken);
 
-        // Identify ONLY NEW messages that haven't been fetched yet
+        // Identify new vs existing messages
         const newSummaries = [];
         const existingRecords = [];
 
@@ -1588,10 +1629,10 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         }
 
         if (newSummaries.length > 0) {
-          addLog(`[Gmail API] ${acc.name}: Found ${newSummaries.length} NEW emails today. Fetching delta...`, 'info');
+          addLog(`[Gmail API] ${acc.name}: Found ${newSummaries.length} new message headers (${scope}). Fetching details...`, 'info');
         }
 
-        // Fetch details for ONLY the new messages in parallel batches of 25
+        // Fetch details in batches of 25
         const BATCH_SIZE = 25;
         const newlyFetchedRecords = [];
 
@@ -1632,9 +1673,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
             const internalTime = msg.internalDate ? parseInt(msg.internalDate, 10) : Date.now();
             const emailDate = new Date(internalTime);
 
-            // Filter out emails not from today
-            if (!isToday(emailDate)) return;
-
             const record = {
               id: `${acc.id}_${msg.id}`,
               messageId: msg.id,
@@ -1650,42 +1688,51 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
               lastSyncTime: new Date()
             };
 
-            // Store in cache for zero-delay future polls
             fetchedMessageCache.set(record.id, record);
 
-            if (folder === 'SPAM') {
-              notifySpamDetected(record);
+            // Filter strictly against the requested scope
+            if (isDateMatchingScope(emailDate, scope)) {
+              if (folder === 'SPAM' && scope === 'TODAY') {
+                notifySpamDetected(record);
+              }
+              newlyFetchedRecords.push(record);
             }
-
-            newlyFetchedRecords.push(record);
           });
         }
 
-        // Return combined list of valid current-date records
-        const combined = [...existingRecords.filter(r => isToday(r.detectionTime)), ...newlyFetchedRecords];
-        return combined;
+        const validExisting = existingRecords.filter(r => isDateMatchingScope(r.detectionTime, scope));
+        return [...validExisting, ...newlyFetchedRecords];
       } catch (err) {
         addLog(`[Gmail API Error] ${acc.name}: ${err.message}`, 'error');
         return [];
       }
     }
 
-    async function runGlobalSync() {
+    async function runGlobalSync(targetScope = 'TODAY') {
       if (isSyncing) return;
       isSyncing = true;
-      syncSpinner.classList.add('animate-spin');
-      syncBtnLabel.textContent = 'Syncing...';
+      currentSyncScope = targetScope;
+
+      if (targetScope === 'YESTERDAY') {
+        yesterdaySpinner.classList.add('animate-spin');
+        yesterdayBtnLabel.textContent = 'Syncing...';
+      } else {
+        syncSpinner.classList.add('animate-spin');
+        syncBtnLabel.textContent = 'Syncing...';
+      }
+
+      updateScopeUI();
 
       try {
         const allItems = [];
-        const accPromises = ACCOUNTS.map(acc => syncMailbox(acc));
+        const accPromises = ACCOUNTS.map(acc => syncMailbox(acc, targetScope));
         const results = await Promise.all(accPromises);
 
         results.forEach(items => allItems.push(...items));
 
         const map = new Map();
-        [...allItems, ...emailRecords].forEach(item => {
-          if (isToday(item.detectionTime)) {
+        allItems.forEach(item => {
+          if (isDateMatchingScope(item.detectionTime, targetScope)) {
             if (!map.has(item.id)) map.set(item.id, item);
           }
         });
@@ -1693,19 +1740,38 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         emailRecords = Array.from(map.values())
           .sort((a, b) => b.detectionTime.getTime() - a.detectionTime.getTime());
 
-        addLog(`[Fast Sync] Active today: ${emailRecords.length} emails across 4 mailboxes`, 'success');
+        addLog(`[Sync Complete] Loaded ${emailRecords.length} emails for ${targetScope}`, 'success');
       } catch (err) {
         addLog(`[Sync Engine Exception] ${err.message}`, 'error');
       } finally {
         isSyncing = false;
         syncSpinner.classList.remove('animate-spin');
         syncBtnLabel.textContent = 'Sync Now';
+        yesterdaySpinner.classList.remove('animate-spin');
+        yesterdayBtnLabel.textContent = 'Sync Yesterday';
+
         lastGlobalSync = new Date();
         headerLastSync.textContent = lastGlobalSync.toLocaleTimeString();
-        countdown = 30;
-        updateCountdownUI();
+
         renderRecords();
         updateStats();
+      }
+    }
+
+    // Update UI elements based on TODAY vs YESTERDAY mode
+    function updateScopeUI() {
+      if (currentSyncScope === 'YESTERDAY') {
+        badgeActiveScope.textContent = "⏪ Yesterday's Mail (Auto-Sync Paused)";
+        badgeActiveScope.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-100 text-violet-800 border border-violet-300";
+        statTotalTitle.textContent = "Yesterday's Emails";
+        statTotalSubtitle.textContent = "Scanned across all 4 seed mailboxes yesterday";
+        tabLabelMonitor.textContent = "Domain Cards (Yesterday)";
+      } else {
+        badgeActiveScope.textContent = "📅 Today's Mail";
+        badgeActiveScope.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200";
+        statTotalTitle.textContent = "Today's Emails";
+        statTotalSubtitle.textContent = "Across all 4 mailboxes today";
+        tabLabelMonitor.textContent = "Domain Cards (Today)";
       }
     }
 
@@ -1752,9 +1818,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       const filterVal = filterFolder.value;
       const groups = groupRecordsByDomain();
 
-      // Filter domain groups
       const filteredGroups = groups.filter(group => {
-        // Query search
         if (q) {
           const matchDomain = group.domain.includes(q);
           const matchEt = group.etName.toLowerCase().includes(q);
@@ -1762,7 +1826,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           if (!matchDomain && !matchEt && !matchSubj) return false;
         }
 
-        // Calculate mailbox statistics for this domain
         const inboxAccounts = new Set();
         let hasSpam = false;
 
@@ -1789,12 +1852,12 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
             ${isSyncing ? `
               <div class="flex flex-col items-center justify-center gap-2">
                 <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-                <span class="text-xs text-slate-600 font-medium">Scanning mailboxes for today's domain traffic...</span>
+                <span class="text-xs text-slate-600 font-medium">Scanning mailboxes (${currentSyncScope})...</span>
               </div>
             ` : `
               <div class="space-y-1">
-                <p class="text-sm font-semibold text-slate-700">No domain records found for today</p>
-                <p class="text-xs text-slate-500">Incoming emails from monitored domains will populate here automatically.</p>
+                <p class="text-sm font-semibold text-slate-700">No domain records found for ${currentSyncScope.toLowerCase()}</p>
+                <p class="text-xs text-slate-500">${currentSyncScope === 'YESTERDAY' ? 'No emails found matching yesterday\'s timeframe.' : 'Incoming emails from monitored domains will populate here automatically.'}</p>
               </div>
             `}
           </div>
@@ -1806,7 +1869,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         const isExpanded = expandedDomainCards.has(group.domain);
         const encodedDomain = encodeURIComponent(group.domain);
 
-        // Map status for each of the 4 seed mailboxes
         const accountStatusMap = {};
         ACCOUNTS.forEach(acc => {
           accountStatusMap[acc.name] = {
@@ -1841,7 +1903,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
         const inboxCount = inboxAccountsSet.size;
 
-        // Styling based on inboxing performance across 4 accounts
         let inboxBadgeClass = "bg-slate-100 text-slate-700 border-slate-200";
         if (inboxCount === 4) {
           inboxBadgeClass = "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold";
@@ -1891,7 +1952,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
                   </div>
 
                   <p class="text-[11px] text-slate-500 mt-0.5">
-                    Latest Activity: <span class="font-mono text-slate-700 font-medium">${group.latestTime.toLocaleTimeString()}</span> · Scanned Emails: <span class="font-bold text-slate-800">${group.emails.length}</span>
+                    Latest Activity: <span class="font-mono text-slate-700 font-medium">${group.latestTime.toLocaleTimeString()} (${group.latestTime.toLocaleDateString()})</span> · Scanned Emails: <span class="font-bold text-slate-800">${group.emails.length}</span>
                   </p>
                 </div>
               </div>
@@ -1979,7 +2040,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
                           </div>
                         ` : `
                           <div class="pt-2 border-t border-slate-200/60 text-[11px] text-slate-400 italic">
-                            No emails from this domain today
+                            No emails from this domain
                           </div>
                         `}
                       </div>
@@ -2029,26 +2090,52 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         countdown--;
         if (countdown <= 0) {
           countdown = 30;
-          runGlobalSync();
+          runGlobalSync('TODAY');
         }
         updateCountdownUI();
       }, 1000);
     }
 
-    btnToggleTimer.addEventListener('click', () => {
-      isAutoSyncEnabled = !isAutoSyncEnabled;
+    function setAutoSync(enable) {
+      isAutoSyncEnabled = enable;
       if (isAutoSyncEnabled) {
         timerBtnIcon.textContent = '⏸';
         timerBtnText.textContent = 'Pause';
+        countdownStatusText.textContent = 'Next Sync';
         btnToggleTimer.className = 'px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors';
       } else {
         timerBtnIcon.textContent = '▶';
         timerBtnText.textContent = 'Resume';
+        countdownStatusText.textContent = 'Paused';
         btnToggleTimer.className = 'px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors';
+      }
+    }
+
+    btnToggleTimer.addEventListener('click', () => {
+      setAutoSync(!isAutoSyncEnabled);
+      if (isAutoSyncEnabled && currentSyncScope === 'YESTERDAY') {
+        currentSyncScope = 'TODAY';
+        updateScopeUI();
+        runGlobalSync('TODAY');
       }
     });
 
-    btnSyncNow.addEventListener('click', () => runGlobalSync());
+    btnSyncNow.addEventListener('click', () => {
+      currentSyncScope = 'TODAY';
+      setAutoSync(true);
+      countdown = 30;
+      updateCountdownUI();
+      runGlobalSync('TODAY');
+    });
+
+    // SYNC YESTERDAY HANDLER: Fetches yesterday and freezes poller
+    btnSyncYesterday.addEventListener('click', () => {
+      setAutoSync(false); // Turn off auto sync until user clicks resume/sync now
+      showToast("Syncing yesterday's mail. Auto-sync is paused.");
+      addLog("[Sync Yesterday] Initiated yesterday's mail check. Auto-sync has been suspended.", 'warn');
+      runGlobalSync('YESTERDAY');
+    });
+
     btnSyncSheetNow.addEventListener('click', () => syncGoogleSheet());
     if (btnSyncItcomNow) btnSyncItcomNow.addEventListener('click', () => syncItcomSheet());
     btnClearLogs.addEventListener('click', () => { terminalLogsContainer.innerHTML = ''; });
@@ -2147,7 +2234,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       const uri = encodeURI(csv);
       const link = document.createElement('a');
       link.setAttribute('href', uri);
-      link.setAttribute('download', `Today_Domain_Report_${Date.now()}.csv`);
+      link.setAttribute('download', `${currentSyncScope}_Domain_Report_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -2199,7 +2286,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       startTimer();
       syncGoogleSheet().then(() => {
         syncItcomSheet();
-        runGlobalSync();
+        runGlobalSync('TODAY');
       });
     });
   </script>
