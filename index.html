@@ -64,11 +64,11 @@
               📅 Today's Mail
             </span>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
-              ⚡ Domain Card View
+              ⚡ 3 Cards / Row View
             </span>
           </div>
           <p class="text-xs text-slate-500 truncate">
-            Fast delta polling with Google Sheet & it.com ET mappings
+            Inbox & Spam detection with Google Sheet & it.com ET mappings
           </p>
         </div>
       </div>
@@ -112,7 +112,7 @@
           <span id="timer-btn-text" class="hidden sm:inline">Pause</span>
         </button>
 
-        <!-- NEW: Sync Yesterday Button -->
+        <!-- Sync Yesterday Button -->
         <button id="btn-sync-yesterday" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-300 bg-violet-50 hover:bg-violet-100 text-violet-800 text-xs font-semibold shadow-xs transition-all active:scale-95" title="Fetch yesterday's mail and pause auto-sync">
           <svg id="yesterday-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
@@ -261,13 +261,13 @@
       </div>
     </div>
 
-    <!-- TAB 1: LIVE MONITOR - DOMAIN CARD ACCORDION VIEW -->
+    <!-- TAB 1: LIVE MONITOR - 3 CARDS IN A ROW VIEW -->
     <div id="tab-content-live" class="tab-pane space-y-4">
       <!-- Filter Toolbar -->
       <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 flex-wrap">
           <!-- Search Input -->
-          <div class="relative flex-1 min-w-[220px]">
+          <div class="relative flex-1 min-w-[200px]">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </div>
@@ -279,18 +279,27 @@
             />
           </div>
 
-          <!-- Inboxing Status Filter -->
-          <select id="filter-folder" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs">
+          <!-- NEW: ET Name Filter Dropdown -->
+          <div class="relative min-w-[170px]">
+            <select id="filter-et" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs">
+              <option value="ALL">All ET Names</option>
+              <option value="MAPPED">Mapped ETs Only</option>
+              <option value="UNMAPPED">Unmapped Only</option>
+            </select>
+          </div>
+
+          <!-- Inboxing & Spam Filter -->
+          <select id="filter-folder" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs min-w-[170px]">
             <option value="ALL">All Delivery Statuses</option>
-            <option value="ALL_INBOX">100% Inboxed (4 of 4 ACs)</option>
+            <option value="HAS_SPAM">⚠️ Has Spam Placement</option>
+            <option value="ALL_INBOX">✓ 100% Inboxed (4 of 4 ACs)</option>
             <option value="PARTIAL_INBOX">Partial Inbox (1 - 3 ACs)</option>
-            <option value="HAS_SPAM">Has Spam Placement</option>
             <option value="ZERO_INBOX">Zero Inbox (0 of 4 ACs)</option>
           </select>
         </div>
 
         <!-- Export CSV & Controls -->
-        <div class="flex items-center justify-end gap-2">
+        <div class="flex items-center justify-end gap-2 shrink-0">
           <button id="btn-export-csv" class="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 shadow-xs transition-colors w-full sm:w-auto">
             <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             <span>Export CSV</span>
@@ -298,9 +307,9 @@
         </div>
       </div>
 
-      <!-- Domain Cards Grid / Stack -->
-      <div id="domain-cards-container" class="space-y-3">
-        <div class="bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-500 shadow-xs">
+      <!-- Domain Cards Grid: Exactly 3 Cards per Line on LG screens -->
+      <div id="domain-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="col-span-full bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-500 shadow-xs">
           <div class="flex flex-col items-center justify-center gap-2">
             <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
             <span class="text-xs text-slate-600 font-medium">Scanning mailboxes...</span>
@@ -801,6 +810,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     const domainCardsContainer = document.getElementById('domain-cards-container');
     const searchInput = document.getElementById('search-input');
     const filterFolder = document.getElementById('filter-folder');
+    const filterEt = document.getElementById('filter-et');
     const btnExportCsv = document.getElementById('btn-export-csv');
 
     const sheetUrlInput = document.getElementById('sheet-url-input');
@@ -1268,6 +1278,39 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       return 'Unmapped';
     }
 
+    // Dynamic builder for ET filter dropdown options
+    function populateEtFilterDropdown() {
+      if (!filterEt) return;
+      const currentSelected = filterEt.value;
+      const etSet = new Set();
+
+      emailRecords.forEach(rec => {
+        if (rec.etName && rec.etName !== 'Unmapped') {
+          etSet.add(rec.etName);
+        }
+      });
+
+      const sortedEts = Array.from(etSet).sort((a, b) => a.localeCompare(b));
+
+      let html = `
+        <option value="ALL">All ET Names</option>
+        <option value="MAPPED">Mapped ETs Only</option>
+        <option value="UNMAPPED">Unmapped Only</option>
+      `;
+
+      if (sortedEts.length > 0) {
+        html += `<optgroup label="Specific ET Names">`;
+        sortedEts.forEach(name => {
+          html += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+        });
+        html += `</optgroup>`;
+      }
+
+      filterEt.innerHTML = html;
+      filterEt.value = currentSelected;
+      if (filterEt.selectedIndex === -1) filterEt.value = 'ALL';
+    }
+
     // --- it.com SHEET CACHING ---
     async function syncItcomSheet() {
       if (!itcomSyncSpinner) return;
@@ -1331,6 +1374,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         emailRecords.forEach(rec => {
           rec.etName = resolveEtName(rec.domain);
         });
+        populateEtFilterDropdown();
         renderRecords();
         updateStats();
       } else {
@@ -1460,6 +1504,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         emailRecords.forEach(rec => {
           rec.etName = resolveEtName(rec.domain);
         });
+        populateEtFilterDropdown();
         renderRecords();
         updateStats();
       } else {
@@ -1541,7 +1586,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       return null;
     }
 
-    // Helper: Formats YYYY/MM/DD for Gmail queries
     function formatDateYMD(d) {
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -1549,7 +1593,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       return `${y}/${m}/${day}`;
     }
 
-    // Gmail date query constructor based on current sync scope
     function getGmailQueryForScope(scope) {
       const now = new Date();
       if (scope === 'YESTERDAY') {
@@ -1558,13 +1601,11 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         return `after:${formatDateYMD(dayBeforeYesterday)} before:${formatDateYMD(today)} (in:inbox OR in:spam OR in:trash)`;
       } else {
-        // TODAY mode: query after yesterday to prevent local timezone cutoff issues
         const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
         return `after:${formatDateYMD(yesterday)} (in:inbox OR in:spam OR in:trash)`;
       }
     }
 
-    // Date validator matching the selected scope
     function isDateMatchingScope(dateObj, scope) {
       const now = new Date();
       if (scope === 'YESTERDAY') {
@@ -1583,7 +1624,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       }
     }
 
-    // High-speed incremental mailbox poller
+    // High-speed incremental mailbox poller: explicitly inspects INBOX, SPAM, and TRASH
     async function syncMailbox(acc, scope = 'TODAY') {
       const token = await getAccessToken(acc);
       if (!token) {
@@ -1615,7 +1656,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           pageToken = listData.nextPageToken || '';
         } while (pageToken);
 
-        // Identify new vs existing messages
         const newSummaries = [];
         const existingRecords = [];
 
@@ -1632,7 +1672,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           addLog(`[Gmail API] ${acc.name}: Found ${newSummaries.length} new message headers (${scope}). Fetching details...`, 'info');
         }
 
-        // Fetch details in batches of 25
         const BATCH_SIZE = 25;
         const newlyFetchedRecords = [];
 
@@ -1690,7 +1729,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
             fetchedMessageCache.set(record.id, record);
 
-            // Filter strictly against the requested scope
             if (isDateMatchingScope(emailDate, scope)) {
               if (folder === 'SPAM' && scope === 'TODAY') {
                 notifySpamDetected(record);
@@ -1740,6 +1778,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         emailRecords = Array.from(map.values())
           .sort((a, b) => b.detectionTime.getTime() - a.detectionTime.getTime());
 
+        populateEtFilterDropdown();
         addLog(`[Sync Complete] Loaded ${emailRecords.length} emails for ${targetScope}`, 'success');
       } catch (err) {
         addLog(`[Sync Engine Exception] ${err.message}`, 'error');
@@ -1758,7 +1797,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       }
     }
 
-    // Update UI elements based on TODAY vs YESTERDAY mode
     function updateScopeUI() {
       if (currentSyncScope === 'YESTERDAY') {
         badgeActiveScope.textContent = "⏪ Yesterday's Mail (Auto-Sync Paused)";
@@ -1775,7 +1813,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       }
     }
 
-    // Toggle expansion state of a Domain Card
     function toggleDomainCard(encodedDomain) {
       const domain = decodeURIComponent(encodedDomain);
       if (expandedDomainCards.has(domain)) {
@@ -1786,7 +1823,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       renderRecords();
     }
 
-    // --- DOMAIN GROUPING & CARD RENDERING ---
+    // --- DOMAIN GROUPING & 3-COLUMN CARD RENDERING ---
     function groupRecordsByDomain() {
       const domainGroups = new Map();
 
@@ -1816,9 +1853,11 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     function renderRecords() {
       const q = searchInput.value.toLowerCase().trim();
       const filterVal = filterFolder.value;
+      const etFilterVal = filterEt ? filterEt.value : 'ALL';
       const groups = groupRecordsByDomain();
 
       const filteredGroups = groups.filter(group => {
+        // Query search
         if (q) {
           const matchDomain = group.domain.includes(q);
           const matchEt = group.etName.toLowerCase().includes(q);
@@ -1826,6 +1865,16 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           if (!matchDomain && !matchEt && !matchSubj) return false;
         }
 
+        // ET Name Filter
+        if (etFilterVal === 'MAPPED') {
+          if (group.etName === 'Unmapped') return false;
+        } else if (etFilterVal === 'UNMAPPED') {
+          if (group.etName !== 'Unmapped') return false;
+        } else if (etFilterVal !== 'ALL') {
+          if (group.etName !== etFilterVal) return false;
+        }
+
+        // Delivery Status Filter
         const inboxAccounts = new Set();
         let hasSpam = false;
 
@@ -1836,9 +1885,9 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
         const inboxCount = inboxAccounts.size;
 
+        if (filterVal === 'HAS_SPAM' && !hasSpam) return false;
         if (filterVal === 'ALL_INBOX' && inboxCount !== 4) return false;
         if (filterVal === 'PARTIAL_INBOX' && (inboxCount === 0 || inboxCount === 4)) return false;
-        if (filterVal === 'HAS_SPAM' && !hasSpam) return false;
         if (filterVal === 'ZERO_INBOX' && inboxCount !== 0) return false;
 
         return true;
@@ -1848,7 +1897,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
       if (filteredGroups.length === 0) {
         domainCardsContainer.innerHTML = `
-          <div class="bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-500 shadow-xs">
+          <div class="col-span-full bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-500 shadow-xs">
             ${isSyncing ? `
               <div class="flex flex-col items-center justify-center gap-2">
                 <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
@@ -1856,8 +1905,8 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
               </div>
             ` : `
               <div class="space-y-1">
-                <p class="text-sm font-semibold text-slate-700">No domain records found for ${currentSyncScope.toLowerCase()}</p>
-                <p class="text-xs text-slate-500">${currentSyncScope === 'YESTERDAY' ? 'No emails found matching yesterday\'s timeframe.' : 'Incoming emails from monitored domains will populate here automatically.'}</p>
+                <p class="text-sm font-semibold text-slate-700">No domain records found for current filters</p>
+                <p class="text-xs text-slate-500">Try clearing the search or changing the ET / Delivery status filter.</p>
               </div>
             `}
           </div>
@@ -1881,6 +1930,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         let totalInboxes = 0;
         let totalSpams = 0;
         const inboxAccountsSet = new Set();
+        const spamAccountsSet = new Set();
 
         group.emails.forEach(em => {
           if (accountStatusMap[em.accountName]) {
@@ -1894,6 +1944,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
               if (accountStatusMap[em.accountName].folder !== 'INBOX') {
                 accountStatusMap[em.accountName].folder = 'SPAM';
               }
+              spamAccountsSet.add(em.accountName);
               totalSpams++;
             } else if (accountStatusMap[em.accountName].folder === 'NONE') {
               accountStatusMap[em.accountName].folder = em.folder;
@@ -1902,95 +1953,106 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         });
 
         const inboxCount = inboxAccountsSet.size;
+        const spamCount = spamAccountsSet.size;
 
-        let inboxBadgeClass = "bg-slate-100 text-slate-700 border-slate-200";
+        let borderClass = 'border-slate-200 hover:border-indigo-300';
+        let statusBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+        
+        if (totalSpams > 0) {
+          borderClass = 'border-rose-300 shadow-rose-500/10 ring-1 ring-rose-400/20';
+        }
+
         if (inboxCount === 4) {
-          inboxBadgeClass = "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold";
+          statusBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold';
         } else if (inboxCount >= 2) {
-          inboxBadgeClass = "bg-indigo-100 text-indigo-800 border-indigo-300 font-bold";
+          statusBadgeClass = 'bg-indigo-100 text-indigo-800 border-indigo-300 font-bold';
         } else if (inboxCount === 1) {
-          inboxBadgeClass = "bg-amber-100 text-amber-800 border-amber-300 font-bold";
+          statusBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
         } else if (inboxCount === 0 && totalSpams > 0) {
-          inboxBadgeClass = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+          statusBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300 font-bold';
         }
 
         return `
-          <div class="bg-white border ${totalSpams > 0 ? 'border-rose-200 shadow-rose-500/5' : 'border-slate-200'} rounded-xl shadow-xs transition-all overflow-hidden hover:border-indigo-300">
-            <!-- Card Header (Click to Expand / Collapse) -->
+          <div class="bg-white border ${borderClass} rounded-xl shadow-xs transition-all overflow-hidden flex flex-col justify-between">
+            <!-- Card Body (Compact & Optimized for 3-Column Grid) -->
             <div 
               onclick="toggleDomainCard('${encodedDomain}')"
-              class="p-4 cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3"
+              class="p-4 cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors flex-1 flex flex-col justify-between gap-3"
             >
-              <div class="flex items-start sm:items-center gap-3 min-w-0">
-                <div class="w-9 h-9 rounded-lg ${totalSpams > 0 ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'} flex items-center justify-center shrink-0 font-bold text-xs">
-                  ${totalSpams > 0 ? '⚠️' : '🌐'}
-                </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <!-- Domain Name -->
-                    <span class="font-mono text-sm font-bold text-slate-900 tracking-tight">${escapeHtml(group.domain)}</span>
-                    
-                    <!-- 1-Click Copy Domain Button -->
-                    <button 
-                      type="button" 
-                      onclick="event.stopPropagation(); copyDomainText('${escapeHtml(group.domain)}', this)"
-                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-indigo-600 text-[10px] font-medium shadow-2xs"
-                      title="Copy ${escapeHtml(group.domain)}"
-                    >
-                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                      <span>Copy</span>
-                    </button>
-
-                    <!-- ET NAME -->
-                    ${group.etName !== 'Unmapped' ? `
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                        ${escapeHtml(group.etName)}
-                      </span>
-                    ` : `
-                      <span class="text-slate-400 italic text-xs">Unmapped ET</span>
-                    `}
+              <div>
+                <!-- Top Row: Icons, Domain & Copy -->
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-8 h-8 rounded-lg ${totalSpams > 0 ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'} flex items-center justify-center shrink-0 font-bold text-xs">
+                      ${totalSpams > 0 ? '⚠️' : '🌐'}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="font-mono text-xs sm:text-sm font-bold text-slate-900 truncate" title="${escapeHtml(group.domain)}">
+                        ${escapeHtml(group.domain)}
+                      </div>
+                      <div class="text-[10px] text-slate-400">
+                        ${group.latestTime.toLocaleTimeString()} · ${group.emails.length} msg${group.emails.length > 1 ? 's' : ''}
+                      </div>
+                    </div>
                   </div>
 
-                  <p class="text-[11px] text-slate-500 mt-0.5">
-                    Latest Activity: <span class="font-mono text-slate-700 font-medium">${group.latestTime.toLocaleTimeString()} (${group.latestTime.toLocaleDateString()})</span> · Scanned Emails: <span class="font-bold text-slate-800">${group.emails.length}</span>
-                  </p>
+                  <!-- 1-Click Copy Domain Button -->
+                  <button 
+                    type="button" 
+                    onclick="event.stopPropagation(); copyDomainText('${escapeHtml(group.domain)}', this)"
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-indigo-600 text-[10px] font-medium shadow-2xs shrink-0"
+                    title="Copy ${escapeHtml(group.domain)}"
+                  >
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <span>Copy</span>
+                  </button>
+                </div>
+
+                <!-- ET NAME -->
+                <div class="mt-2.5">
+                  ${group.etName !== 'Unmapped' ? `
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 truncate max-w-full" title="${escapeHtml(group.etName)}">
+                      ${escapeHtml(group.etName)}
+                    </span>
+                  ` : `
+                    <span class="text-slate-400 italic text-[11px]">Unmapped ET</span>
+                  `}
                 </div>
               </div>
 
-              <!-- Inboxing Performance Badges -->
-              <div class="flex items-center gap-2 flex-wrap shrink-0 justify-between sm:justify-end">
-                <!-- INBOX IN X OF 4 MAILBOXES STATUS CHIP -->
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs ${inboxBadgeClass} shadow-2xs">
-                  <span class="w-2 h-2 rounded-full ${inboxCount === 4 ? 'bg-emerald-500 animate-pulse' : inboxCount > 0 ? 'bg-indigo-500' : 'bg-rose-500'}"></span>
-                  <span><strong>Inbox in ${inboxCount} of 4 ACs</strong></span>
+              <!-- Status Badges: Inboxing + Spam Counters -->
+              <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-wrap">
+                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border ${statusBadgeClass}">
+                  <span class="w-1.5 h-1.5 rounded-full ${inboxCount === 4 ? 'bg-emerald-500 animate-pulse' : inboxCount > 0 ? 'bg-indigo-500' : 'bg-rose-500'}"></span>
+                  <span><strong>${inboxCount} of 4 Inbox</strong></span>
                 </div>
 
                 ${totalSpams > 0 ? `
-                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200">
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
-                    <span>${totalSpams} in Spam</span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+                    <span>${totalSpams} in Spam (${spamCount} AC)</span>
                   </span>
-                ` : ''}
+                ` : `
+                  <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-0.5">
+                    ✓ 0 Spam
+                  </span>
+                `}
 
-                <div class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transform transition-transform duration-200 ${isExpanded ? 'rotate-180 bg-indigo-100 text-indigo-600' : ''}">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <div class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transform transition-transform duration-200 ${isExpanded ? 'rotate-180 bg-indigo-100 text-indigo-600' : ''}">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
               </div>
             </div>
 
-            <!-- EXPANDABLE SECTION: 4-ACCOUNT DETAILED STATUS -->
+            <!-- EXPANDED ACCORDION: Status in all 4 Seed Accounts -->
             ${isExpanded ? `
-              <div class="border-t border-slate-200 bg-slate-50/70 p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
-                    <span>📫</span>
-                    <span>Status Across All 4 Seed Accounts for ${escapeHtml(group.domain)}</span>
-                  </h4>
-                  <span class="text-[11px] text-slate-500">Live delta sync verified</span>
+              <div class="border-t border-slate-200 bg-slate-50/80 p-3 space-y-2">
+                <div class="text-[10px] font-bold text-slate-700 uppercase tracking-wide flex items-center justify-between">
+                  <span>Delivery Across All 4 Accounts:</span>
+                  <span class="text-indigo-600 font-mono">${group.domain}</span>
                 </div>
 
-                <!-- 4 Account Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                <div class="grid grid-cols-2 gap-2">
                   ${ACCOUNTS.map(acc => {
                     const accData = accountStatusMap[acc.name];
                     const folder = accData.folder;
@@ -1998,50 +2060,39 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
                     const isSpam = folder === 'SPAM';
                     const hasMail = accData.hasMail;
 
-                    let bgCardClass = "bg-white border-slate-200";
-                    let badgeClass = "bg-slate-100 text-slate-500 border-slate-200";
-                    let badgeText = "No Mail Received";
+                    let bgCard = "bg-white border-slate-200";
+                    let badge = "bg-slate-100 text-slate-400";
+                    let badgeText = "None";
 
                     if (isInbox) {
-                      bgCardClass = "bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/20";
-                      badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200 font-bold";
+                      bgCard = "bg-emerald-50/80 border-emerald-300";
+                      badge = "bg-emerald-100 text-emerald-800 font-bold border border-emerald-200";
                       badgeText = "INBOX ✓";
                     } else if (isSpam) {
-                      bgCardClass = "bg-rose-50/70 border-rose-300 ring-1 ring-rose-400/20";
-                      badgeClass = "bg-rose-100 text-rose-800 border-rose-200 font-bold";
+                      bgCard = "bg-rose-50/80 border-rose-300";
+                      badge = "bg-rose-100 text-rose-800 font-bold border border-rose-200";
                       badgeText = "SPAM ⚠️";
                     } else if (hasMail) {
-                      bgCardClass = "bg-amber-50/70 border-amber-300";
-                      badgeClass = "bg-amber-100 text-amber-800 border-amber-200 font-semibold";
+                      bgCard = "bg-amber-50/80 border-amber-300";
+                      badge = "bg-amber-100 text-amber-800 font-medium";
                       badgeText = escapeHtml(folder);
                     }
 
                     return `
-                      <div class="p-3 rounded-xl border ${bgCardClass} shadow-2xs space-y-2">
-                        <div class="flex items-start justify-between gap-1">
-                          <div>
-                            <div class="font-bold text-xs text-slate-900 truncate" title="${escapeHtml(acc.name)}">${escapeHtml(acc.name)}</div>
-                            <span class="text-[10px] text-slate-500">${escapeHtml(acc.type)}</span>
-                          </div>
-                          <span class="text-[11px] px-2 py-0.5 rounded-full border ${badgeClass}">
-                            ${badgeText}
-                          </span>
+                      <div class="p-2 rounded-lg border ${bgCard} text-[10px] space-y-1">
+                        <div class="flex items-center justify-between gap-1">
+                          <span class="font-bold text-slate-800 truncate" title="${escapeHtml(acc.name)}">${escapeHtml(acc.name)}</span>
+                          <span class="px-1.5 py-0.2 rounded text-[9px] ${badge}">${badgeText}</span>
                         </div>
-
                         ${accData.records.length > 0 ? `
-                          <div class="pt-2 border-t border-slate-200/60 space-y-1.5 text-[11px]">
-                            <div class="truncate text-slate-700" title="${escapeHtml(accData.records[0].subject)}">
-                              <strong>Subj:</strong> ${escapeHtml(accData.records[0].subject || '(No Subject)')}
-                            </div>
-                            <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                              <span>${accData.records[0].detectionTime.toLocaleTimeString()}</span>
-                              <span>${accData.records.length > 1 ? `+${accData.records.length - 1} more` : ''}</span>
-                            </div>
+                          <div class="text-slate-600 truncate text-[9px]" title="${escapeHtml(accData.records[0].subject)}">
+                            ${escapeHtml(accData.records[0].subject || '(No Subject)')}
+                          </div>
+                          <div class="text-[9px] text-slate-400 font-mono">
+                            ${accData.records[0].detectionTime.toLocaleTimeString()}
                           </div>
                         ` : `
-                          <div class="pt-2 border-t border-slate-200/60 text-[11px] text-slate-400 italic">
-                            No emails from this domain
-                          </div>
+                          <div class="text-slate-400 italic text-[9px]">No emails</div>
                         `}
                       </div>
                     `;
@@ -2128,9 +2179,8 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       runGlobalSync('TODAY');
     });
 
-    // SYNC YESTERDAY HANDLER: Fetches yesterday and freezes poller
     btnSyncYesterday.addEventListener('click', () => {
-      setAutoSync(false); // Turn off auto sync until user clicks resume/sync now
+      setAutoSync(false);
       showToast("Syncing yesterday's mail. Auto-sync is paused.");
       addLog("[Sync Yesterday] Initiated yesterday's mail check. Auto-sync has been suspended.", 'warn');
       runGlobalSync('YESTERDAY');
@@ -2215,6 +2265,9 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
     searchInput.addEventListener('input', renderRecords);
     filterFolder.addEventListener('change', renderRecords);
+    if (filterEt) {
+      filterEt.addEventListener('change', renderRecords);
+    }
 
     btnExportCsv.addEventListener('click', () => {
       if (emailRecords.length === 0) return;
@@ -2269,6 +2322,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           renderSheetTable(parsed);
         }
         emailRecords.forEach(rec => { rec.etName = resolveEtName(rec.domain); });
+        populateEtFilterDropdown();
         renderRecords();
         updateStats();
         addLog(`[Quick Paste] Successfully applied ${parsed.length} ${currentPasteTarget} domain mappings`, 'success');
