@@ -64,11 +64,11 @@
               📅 Today's Mail
             </span>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
-              ⚡ 3 Cards / Row View
+              ⚡ Date Filtering (Today/Yesterday)
             </span>
           </div>
           <p class="text-xs text-slate-500 truncate">
-            Inbox & Spam detection with Google Sheet & it.com ET mappings
+            Validates DATE column (Today & Yesterday only) across Sheet1, it.com & Extra Sheet tabs
           </p>
         </div>
       </div>
@@ -163,6 +163,13 @@
           <span id="badge-itcom-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[11px] font-mono">0</span>
         </button>
 
+        <!-- NEW: Extra Sheet Tab (gid=1798344486) (Protected) -->
+        <button data-tab="extrasheet" class="tab-btn py-2.5 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+          <span class="tab-lock-indicator text-[11px]">🔒</span>
+          <span>Extra Sheet</span>
+          <span id="badge-extrasheet-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[11px] font-mono">0</span>
+        </button>
+
         <!-- Diagnostic Terminal (Protected) -->
         <button data-tab="terminal" class="tab-btn py-2.5 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap transition-colors">
           <span class="tab-lock-indicator text-[11px]">🔒</span>
@@ -242,7 +249,7 @@
           <span id="stat-sheet-count" class="text-2xl sm:text-3xl font-extrabold text-indigo-600 tracking-tight">0</span>
           <span id="stat-mapped" class="text-xs font-semibold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">0 Resolved</span>
         </div>
-        <p class="text-[11px] text-slate-400 mt-1">Direct from published Sheet1</p>
+        <p class="text-[11px] text-slate-400 mt-1">Filtered by Today / Yesterday dates</p>
       </div>
 
       <!-- Active Seed Accounts -->
@@ -279,7 +286,7 @@
             />
           </div>
 
-          <!-- NEW: ET Name Filter Dropdown -->
+          <!-- ET Name Filter Dropdown -->
           <div class="relative min-w-[170px]">
             <select id="filter-et" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs">
               <option value="ALL">All ET Names</option>
@@ -318,17 +325,17 @@
       </div>
     </div>
 
-    <!-- TAB 2: GOOGLE SHEET CACHE (Protected) -->
+    <!-- TAB 2: GOOGLE SHEET CACHE (Sheet1) (Protected) -->
     <div id="tab-content-sheet" class="tab-pane hidden space-y-4">
       <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
             <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
               <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-              Google Sheet Domain Mapping Cache
+              Google Sheet Domain Mapping Cache (Sheet1)
             </h3>
             <p class="text-xs text-slate-500 mt-0.5">
-              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Sheet1</code> | Headers: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Domains</code> & <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">ET NAME</code>
+              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Sheet1</code> | Headers: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Domains</code>, <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">ET NAME</code> & <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">DATE</code> (Today/Yesterday)
             </p>
           </div>
 
@@ -367,21 +374,22 @@
             Cached Domain Mappings (<span id="sheet-table-count">0</span> entries)
           </span>
           <span class="text-[11px] text-slate-500">
-            Instant in-memory lookup on every received email
+            Filtered strictly for Today or Yesterday dates
           </span>
         </div>
         <div class="max-h-96 overflow-y-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-100/80 text-slate-600 sticky top-0 border-b border-slate-200">
               <tr>
-                <th class="py-2.5 px-4 font-semibold">Domains (Column A)</th>
-                <th class="py-2.5 px-4 font-semibold">ET NAME (Column B)</th>
+                <th class="py-2.5 px-4 font-semibold">Domains</th>
+                <th class="py-2.5 px-4 font-semibold">ET NAME</th>
+                <th class="py-2.5 px-4 font-semibold">DATE</th>
                 <th class="py-2.5 px-4 font-semibold">Status</th>
               </tr>
             </thead>
             <tbody id="sheet-mappings-tbody" class="divide-y divide-slate-200">
               <tr>
-                <td colspan="3" class="py-8 text-center text-slate-500">
+                <td colspan="4" class="py-8 text-center text-slate-500">
                   No cached domain mappings loaded. Click "Sync Sheet Now" or "Quick Paste CSV".
                 </td>
               </tr>
@@ -391,7 +399,7 @@
       </div>
     </div>
 
-    <!-- TAB: it.com SHEET CACHE & CHECKER (Protected) -->
+    <!-- TAB 3: it.com SHEET CACHE & CHECKER (Protected) -->
     <div id="tab-content-itcom" class="tab-pane hidden space-y-4">
       <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
@@ -401,7 +409,7 @@
               <span>it.com Sheet Domain Mapping Cache</span>
             </h3>
             <p class="text-xs text-slate-500 mt-0.5">
-              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">it.com</code> | Headers: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Domains</code> & <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">ET NAME</code>
+              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">it.com</code> | Headers: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Domains</code>, <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">ET NAME</code> & <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">DATE</code>
             </p>
           </div>
 
@@ -439,7 +447,7 @@
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <span>🔍</span>
-              <span>it.com Live Domain Status Checker</span>
+              <span>Live Domain Status Checker</span>
             </span>
             <span class="text-[10px] text-indigo-700 font-medium bg-indigo-100 px-2 py-0.5 rounded-full">Instant Test</span>
           </div>
@@ -465,21 +473,22 @@
             Cached it.com Domain Mappings (<span id="itcom-table-count">0</span> entries)
           </span>
           <span class="text-[11px] text-slate-500">
-            Cross-referenced on every 30s cycle
+            Filtered strictly for Today or Yesterday dates
           </span>
         </div>
         <div class="max-h-96 overflow-y-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-100/80 text-slate-600 sticky top-0 border-b border-slate-200">
               <tr>
-                <th class="py-2.5 px-4 font-semibold">Domains (Column A)</th>
-                <th class="py-2.5 px-4 font-semibold">ET NAME (Column B)</th>
+                <th class="py-2.5 px-4 font-semibold">Domains</th>
+                <th class="py-2.5 px-4 font-semibold">ET NAME</th>
+                <th class="py-2.5 px-4 font-semibold">DATE</th>
                 <th class="py-2.5 px-4 font-semibold">Status</th>
               </tr>
             </thead>
             <tbody id="itcom-mappings-tbody" class="divide-y divide-slate-200">
               <tr>
-                <td colspan="3" class="py-8 text-center text-slate-500">
+                <td colspan="4" class="py-8 text-center text-slate-500">
                   No cached it.com domain mappings loaded. Click "Sync it.com Sheet" or "Quick Paste it.com CSV".
                 </td>
               </tr>
@@ -489,7 +498,82 @@
       </div>
     </div>
 
-    <!-- TAB 3: DIAGNOSTIC TERMINAL (Protected) -->
+    <!-- TAB 4: NEW EXTRA SHEET TAB (gid=1798344486) (Protected) -->
+    <div id="tab-content-extrasheet" class="tab-pane hidden space-y-4">
+      <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-4 h-4 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <span>Extra Sheet Domain Mapping Cache</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Tab: <code class="text-violet-600 font-semibold bg-violet-50 px-1 py-0.5 rounded">gid=1798344486</code> | Headers: <code class="text-violet-600 font-semibold bg-violet-50 px-1 py-0.5 rounded">Domains</code>, <code class="text-violet-600 font-semibold bg-violet-50 px-1 py-0.5 rounded">ET NAME</code> & <code class="text-violet-600 font-semibold bg-violet-50 px-1 py-0.5 rounded">DATE</code>
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btn-open-extrasheet-paste-modal" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 shadow-xs transition-colors">
+              Quick Paste Extra CSV
+            </button>
+            <button id="btn-sync-extrasheet-now" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-xs transition-all active:scale-95">
+              <svg id="extrasheet-sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+              <span>Sync Extra Sheet</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- URL Configuration -->
+        <div class="mt-4">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">
+            Published Extra Sheet CSV Endpoint
+          </label>
+          <input
+            id="extrasheet-url-input"
+            type="text"
+            value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=1798344486&single=true&output=csv"
+            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+          />
+          <div class="mt-2 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-500 gap-1">
+            <span>Status: <strong id="extrasheet-status-text" class="text-slate-800">Ready to synchronize Extra Sheet</strong></span>
+            <span id="extrasheet-sync-time">Never synced</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- In-Memory Extra Sheet Table -->
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <span class="text-xs font-bold text-slate-800">
+            Cached Extra Sheet Domain Mappings (<span id="extrasheet-table-count">0</span> entries)
+          </span>
+          <span class="text-[11px] text-slate-500">
+            Filtered strictly for Today or Yesterday dates
+          </span>
+        </div>
+        <div class="max-h-96 overflow-y-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100/80 text-slate-600 sticky top-0 border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-4 font-semibold">Domains</th>
+                <th class="py-2.5 px-4 font-semibold">ET NAME</th>
+                <th class="py-2.5 px-4 font-semibold">DATE</th>
+                <th class="py-2.5 px-4 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody id="extrasheet-mappings-tbody" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="4" class="py-8 text-center text-slate-500">
+                  No cached Extra Sheet mappings loaded. Click "Sync Extra Sheet" or "Quick Paste Extra CSV".
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: DIAGNOSTIC TERMINAL (Protected) -->
     <div id="tab-content-terminal" class="tab-pane hidden space-y-4">
       <div class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div class="p-3.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
@@ -507,7 +591,7 @@
       </div>
     </div>
 
-    <!-- TAB 4: SECURE SERVER CODE (Protected) -->
+    <!-- TAB 6: SECURE SERVER CODE (Protected) -->
     <div id="tab-content-backend" class="tab-pane hidden space-y-4">
       <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
         <div>
@@ -707,12 +791,12 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         <button id="btn-close-paste-modal" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
       </div>
       <p class="text-xs text-slate-500">
-        Paste rows with <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Domains</code> and <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">ET NAME</code>:
+        Paste rows with <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">Domains</code>, <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">ET NAME</code> and optional <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.5 rounded">DATE</code>:
       </p>
       <textarea
         id="paste-textarea"
         rows="8"
-        placeholder="Domains,ET NAME&#10;example.com,Example Tech&#10;acme.org,Acme Corporation"
+        placeholder="Domains,ET NAME,DATE&#10;example.com,Example Tech,2026-09-24&#10;acme.org,Acme Corporation,2026-09-23"
         class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 font-mono text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
       ></textarea>
       <div class="flex justify-end gap-2">
@@ -745,8 +829,12 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     ];
 
     let emailRecords = [];
+    
+    // In-memory sheet mapping stores (domain -> { etName, dateStr })
     const domainLookupMap = new Map();
     const itcomLookupMap = new Map();
+    const extraSheetLookupMap = new Map();
+
     const tokenCache = {}; // { [accId]: { token: string, expiry: number } }
 
     // Active scope: 'TODAY' or 'YESTERDAY'
@@ -756,7 +844,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     const expandedDomainCards = new Set();
 
     // In-Memory Persistent Message Detail Cache for INSTANT Refresh
-    const fetchedMessageCache = new Map(); // key: messageId -> full record object
+    const fetchedMessageCache = new Map();
 
     // Persistent storage for spam notification tracking to prevent duplicate alerts
     const notifiedSpamIds = new Set(JSON.parse(localStorage.getItem('notified_spam_ids') || '[]'));
@@ -773,6 +861,37 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     let countdown = 30;
     let countdownInterval = null;
     let lastGlobalSync = null;
+
+    // --- DATE COMPARISON HELPER ---
+    // Strictly evaluates if a date string in Google Sheet corresponds to Today or Yesterday
+    function isDateTodayOrYesterday(dateStr) {
+      if (!dateStr) return true; // If no date column is provided, allow mapping
+      const trimmed = dateStr.trim();
+      if (!trimmed) return true;
+
+      // Handle DD/MM/YYYY or DD-MM-YYYY or YYYY-MM-DD
+      let parsed = Date.parse(trimmed);
+      if (isNaN(parsed)) {
+        const parts = trimmed.split(/[\/\-\.]/);
+        if (parts.length === 3) {
+          if (parts[0].length === 4) { // YYYY/MM/DD
+            parsed = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+          } else { // DD/MM/YYYY
+            parsed = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+          }
+        }
+      }
+
+      if (isNaN(parsed)) return true; // Fail open if unparseable
+
+      const d = new Date(parsed);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+      return target.getTime() === today.getTime() || target.getTime() === yesterday.getTime();
+    }
 
     // --- DOM REFERENCES ---
     const countdownCircle = document.getElementById('countdown-circle');
@@ -813,6 +932,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     const filterEt = document.getElementById('filter-et');
     const btnExportCsv = document.getElementById('btn-export-csv');
 
+    // Sheet1 Elements
     const sheetUrlInput = document.getElementById('sheet-url-input');
     const sheetStatusText = document.getElementById('sheet-status-text');
     const sheetSyncTime = document.getElementById('sheet-sync-time');
@@ -834,6 +954,17 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     const itcomCheckerInput = document.getElementById('itcom-checker-input');
     const btnCheckItcomDomain = document.getElementById('btn-check-itcom-domain');
     const itcomCheckerResult = document.getElementById('itcom-checker-result');
+
+    // NEW: Extra Sheet Elements
+    const badgeExtraSheetCount = document.getElementById('badge-extrasheet-count');
+    const extraSheetUrlInput = document.getElementById('extrasheet-url-input');
+    const extraSheetStatusText = document.getElementById('extrasheet-status-text');
+    const extraSheetSyncTime = document.getElementById('extrasheet-sync-time');
+    const btnSyncExtraSheetNow = document.getElementById('btn-sync-extrasheet-now');
+    const extraSheetSyncSpinner = document.getElementById('extrasheet-sync-spinner');
+    const extraSheetMappingsTbody = document.getElementById('extrasheet-mappings-tbody');
+    const extraSheetTableCount = document.getElementById('extrasheet-table-count');
+    const btnOpenExtraSheetPasteModal = document.getElementById('btn-open-extrasheet-paste-modal');
 
     const terminalLogsContainer = document.getElementById('terminal-logs-container');
     const btnClearLogs = document.getElementById('btn-clear-logs');
@@ -1262,23 +1393,25 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       return parts.length > 1 ? parts[1].toLowerCase().trim() : email.toLowerCase().trim();
     }
 
+    // Resolves ET name prioritized across Sheet1, Extra Sheet, and it.com caches
     function resolveEtName(domain) {
       if (!domain) return 'Unmapped';
       const clean = domain.toLowerCase().trim();
       
-      if (domainLookupMap.has(clean)) return domainLookupMap.get(clean);
-      if (itcomLookupMap.has(clean)) return `${itcomLookupMap.get(clean)} (it.com)`;
+      if (domainLookupMap.has(clean)) return domainLookupMap.get(clean).etName;
+      if (extraSheetLookupMap.has(clean)) return `${extraSheetLookupMap.get(clean).etName} (Extra)`;
+      if (itcomLookupMap.has(clean)) return `${itcomLookupMap.get(clean).etName} (it.com)`;
 
       const parts = clean.split('.');
       if (parts.length > 2) {
         const root = parts.slice(-2).join('.');
-        if (domainLookupMap.has(root)) return domainLookupMap.get(root);
-        if (itcomLookupMap.has(root)) return `${itcomLookupMap.get(root)} (it.com)`;
+        if (domainLookupMap.has(root)) return domainLookupMap.get(root).etName;
+        if (extraSheetLookupMap.has(root)) return `${extraSheetLookupMap.get(root).etName} (Extra)`;
+        if (itcomLookupMap.has(root)) return `${itcomLookupMap.get(root).etName} (it.com)`;
       }
       return 'Unmapped';
     }
 
-    // Dynamic builder for ET filter dropdown options
     function populateEtFilterDropdown() {
       if (!filterEt) return;
       const currentSelected = filterEt.value;
@@ -1311,7 +1444,112 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       if (filterEt.selectedIndex === -1) filterEt.value = 'ALL';
     }
 
-    // --- it.com SHEET CACHING ---
+    // Generic CSV processor that handles DOMAIN, ET NAME, and DATE columns
+    function parseSheetCsvData(rawText) {
+      const parsed = [];
+      const lines = rawText.split(/\r?\n/).filter(l => l.trim().length > 0);
+      if (lines.length < 2) return parsed;
+
+      const headerCols = parseCsvLine(lines[0]).map(h => h.toLowerCase());
+      let domainIdx = headerCols.findIndex(h => h.includes('domain'));
+      let etIdx = headerCols.findIndex(h => h.includes('et') || h.includes('name'));
+      let dateIdx = headerCols.findIndex(h => h.includes('date'));
+
+      if (domainIdx === -1) domainIdx = 0;
+      if (etIdx === -1) etIdx = 1;
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCsvLine(lines[i]);
+        const d = (cols[domainIdx] || '').toLowerCase().trim();
+        const et = (cols[etIdx] || '').trim();
+        const dateStr = dateIdx !== -1 ? (cols[dateIdx] || '').trim() : '';
+
+        if (d && et && !d.includes('domain')) {
+          // Check if date corresponds to today or yesterday only
+          if (isDateTodayOrYesterday(dateStr)) {
+            parsed.push({ domain: d, etName: et, dateStr: dateStr });
+          }
+        }
+      }
+      return parsed;
+    }
+
+    // --- TAB 2: GOOGLE SHEET (Sheet1) CACHING ---
+    async function syncGoogleSheet() {
+      sheetSyncSpinner.classList.add('animate-spin');
+      sheetStatusText.textContent = 'Fetching published Sheet1 CSV...';
+      addLog('[Sheet Sync] Connecting to published Google Sheet CSV...', 'info');
+
+      const targetUrl = sheetUrlInput.value.trim();
+      const endpoints = [
+        targetUrl,
+        `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+      ];
+
+      let parsed = [];
+      for (const ep of endpoints) {
+        try {
+          const resp = await fetch(ep, { cache: 'no-store' });
+          if (resp.ok) {
+            const raw = await resp.text();
+            if (raw && !raw.includes('<!DOCTYPE html>') && raw.length > 10) {
+              parsed = parseSheetCsvData(raw);
+              if (parsed.length > 0) {
+                addLog(`[Sheet Sync] Successfully fetched ${parsed.length} domains matching Today/Yesterday dates!`, 'success');
+                break;
+              }
+            }
+          }
+        } catch (err) {
+          addLog(`[Sheet Sync] Endpoint notice: ${err.message}`, 'warn');
+        }
+      }
+
+      sheetSyncSpinner.classList.remove('animate-spin');
+
+      if (parsed.length > 0) {
+        domainLookupMap.clear();
+        parsed.forEach(p => domainLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
+
+        sheetStatusText.textContent = `Active: ${parsed.length} domains cached (Today/Yesterday only)`;
+        sheetSyncTime.textContent = `Synced at: ${new Date().toLocaleTimeString()}`;
+        renderSheetTable(parsed);
+
+        refreshAllRecordEtNames();
+      } else {
+        sheetStatusText.textContent = 'Direct fetch blocked or no matching dates. Click "Quick Paste CSV".';
+        addLog('[Sheet Sync] Google Sheet fetch finished with 0 active date mappings.', 'warn');
+      }
+    }
+
+    function renderSheetTable(mappings) {
+      sheetTableCount.textContent = mappings.length;
+      badgeSheetCount.textContent = mappings.length;
+      updateTotalCachedDomainStats();
+
+      if (mappings.length === 0) {
+        sheetMappingsTbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="py-8 text-center text-slate-500">
+              No cached domain mappings loaded for Today/Yesterday. Click "Sync Sheet Now" or "Quick Paste CSV".
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      sheetMappingsTbody.innerHTML = mappings.map(m => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-4 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
+          <td class="py-2.5 px-4 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
+          <td class="py-2.5 px-4 font-mono text-slate-500 text-[11px]">${escapeHtml(m.dateStr || 'Auto/Current')}</td>
+          <td class="py-2.5 px-4 text-emerald-700 font-medium text-[11px]">Valid Date ✓</td>
+        </tr>
+      `).join('');
+    }
+
+    // --- TAB 3: it.com SHEET CACHING ---
     async function syncItcomSheet() {
       if (!itcomSyncSpinner) return;
       itcomSyncSpinner.classList.add('animate-spin');
@@ -1332,28 +1570,10 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           if (resp.ok) {
             const raw = await resp.text();
             if (raw && !raw.includes('<!DOCTYPE html>') && raw.length > 10) {
-              const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
-              if (lines.length >= 2) {
-                const headerCols = parseCsvLine(lines[0]).map(h => h.toLowerCase());
-                let domainIdx = headerCols.findIndex(h => h.includes('domain'));
-                let etIdx = headerCols.findIndex(h => h.includes('et') || h.includes('name'));
-
-                if (domainIdx === -1) domainIdx = 0;
-                if (etIdx === -1) etIdx = 1;
-
-                for (let i = 1; i < lines.length; i++) {
-                  const cols = parseCsvLine(lines[i]);
-                  const d = (cols[domainIdx] || '').toLowerCase().trim();
-                  const et = (cols[etIdx] || '').trim();
-                  if (d && et && !d.includes('domain')) {
-                    parsed.push({ domain: d, etName: et });
-                  }
-                }
-
-                if (parsed.length > 0) {
-                  addLog(`[it.com Sync] Successfully parsed ${parsed.length} mappings from it.com!`, 'success');
-                  break;
-                }
+              parsed = parseSheetCsvData(raw);
+              if (parsed.length > 0) {
+                addLog(`[it.com Sync] Successfully parsed ${parsed.length} mappings matching Today/Yesterday from it.com!`, 'success');
+                break;
               }
             }
           }
@@ -1366,20 +1586,15 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
       if (parsed.length > 0) {
         itcomLookupMap.clear();
-        parsed.forEach(p => itcomLookupMap.set(p.domain, p.etName));
-        itcomStatusText.textContent = `Active: ${parsed.length} domains cached from it.com`;
+        parsed.forEach(p => itcomLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
+        itcomStatusText.textContent = `Active: ${parsed.length} domains cached (Today/Yesterday only)`;
         itcomSyncTime.textContent = `Synced at: ${new Date().toLocaleTimeString()}`;
         renderItcomTable(parsed);
 
-        emailRecords.forEach(rec => {
-          rec.etName = resolveEtName(rec.domain);
-        });
-        populateEtFilterDropdown();
-        renderRecords();
-        updateStats();
+        refreshAllRecordEtNames();
       } else {
-        itcomStatusText.textContent = 'Fetch blocked or empty. Click "Quick Paste it.com CSV".';
-        addLog('[it.com Sync] Direct fetch could not complete. Use Quick Paste fallback.', 'warn');
+        itcomStatusText.textContent = 'Fetch blocked or no matching dates. Click "Quick Paste it.com CSV".';
+        addLog('[it.com Sync] Direct fetch finished with 0 active date mappings.', 'warn');
       }
     }
 
@@ -1387,12 +1602,13 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       if (!itcomTableCount || !badgeItcomCount || !itcomMappingsTbody) return;
       itcomTableCount.textContent = mappings.length;
       badgeItcomCount.textContent = mappings.length;
+      updateTotalCachedDomainStats();
 
       if (mappings.length === 0) {
         itcomMappingsTbody.innerHTML = `
           <tr>
-            <td colspan="3" class="py-8 text-center text-slate-500">
-              No cached it.com domain mappings loaded. Click "Sync it.com Sheet" or "Quick Paste it.com CSV".
+            <td colspan="4" class="py-8 text-center text-slate-500">
+              No cached it.com domain mappings loaded for Today/Yesterday.
             </td>
           </tr>
         `;
@@ -1403,51 +1619,20 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-4 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
           <td class="py-2.5 px-4 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2.5 px-4 text-emerald-700 font-medium text-[11px]">Ready (it.com)</td>
+          <td class="py-2.5 px-4 font-mono text-slate-500 text-[11px]">${escapeHtml(m.dateStr || 'Auto/Current')}</td>
+          <td class="py-2.5 px-4 text-emerald-700 font-medium text-[11px]">Valid Date ✓</td>
         </tr>
       `).join('');
     }
 
-    if (btnCheckItcomDomain && itcomCheckerInput) {
-      btnCheckItcomDomain.addEventListener('click', () => {
-        const query = itcomCheckerInput.value.trim().toLowerCase();
-        if (!query) {
-          showToast('Please enter a domain to check');
-          return;
-        }
+    // --- TAB 4: NEW EXTRA SHEET (gid=1798344486) CACHING ---
+    async function syncExtraSheet() {
+      if (!extraSheetSyncSpinner) return;
+      extraSheetSyncSpinner.classList.add('animate-spin');
+      extraSheetStatusText.textContent = 'Fetching published Extra Sheet CSV...';
+      addLog('[Extra Sheet Sync] Connecting to published Extra Sheet CSV (gid=1798344486)...', 'info');
 
-        const isSheet1 = domainLookupMap.has(query);
-        const isItcom = itcomLookupMap.has(query);
-        const resolved = resolveEtName(query);
-
-        const matchingEmails = emailRecords.filter(r => (r.domain || '').toLowerCase() === query);
-        const inInbox = matchingEmails.filter(r => r.folder === 'INBOX').length;
-        const inSpam = matchingEmails.filter(r => r.folder === 'SPAM').length;
-
-        itcomCheckerResult.classList.remove('hidden');
-        itcomCheckerResult.innerHTML = `
-          <div class="space-y-1">
-            <div class="font-bold text-slate-900">Domain: <span class="text-indigo-600">${escapeHtml(query)}</span></div>
-            <div>ET Name: <strong>${escapeHtml(resolved)}</strong></div>
-            <div>Mapped in it.com: <strong class="${isItcom ? 'text-emerald-600' : 'text-slate-500'}">${isItcom ? 'Yes ✓' : 'No'}</strong></div>
-            <div>Mapped in Sheet1: <strong class="${isSheet1 ? 'text-emerald-600' : 'text-slate-500'}">${isSheet1 ? 'Yes ✓' : 'No'}</strong></div>
-            <div class="pt-1 border-t border-slate-200 flex gap-3 text-[11px]">
-              <span>Detected Emails: <strong>${matchingEmails.length}</strong></span>
-              <span class="text-emerald-600">Inbox: <strong>${inInbox}</strong></span>
-              <span class="text-rose-600">Spam: <strong>${inSpam}</strong></span>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    // --- GOOGLE SHEET CACHING ---
-    async function syncGoogleSheet() {
-      sheetSyncSpinner.classList.add('animate-spin');
-      sheetStatusText.textContent = 'Fetching published Sheet1 CSV...';
-      addLog('[Sheet Sync] Connecting to published Google Sheet CSV...', 'info');
-
-      const targetUrl = sheetUrlInput.value.trim();
+      const targetUrl = extraSheetUrlInput.value.trim();
       const endpoints = [
         targetUrl,
         `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
@@ -1461,81 +1646,115 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           if (resp.ok) {
             const raw = await resp.text();
             if (raw && !raw.includes('<!DOCTYPE html>') && raw.length > 10) {
-              const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
-              if (lines.length >= 2) {
-                const headerCols = parseCsvLine(lines[0]).map(h => h.toLowerCase());
-                let domainIdx = headerCols.findIndex(h => h.includes('domain'));
-                let etIdx = headerCols.findIndex(h => h.includes('et') || h.includes('name'));
-
-                if (domainIdx === -1) domainIdx = 0;
-                if (etIdx === -1) etIdx = 1;
-
-                for (let i = 1; i < lines.length; i++) {
-                  const cols = parseCsvLine(lines[i]);
-                  const d = (cols[domainIdx] || '').toLowerCase().trim();
-                  const et = (cols[etIdx] || '').trim();
-                  if (d && et && !d.includes('domain')) {
-                    parsed.push({ domain: d, etName: et });
-                  }
-                }
-
-                if (parsed.length > 0) {
-                  addLog(`[Sheet Sync] Successfully fetched and parsed ${parsed.length} domain mappings!`, 'success');
-                  break;
-                }
+              parsed = parseSheetCsvData(raw);
+              if (parsed.length > 0) {
+                addLog(`[Extra Sheet Sync] Successfully fetched ${parsed.length} mappings matching Today/Yesterday!`, 'success');
+                break;
               }
             }
           }
         } catch (err) {
-          addLog(`[Sheet Sync] Endpoint notice: ${err.message}`, 'warn');
+          addLog(`[Extra Sheet Sync] Notice: ${err.message}`, 'warn');
         }
       }
 
-      sheetSyncSpinner.classList.remove('animate-spin');
+      extraSheetSyncSpinner.classList.remove('animate-spin');
 
       if (parsed.length > 0) {
-        domainLookupMap.clear();
-        parsed.forEach(p => domainLookupMap.set(p.domain, p.etName));
+        extraSheetLookupMap.clear();
+        parsed.forEach(p => extraSheetLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
+        extraSheetStatusText.textContent = `Active: ${parsed.length} domains cached (Today/Yesterday only)`;
+        extraSheetSyncTime.textContent = `Synced at: ${new Date().toLocaleTimeString()}`;
+        renderExtraSheetTable(parsed);
 
-        sheetStatusText.textContent = `Active: ${parsed.length} domains cached in memory`;
-        sheetSyncTime.textContent = `Synced at: ${new Date().toLocaleTimeString()}`;
-        renderSheetTable(parsed);
-
-        emailRecords.forEach(rec => {
-          rec.etName = resolveEtName(rec.domain);
-        });
-        populateEtFilterDropdown();
-        renderRecords();
-        updateStats();
+        refreshAllRecordEtNames();
       } else {
-        sheetStatusText.textContent = 'Direct fetch blocked. Click "Quick Paste CSV" to load mappings instantly.';
-        addLog('[Sheet Sync] Google Sheet fetch could not complete. Use Quick Paste fallback.', 'error');
+        extraSheetStatusText.textContent = 'Fetch blocked or no matching dates. Click "Quick Paste Extra CSV".';
+        addLog('[Extra Sheet Sync] Finished with 0 active date mappings.', 'warn');
       }
     }
 
-    function renderSheetTable(mappings) {
-      sheetTableCount.textContent = mappings.length;
-      badgeSheetCount.textContent = mappings.length;
-      statSheetCount.textContent = mappings.length;
+    function renderExtraSheetTable(mappings) {
+      if (!extraSheetTableCount || !badgeExtraSheetCount || !extraSheetMappingsTbody) return;
+      extraSheetTableCount.textContent = mappings.length;
+      badgeExtraSheetCount.textContent = mappings.length;
+      updateTotalCachedDomainStats();
 
       if (mappings.length === 0) {
-        sheetMappingsTbody.innerHTML = `
+        extraSheetMappingsTbody.innerHTML = `
           <tr>
-            <td colspan="3" class="py-8 text-center text-slate-500">
-              No cached domain mappings loaded. Click "Sync Sheet Now" or "Quick Paste CSV".
+            <td colspan="4" class="py-8 text-center text-slate-500">
+              No cached Extra Sheet mappings loaded for Today/Yesterday.
             </td>
           </tr>
         `;
         return;
       }
 
-      sheetMappingsTbody.innerHTML = mappings.map(m => `
+      extraSheetMappingsTbody.innerHTML = mappings.map(m => `
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-4 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
-          <td class="py-2.5 px-4 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2.5 px-4 text-emerald-700 font-medium text-[11px]">Ready for Matching</td>
+          <td class="py-2.5 px-4 font-semibold text-violet-700">${escapeHtml(m.etName)}</td>
+          <td class="py-2.5 px-4 font-mono text-slate-500 text-[11px]">${escapeHtml(m.dateStr || 'Auto/Current')}</td>
+          <td class="py-2.5 px-4 text-emerald-700 font-medium text-[11px]">Valid Date ✓</td>
         </tr>
       `).join('');
+    }
+
+    function updateTotalCachedDomainStats() {
+      const totalUniqueDomains = new Set([
+        ...domainLookupMap.keys(),
+        ...itcomLookupMap.keys(),
+        ...extraSheetLookupMap.keys()
+      ]);
+      statSheetCount.textContent = totalUniqueDomains.size;
+    }
+
+    function refreshAllRecordEtNames() {
+      emailRecords.forEach(rec => {
+        rec.etName = resolveEtName(rec.domain);
+      });
+      populateEtFilterDropdown();
+      renderRecords();
+      updateStats();
+    }
+
+    // --- CHECKER TOOL HANDLER ---
+    if (btnCheckItcomDomain && itcomCheckerInput) {
+      btnCheckItcomDomain.addEventListener('click', () => {
+        const query = itcomCheckerInput.value.trim().toLowerCase();
+        if (!query) {
+          showToast('Please enter a domain to check');
+          return;
+        }
+
+        const inSheet1 = domainLookupMap.has(query);
+        const inItcom = itcomLookupMap.has(query);
+        const inExtra = extraSheetLookupMap.has(query);
+        const resolved = resolveEtName(query);
+
+        const matchingEmails = emailRecords.filter(r => (r.domain || '').toLowerCase() === query);
+        const inInbox = matchingEmails.filter(r => r.folder === 'INBOX').length;
+        const inSpam = matchingEmails.filter(r => r.folder === 'SPAM').length;
+
+        itcomCheckerResult.classList.remove('hidden');
+        itcomCheckerResult.innerHTML = `
+          <div class="space-y-1">
+            <div class="font-bold text-slate-900">Domain: <span class="text-indigo-600">${escapeHtml(query)}</span></div>
+            <div>ET Name: <strong>${escapeHtml(resolved)}</strong></div>
+            <div class="flex gap-4 pt-1">
+              <div>Sheet1: <strong class="${inSheet1 ? 'text-emerald-600' : 'text-slate-400'}">${inSheet1 ? 'Yes ✓' : 'No'}</strong></div>
+              <div>it.com: <strong class="${inItcom ? 'text-emerald-600' : 'text-slate-400'}">${inItcom ? 'Yes ✓' : 'No'}</strong></div>
+              <div>Extra Sheet: <strong class="${inExtra ? 'text-violet-600' : 'text-slate-400'}">${inExtra ? 'Yes ✓' : 'No'}</strong></div>
+            </div>
+            <div class="pt-1 border-t border-slate-200 flex gap-3 text-[11px]">
+              <span>Detected Emails: <strong>${matchingEmails.length}</strong></span>
+              <span class="text-emerald-600">Inbox: <strong>${inInbox}</strong></span>
+              <span class="text-rose-600">Spam: <strong>${inSpam}</strong></span>
+            </div>
+          </div>
+        `;
+      });
     }
 
     // --- OAUTH & GMAIL API ENGINE ---
@@ -1624,7 +1843,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       }
     }
 
-    // High-speed incremental mailbox poller: explicitly inspects INBOX, SPAM, and TRASH
     async function syncMailbox(acc, scope = 'TODAY') {
       const token = await getAccessToken(acc);
       if (!token) {
@@ -1857,7 +2075,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       const groups = groupRecordsByDomain();
 
       const filteredGroups = groups.filter(group => {
-        // Query search
         if (q) {
           const matchDomain = group.domain.includes(q);
           const matchEt = group.etName.toLowerCase().includes(q);
@@ -1865,7 +2082,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           if (!matchDomain && !matchEt && !matchSubj) return false;
         }
 
-        // ET Name Filter
         if (etFilterVal === 'MAPPED') {
           if (group.etName === 'Unmapped') return false;
         } else if (etFilterVal === 'UNMAPPED') {
@@ -1874,7 +2090,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
           if (group.etName !== etFilterVal) return false;
         }
 
-        // Delivery Status Filter
         const inboxAccounts = new Set();
         let hasSpam = false;
 
@@ -1906,7 +2121,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
             ` : `
               <div class="space-y-1">
                 <p class="text-sm font-semibold text-slate-700">No domain records found for current filters</p>
-                <p class="text-xs text-slate-500">Try clearing the search or changing the ET / Delivery status filter.</p>
+                <p class="text-xs text-slate-500">Domains must match Today or Yesterday's DATE from Google Sheets.</p>
               </div>
             `}
           </div>
@@ -2029,7 +2244,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
                 ${totalSpams > 0 ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
                     <span>${totalSpams} in Spam (${spamCount} AC)</span>
                   </span>
                 ` : `
@@ -2039,7 +2254,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
                 `}
 
                 <div class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transform transition-transform duration-200 ${isExpanded ? 'rotate-180 bg-indigo-100 text-indigo-600' : ''}">
-                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
               </div>
             </div>
@@ -2188,13 +2403,14 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
     btnSyncSheetNow.addEventListener('click', () => syncGoogleSheet());
     if (btnSyncItcomNow) btnSyncItcomNow.addEventListener('click', () => syncItcomSheet());
+    if (btnSyncExtraSheetNow) btnSyncExtraSheetNow.addEventListener('click', () => syncExtraSheet());
     btnClearLogs.addEventListener('click', () => { terminalLogsContainer.innerHTML = ''; });
 
     btnOpenPasteModal.addEventListener('click', () => {
       currentPasteTarget = 'sheet1';
       pasteModalTitle.textContent = 'Quick Paste CSV / TSV Data (Sheet1)';
       pasteTextarea.value = '';
-      pasteTextarea.placeholder = 'Domains,ET NAME\nexample.com,Example Tech\nacme.org,Acme Corporation';
+      pasteTextarea.placeholder = 'Domains,ET NAME,DATE\nexample.com,Example Tech,2026-09-24\nacme.org,Acme Corporation,2026-09-23';
       pasteModal.classList.remove('hidden');
     });
 
@@ -2203,7 +2419,17 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         currentPasteTarget = 'itcom';
         pasteModalTitle.textContent = 'Quick Paste it.com CSV / TSV Data';
         pasteTextarea.value = '';
-        pasteTextarea.placeholder = 'Domains,ET NAME\nexample.it.com,Example Tech\nacme.com,Acme Corp';
+        pasteTextarea.placeholder = 'Domains,ET NAME,DATE\nexample.it.com,Example Tech,2026-09-24\nacme.com,Acme Corp,2026-09-23';
+        pasteModal.classList.remove('hidden');
+      });
+    }
+
+    if (btnOpenExtraSheetPasteModal) {
+      btnOpenExtraSheetPasteModal.addEventListener('click', () => {
+        currentPasteTarget = 'extrasheet';
+        pasteModalTitle.textContent = 'Quick Paste Extra Sheet CSV Data';
+        pasteTextarea.value = '';
+        pasteTextarea.placeholder = 'Domains,ET NAME,DATE\ncustom.com,Extra Brand,2026-09-24\nservice.net,Service Group,2026-09-23';
         pasteModal.classList.remove('hidden');
       });
     }
@@ -2297,38 +2523,34 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     btnCancelPaste.addEventListener('click', () => pasteModal.classList.add('hidden'));
     btnApplyPaste.addEventListener('click', () => {
       const text = pasteTextarea.value;
-      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-      const parsed = [];
-      for (let i = 0; i < lines.length; i++) {
-        const parts = lines[i].includes('\t') ? lines[i].split('\t') : parseCsvLine(lines[i]);
-        const d = (parts[0] || '').toLowerCase().trim();
-        const et = (parts[1] || '').trim();
-        if (d && et && !d.includes('domain')) {
-          parsed.push({ domain: d, etName: et });
-        }
-      }
+      const parsed = parseSheetCsvData(text);
       if (parsed.length > 0) {
         if (currentPasteTarget === 'itcom') {
           itcomLookupMap.clear();
-          parsed.forEach(p => itcomLookupMap.set(p.domain, p.etName));
-          itcomStatusText.textContent = `Active: ${parsed.length} domains loaded via Quick Paste`;
+          parsed.forEach(p => itcomLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
+          itcomStatusText.textContent = `Active: ${parsed.length} domains loaded via Quick Paste (Today/Yesterday only)`;
           itcomSyncTime.textContent = `Pasted at: ${new Date().toLocaleTimeString()}`;
           renderItcomTable(parsed);
+        } else if (currentPasteTarget === 'extrasheet') {
+          extraSheetLookupMap.clear();
+          parsed.forEach(p => extraSheetLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
+          extraSheetStatusText.textContent = `Active: ${parsed.length} domains loaded via Quick Paste (Today/Yesterday only)`;
+          extraSheetSyncTime.textContent = `Pasted at: ${new Date().toLocaleTimeString()}`;
+          renderExtraSheetTable(parsed);
         } else {
           domainLookupMap.clear();
-          parsed.forEach(p => domainLookupMap.set(p.domain, p.etName));
-          sheetStatusText.textContent = `Active: ${parsed.length} domains loaded via Quick Paste`;
+          parsed.forEach(p => domainLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
+          sheetStatusText.textContent = `Active: ${parsed.length} domains loaded via Quick Paste (Today/Yesterday only)`;
           sheetSyncTime.textContent = `Pasted at: ${new Date().toLocaleTimeString()}`;
           renderSheetTable(parsed);
         }
-        emailRecords.forEach(rec => { rec.etName = resolveEtName(rec.domain); });
-        populateEtFilterDropdown();
-        renderRecords();
-        updateStats();
-        addLog(`[Quick Paste] Successfully applied ${parsed.length} ${currentPasteTarget} domain mappings`, 'success');
+        refreshAllRecordEtNames();
+        addLog(`[Quick Paste] Successfully applied ${parsed.length} ${currentPasteTarget} domain mappings matching Today/Yesterday`, 'success');
         pasteModal.classList.add('hidden');
         pasteTextarea.value = '';
-        showToast(`Loaded ${parsed.length} domain mappings`);
+        showToast(`Loaded ${parsed.length} filtered domain mappings`);
+      } else {
+        showToast("No rows found matching Today or Yesterday's DATE");
       }
     });
 
@@ -2338,9 +2560,13 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       updateLockUI();
       checkBrowserNotificationPermission();
       startTimer();
+      // Sequentially cache all 3 tabs with Date enforcement before starting global Gmail sync
       syncGoogleSheet().then(() => {
-        syncItcomSheet();
-        runGlobalSync('TODAY');
+        syncItcomSheet().then(() => {
+          syncExtraSheet().then(() => {
+            runGlobalSync('TODAY');
+          });
+        });
       });
     });
   </script>
