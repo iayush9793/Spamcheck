@@ -163,7 +163,7 @@
           <span id="badge-itcom-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[11px] font-mono">0</span>
         </button>
 
-        <!-- NEW: Extra Sheet Tab (gid=1798344486) (Protected) -->
+        <!-- Extra Sheet Tab (Protected) -->
         <button data-tab="extrasheet" class="tab-btn py-2.5 px-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap transition-colors">
           <span class="tab-lock-indicator text-[11px]">🔒</span>
           <span>Extra Sheet</span>
@@ -268,7 +268,7 @@
       </div>
     </div>
 
-    <!-- TAB 1: LIVE MONITOR - 3 CARDS IN A ROW VIEW -->
+    <!-- TAB 1: LIVE MONITOR VIEW -->
     <div id="tab-content-live" class="tab-pane space-y-4">
       <!-- Filter Toolbar -->
       <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
@@ -287,7 +287,7 @@
           </div>
 
           <!-- ET Name Filter Dropdown -->
-          <div class="relative min-w-[170px]">
+          <div class="relative min-w-[200px]">
             <select id="filter-et" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs">
               <option value="ALL">All ET Names</option>
               <option value="MAPPED">Mapped ETs Only</option>
@@ -314,8 +314,8 @@
         </div>
       </div>
 
-      <!-- Domain Cards Grid: Exactly 3 Cards per Line on LG screens -->
-      <div id="domain-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Domain Cards / ET Analytics Container -->
+      <div id="domain-cards-container" class="space-y-4">
         <div class="col-span-full bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-500 shadow-xs">
           <div class="flex flex-col items-center justify-center gap-2">
             <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
@@ -489,7 +489,7 @@
             <tbody id="itcom-mappings-tbody" class="divide-y divide-slate-200">
               <tr>
                 <td colspan="4" class="py-8 text-center text-slate-500">
-                  No cached it.com domain mappings loaded. Click "Sync it.com Sheet" or "Quick Paste it.com CSV".
+                  No cached it.com domain mappings loaded for Today/Yesterday. Click "Sync it.com Sheet" or "Quick Paste it.com CSV".
                 </td>
               </tr>
             </tbody>
@@ -498,7 +498,7 @@
       </div>
     </div>
 
-    <!-- TAB 4: NEW EXTRA SHEET TAB (gid=1798344486) (Protected) -->
+    <!-- TAB 4: EXTRA SHEET (gid=1798344486) (Protected) -->
     <div id="tab-content-extrasheet" class="tab-pane hidden space-y-4">
       <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
@@ -564,7 +564,7 @@
             <tbody id="extrasheet-mappings-tbody" class="divide-y divide-slate-200">
               <tr>
                 <td colspan="4" class="py-8 text-center text-slate-500">
-                  No cached Extra Sheet mappings loaded. Click "Sync Extra Sheet" or "Quick Paste Extra CSV".
+                  No cached Extra Sheet mappings loaded for Today/Yesterday. Click "Sync Extra Sheet" or "Quick Paste Extra CSV".
                 </td>
               </tr>
             </tbody>
@@ -631,7 +631,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         <button id="btn-close-alerts-modal" class="text-slate-400 hover:text-slate-600 text-base font-bold p-1">✕</button>
       </div>
 
-      <!-- Channel 1: Native Browser Push with ET Name & Domain -->
+      <!-- Channel 1: Native Browser Push -->
       <div class="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/50 space-y-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -650,7 +650,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         </div>
       </div>
 
-      <!-- Channel 2: Mobile App Lock-Screen Push (100% Free via ntfy) -->
+      <!-- Channel 2: Mobile App Lock-Screen Push -->
       <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -678,7 +678,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
             />
           </div>
           <p class="text-[10px] text-slate-500 leading-normal">
-            Install the free <strong>ntfy</strong> app on Android/iOS and subscribe to this topic to receive lock-screen alerts.
+            Install the free <strong>ntfy</strong> app on Android/iOS and subscribe to this topic.
           </p>
         </div>
       </div>
@@ -863,26 +863,24 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     let lastGlobalSync = null;
 
     // --- DATE COMPARISON HELPER ---
-    // Strictly evaluates if a date string in Google Sheet corresponds to Today or Yesterday
     function isDateTodayOrYesterday(dateStr) {
-      if (!dateStr) return true; // If no date column is provided, allow mapping
+      if (!dateStr) return true;
       const trimmed = dateStr.trim();
       if (!trimmed) return true;
 
-      // Handle DD/MM/YYYY or DD-MM-YYYY or YYYY-MM-DD
       let parsed = Date.parse(trimmed);
       if (isNaN(parsed)) {
         const parts = trimmed.split(/[\/\-\.]/);
         if (parts.length === 3) {
-          if (parts[0].length === 4) { // YYYY/MM/DD
+          if (parts[0].length === 4) {
             parsed = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
-          } else { // DD/MM/YYYY
+          } else {
             parsed = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
           }
         }
       }
 
-      if (isNaN(parsed)) return true; // Fail open if unparseable
+      if (isNaN(parsed)) return true;
 
       const d = new Date(parsed);
       const now = new Date();
@@ -905,7 +903,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     const syncBtnLabel = document.getElementById('sync-btn-label');
     const headerLastSync = document.getElementById('header-last-sync');
 
-    // Scope & Yesterday Elements
     const badgeActiveScope = document.getElementById('badge-active-scope');
     const btnSyncYesterday = document.getElementById('btn-sync-yesterday');
     const yesterdaySpinner = document.getElementById('yesterday-spinner');
@@ -955,7 +952,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
     const btnCheckItcomDomain = document.getElementById('btn-check-itcom-domain');
     const itcomCheckerResult = document.getElementById('itcom-checker-result');
 
-    // NEW: Extra Sheet Elements
+    // Extra Sheet Elements
     const badgeExtraSheetCount = document.getElementById('badge-extrasheet-count');
     const extraSheetUrlInput = document.getElementById('extrasheet-url-input');
     const extraSheetStatusText = document.getElementById('extrasheet-status-text');
@@ -1393,7 +1390,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       return parts.length > 1 ? parts[1].toLowerCase().trim() : email.toLowerCase().trim();
     }
 
-    // Resolves ET name prioritized across Sheet1, Extra Sheet, and it.com caches
     function resolveEtName(domain) {
       if (!domain) return 'Unmapped';
       const clean = domain.toLowerCase().trim();
@@ -1444,7 +1440,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       if (filterEt.selectedIndex === -1) filterEt.value = 'ALL';
     }
 
-    // Generic CSV processor that handles DOMAIN, ET NAME, and DATE columns
     function parseSheetCsvData(rawText) {
       const parsed = [];
       const lines = rawText.split(/\r?\n/).filter(l => l.trim().length > 0);
@@ -1465,7 +1460,6 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         const dateStr = dateIdx !== -1 ? (cols[dateIdx] || '').trim() : '';
 
         if (d && et && !d.includes('domain')) {
-          // Check if date corresponds to today or yesterday only
           if (isDateTodayOrYesterday(dateStr)) {
             parsed.push({ domain: d, etName: et, dateStr: dateStr });
           }
@@ -1625,7 +1619,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       `).join('');
     }
 
-    // --- TAB 4: NEW EXTRA SHEET (gid=1798344486) CACHING ---
+    // --- TAB 4: EXTRA SHEET (gid=1798344486) CACHING ---
     async function syncExtraSheet() {
       if (!extraSheetSyncSpinner) return;
       extraSheetSyncSpinner.classList.add('animate-spin');
@@ -2041,7 +2035,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       renderRecords();
     }
 
-    // --- DOMAIN GROUPING & 3-COLUMN CARD RENDERING ---
+    // --- DOMAIN GROUPING ---
     function groupRecordsByDomain() {
       const domainGroups = new Map();
 
@@ -2068,11 +2062,200 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
       return Array.from(domainGroups.values()).sort((a, b) => b.latestTime.getTime() - a.latestTime.getTime());
     }
 
+    // Helper: Build a single domain card HTML
+    function buildDomainCardHtml(group) {
+      const isExpanded = expandedDomainCards.has(group.domain);
+      const encodedDomain = encodeURIComponent(group.domain);
+
+      const accountStatusMap = {};
+      ACCOUNTS.forEach(acc => {
+        accountStatusMap[acc.name] = {
+          hasMail: false,
+          folder: 'NONE',
+          records: []
+        };
+      });
+
+      let totalInboxes = 0;
+      let totalSpams = 0;
+      const inboxAccountsSet = new Set();
+      const spamAccountsSet = new Set();
+
+      group.emails.forEach(em => {
+        if (accountStatusMap[em.accountName]) {
+          accountStatusMap[em.accountName].hasMail = true;
+          accountStatusMap[em.accountName].records.push(em);
+          if (em.folder === 'INBOX') {
+            accountStatusMap[em.accountName].folder = 'INBOX';
+            inboxAccountsSet.add(em.accountName);
+            totalInboxes++;
+          } else if (em.folder === 'SPAM') {
+            if (accountStatusMap[em.accountName].folder !== 'INBOX') {
+              accountStatusMap[em.accountName].folder = 'SPAM';
+            }
+            spamAccountsSet.add(em.accountName);
+            totalSpams++;
+          } else if (accountStatusMap[em.accountName].folder === 'NONE') {
+            accountStatusMap[em.accountName].folder = em.folder;
+          }
+        }
+      });
+
+      const inboxCount = inboxAccountsSet.size;
+      const spamCount = spamAccountsSet.size;
+
+      let borderClass = 'border-slate-200 hover:border-indigo-300';
+      let statusBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+      
+      if (totalSpams > 0) {
+        borderClass = 'border-rose-300 shadow-rose-500/10 ring-1 ring-rose-400/20';
+      }
+
+      if (inboxCount === 4) {
+        statusBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold';
+      } else if (inboxCount >= 2) {
+        statusBadgeClass = 'bg-indigo-100 text-indigo-800 border-indigo-300 font-bold';
+      } else if (inboxCount === 1) {
+        statusBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
+      } else if (inboxCount === 0 && totalSpams > 0) {
+        statusBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300 font-bold';
+      }
+
+      return `
+        <div class="bg-white border ${borderClass} rounded-xl shadow-xs transition-all overflow-hidden flex flex-col justify-between">
+          <div 
+            onclick="toggleDomainCard('${encodedDomain}')"
+            class="p-4 cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors flex-1 flex flex-col justify-between gap-3"
+          >
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-8 h-8 rounded-lg ${totalSpams > 0 ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'} flex items-center justify-center shrink-0 font-bold text-xs">
+                    ${totalSpams > 0 ? '⚠️' : '🌐'}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-mono text-xs sm:text-sm font-bold text-slate-900 truncate" title="${escapeHtml(group.domain)}">
+                      ${escapeHtml(group.domain)}
+                    </div>
+                    <div class="text-[10px] text-slate-400">
+                      ${group.latestTime.toLocaleTimeString()} · ${group.emails.length} msg${group.emails.length > 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  type="button" 
+                  onclick="event.stopPropagation(); copyDomainText('${escapeHtml(group.domain)}', this)"
+                  class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-indigo-600 text-[10px] font-medium shadow-2xs shrink-0"
+                  title="Copy ${escapeHtml(group.domain)}"
+                >
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+
+              <div class="mt-2.5">
+                ${group.etName !== 'Unmapped' ? `
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 truncate max-w-full" title="${escapeHtml(group.etName)}">
+                    ${escapeHtml(group.etName)}
+                  </span>
+                ` : `
+                  <span class="text-slate-400 italic text-[11px]">Unmapped ET</span>
+                `}
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-wrap">
+              <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border ${statusBadgeClass}">
+                <span class="w-1.5 h-1.5 rounded-full ${inboxCount === 4 ? 'bg-emerald-500 animate-pulse' : inboxCount > 0 ? 'bg-indigo-500' : 'bg-rose-500'}"></span>
+                <span><strong>${inboxCount} of 4 Inbox</strong></span>
+              </div>
+
+              ${totalSpams > 0 ? `
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+                  <span>${totalSpams} in Spam (${spamCount} AC)</span>
+                </span>
+              ` : `
+                <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-0.5">
+                  ✓ 0 Spam
+                </span>
+              `}
+
+              <div class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transform transition-transform duration-200 ${isExpanded ? 'rotate-180 bg-indigo-100 text-indigo-600' : ''}">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+          </div>
+
+          ${isExpanded ? `
+            <div class="border-t border-slate-200 bg-slate-50/80 p-3 space-y-2">
+              <div class="text-[10px] font-bold text-slate-700 uppercase tracking-wide flex items-center justify-between">
+                <span>Delivery Across All 4 Accounts:</span>
+                <span class="text-indigo-600 font-mono">${group.domain}</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                ${ACCOUNTS.map(acc => {
+                  const accData = accountStatusMap[acc.name];
+                  const folder = accData.folder;
+                  const isInbox = folder === 'INBOX';
+                  const isSpam = folder === 'SPAM';
+                  const hasMail = accData.hasMail;
+
+                  let bgCard = "bg-white border-slate-200";
+                  let badge = "bg-slate-100 text-slate-400";
+                  let badgeText = "None";
+
+                  if (isInbox) {
+                    bgCard = "bg-emerald-50/80 border-emerald-300";
+                    badge = "bg-emerald-100 text-emerald-800 font-bold border border-emerald-200";
+                    badgeText = "INBOX ✓";
+                  } else if (isSpam) {
+                    bgCard = "bg-rose-50/80 border-rose-300";
+                    badge = "bg-rose-100 text-rose-800 font-bold border border-rose-200";
+                    badgeText = "SPAM ⚠️";
+                  } else if (hasMail) {
+                    bgCard = "bg-amber-50/80 border-amber-300";
+                    badge = "bg-amber-100 text-amber-800 font-medium";
+                    badgeText = escapeHtml(folder);
+                  }
+
+                  return `
+                    <div class="p-2 rounded-lg border ${bgCard} text-[10px] space-y-1">
+                      <div class="flex items-center justify-between gap-1">
+                        <span class="font-bold text-slate-800 truncate" title="${escapeHtml(acc.name)}">${escapeHtml(acc.name)}</span>
+                        <span class="px-1.5 py-0.2 rounded text-[9px] ${badge}">${badgeText}</span>
+                      </div>
+                      ${accData.records.length > 0 ? `
+                        <div class="text-slate-600 truncate text-[9px]" title="${escapeHtml(accData.records[0].subject)}">
+                          ${escapeHtml(accData.records[0].subject || '(No Subject)')}
+                        </div>
+                        <div class="text-[9px] text-slate-400 font-mono">
+                          ${accData.records[0].detectionTime.toLocaleTimeString()}
+                        </div>
+                      ` : `
+                        <div class="text-slate-400 italic text-[9px]">No emails</div>
+                      `}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // --- MAIN RENDER LOGIC ---
     function renderRecords() {
       const q = searchInput.value.toLowerCase().trim();
       const filterVal = filterFolder.value;
       const etFilterVal = filterEt ? filterEt.value : 'ALL';
       const groups = groupRecordsByDomain();
+
+      // Check if a specific single ET is selected (e.g. jsg 26, jsg 38nr)
+      const isSpecificEtSelected = etFilterVal !== 'ALL' && etFilterVal !== 'MAPPED' && etFilterVal !== 'UNMAPPED';
 
       const filteredGroups = groups.filter(group => {
         if (q) {
@@ -2129,195 +2312,187 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
         return;
       }
 
-      domainCardsContainer.innerHTML = filteredGroups.map(group => {
-        const isExpanded = expandedDomainCards.has(group.domain);
-        const encodedDomain = encodeURIComponent(group.domain);
+      // --- DEDICATED VIEW FOR SPECIFIC ET SELECTION ---
+      if (isSpecificEtSelected) {
+        // Compute stats across all emails belonging to this ET
+        const etEmails = emailRecords.filter(r => r.etName === etFilterVal);
+        
+        // Count mailbox placements per domain/subject group
+        let inbox4Count = 0;
+        let inbox3Count = 0;
+        let inbox2Count = 0;
 
-        const accountStatusMap = {};
-        ACCOUNTS.forEach(acc => {
-          accountStatusMap[acc.name] = {
-            hasMail: false,
-            folder: 'NONE',
-            records: []
-          };
-        });
+        let spam4Count = 0;
+        let spam3Count = 0;
+        let spamLowCount = 0;
 
-        let totalInboxes = 0;
-        let totalSpams = 0;
-        const inboxAccountsSet = new Set();
-        const spamAccountsSet = new Set();
+        const inboxGroups = [];
+        const spamGroups = [];
 
-        group.emails.forEach(em => {
-          if (accountStatusMap[em.accountName]) {
-            accountStatusMap[em.accountName].hasMail = true;
-            accountStatusMap[em.accountName].records.push(em);
-            if (em.folder === 'INBOX') {
-              accountStatusMap[em.accountName].folder = 'INBOX';
-              inboxAccountsSet.add(em.accountName);
-              totalInboxes++;
-            } else if (em.folder === 'SPAM') {
-              if (accountStatusMap[em.accountName].folder !== 'INBOX') {
-                accountStatusMap[em.accountName].folder = 'SPAM';
-              }
-              spamAccountsSet.add(em.accountName);
-              totalSpams++;
-            } else if (accountStatusMap[em.accountName].folder === 'NONE') {
-              accountStatusMap[em.accountName].folder = em.folder;
-            }
+        filteredGroups.forEach(group => {
+          const inboxAccs = new Set();
+          const spamAccs = new Set();
+
+          group.emails.forEach(e => {
+            if (e.folder === 'INBOX') inboxAccs.add(e.accountName);
+            if (e.folder === 'SPAM') spamAccs.add(e.accountName);
+          });
+
+          // Tally Opener / Inbox count
+          if (inboxAccs.size === 4) inbox4Count++;
+          else if (inboxAccs.size === 3) inbox3Count++;
+          else if (inboxAccs.size === 2) inbox2Count++;
+
+          // Tally Spam count
+          if (spamAccs.size === 4) spam4Count++;
+          else if (spamAccs.size === 3) spam3Count++;
+          else if (spamAccs.size > 0) spamLowCount++;
+
+          if (inboxAccs.size > 0) {
+            inboxGroups.push(group);
+          }
+          if (spamAccs.size > 0) {
+            spamGroups.push(group);
           }
         });
 
-        const inboxCount = inboxAccountsSet.size;
-        const spamCount = spamAccountsSet.size;
+        const totalEtEmails = etEmails.length;
+        const totalInboxEmails = etEmails.filter(e => e.folder === 'INBOX').length;
+        const totalSpamEmails = etEmails.filter(e => e.folder === 'SPAM').length;
 
-        let borderClass = 'border-slate-200 hover:border-indigo-300';
-        let statusBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
-        
-        if (totalSpams > 0) {
-          borderClass = 'border-rose-300 shadow-rose-500/10 ring-1 ring-rose-400/20';
-        }
-
-        if (inboxCount === 4) {
-          statusBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold';
-        } else if (inboxCount >= 2) {
-          statusBadgeClass = 'bg-indigo-100 text-indigo-800 border-indigo-300 font-bold';
-        } else if (inboxCount === 1) {
-          statusBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
-        } else if (inboxCount === 0 && totalSpams > 0) {
-          statusBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300 font-bold';
-        }
-
-        return `
-          <div class="bg-white border ${borderClass} rounded-xl shadow-xs transition-all overflow-hidden flex flex-col justify-between">
-            <!-- Card Body (Compact & Optimized for 3-Column Grid) -->
-            <div 
-              onclick="toggleDomainCard('${encodedDomain}')"
-              class="p-4 cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors flex-1 flex flex-col justify-between gap-3"
-            >
+        domainCardsContainer.innerHTML = `
+          <!-- ET Overview Banner -->
+          <div class="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 border border-indigo-700/40 rounded-2xl p-5 text-white shadow-lg space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <!-- Top Row: Icons, Domain & Copy -->
-                <div class="flex items-start justify-between gap-2">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <div class="w-8 h-8 rounded-lg ${totalSpams > 0 ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'} flex items-center justify-center shrink-0 font-bold text-xs">
-                      ${totalSpams > 0 ? '⚠️' : '🌐'}
-                    </div>
-                    <div class="min-w-0">
-                      <div class="font-mono text-xs sm:text-sm font-bold text-slate-900 truncate" title="${escapeHtml(group.domain)}">
-                        ${escapeHtml(group.domain)}
-                      </div>
-                      <div class="text-[10px] text-slate-400">
-                        ${group.latestTime.toLocaleTimeString()} · ${group.emails.length} msg${group.emails.length > 1 ? 's' : ''}
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- 1-Click Copy Domain Button -->
-                  <button 
-                    type="button" 
-                    onclick="event.stopPropagation(); copyDomainText('${escapeHtml(group.domain)}', this)"
-                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 hover:text-indigo-600 text-[10px] font-medium shadow-2xs shrink-0"
-                    title="Copy ${escapeHtml(group.domain)}"
-                  >
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    <span>Copy</span>
-                  </button>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs uppercase tracking-wider text-indigo-300 font-bold">Campaign Delivery Report</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">Active ET</span>
                 </div>
+                <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight mt-0.5">${escapeHtml(etFilterVal)}</h2>
+              </div>
+              <div class="flex items-center gap-4 text-xs">
+                <div class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+                  <div class="text-[10px] text-slate-300">Total Emails</div>
+                  <div class="text-base font-extrabold text-white">${totalEtEmails}</div>
+                </div>
+                <div class="bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-400/30">
+                  <div class="text-[10px] text-emerald-200">Inbox Placements</div>
+                  <div class="text-base font-extrabold text-emerald-300">${totalInboxEmails}</div>
+                </div>
+                <div class="bg-rose-500/20 px-3 py-1.5 rounded-xl border border-rose-400/30">
+                  <div class="text-[10px] text-rose-200">Spam Placements</div>
+                  <div class="text-base font-extrabold text-rose-300">${totalSpamEmails}</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                <!-- ET NAME -->
-                <div class="mt-2.5">
-                  ${group.etName !== 'Unmapped' ? `
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 truncate max-w-full" title="${escapeHtml(group.etName)}">
-                      ${escapeHtml(group.etName)}
-                    </span>
-                  ` : `
-                    <span class="text-slate-400 italic text-[11px]">Unmapped ET</span>
-                  `}
+          <!-- SECTION 1: OPENER / INBOX -->
+          <div class="bg-white border-2 border-emerald-300 rounded-2xl p-5 shadow-xs space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-emerald-100 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg shadow-xs">
+                  📬
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-emerald-950 flex items-center gap-2">
+                    Section 1: Opener & Inbox Placements
+                    <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">${inboxGroups.length} Domains</span>
+                  </h3>
+                  <p class="text-xs text-emerald-700">Detailed account-level inbox delivery breakdown for <strong class="text-emerald-900">${escapeHtml(etFilterVal)}</strong></p>
                 </div>
               </div>
 
-              <!-- Status Badges: Inboxing + Spam Counters -->
-              <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-wrap">
-                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border ${statusBadgeClass}">
-                  <span class="w-1.5 h-1.5 rounded-full ${inboxCount === 4 ? 'bg-emerald-500 animate-pulse' : inboxCount > 0 ? 'bg-indigo-500' : 'bg-rose-500'}"></span>
-                  <span><strong>${inboxCount} of 4 Inbox</strong></span>
+              <!-- Stat Badges for Opener / Inbox -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- 4 ACs Inbox -->
+                <div class="bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded-xl text-center shadow-2xs">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">4 ACs Inbox</span>
+                  <span class="text-lg font-black text-emerald-800">${inbox4Count}</span>
                 </div>
-
-                ${totalSpams > 0 ? `
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
-                    <span>${totalSpams} in Spam (${spamCount} AC)</span>
-                  </span>
-                ` : `
-                  <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-0.5">
-                    ✓ 0 Spam
-                  </span>
-                `}
-
-                <div class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transform transition-transform duration-200 ${isExpanded ? 'rotate-180 bg-indigo-100 text-indigo-600' : ''}">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <!-- 3 ACs Inbox -->
+                <div class="bg-indigo-50 border border-indigo-300 px-3 py-1.5 rounded-xl text-center shadow-2xs">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 block">3 ACs Inbox</span>
+                  <span class="text-lg font-black text-indigo-800">${inbox3Count}</span>
+                </div>
+                <!-- 2 ACs Inbox -->
+                <div class="bg-amber-50 border border-amber-300 px-3 py-1.5 rounded-xl text-center shadow-2xs">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">2 ACs Inbox</span>
+                  <span class="text-lg font-black text-amber-800">${inbox2Count}</span>
                 </div>
               </div>
             </div>
 
-            <!-- EXPANDED ACCORDION: Status in all 4 Seed Accounts -->
-            ${isExpanded ? `
-              <div class="border-t border-slate-200 bg-slate-50/80 p-3 space-y-2">
-                <div class="text-[10px] font-bold text-slate-700 uppercase tracking-wide flex items-center justify-between">
-                  <span>Delivery Across All 4 Accounts:</span>
-                  <span class="text-indigo-600 font-mono">${group.domain}</span>
+            <!-- Inbox Domain Cards Grid -->
+            ${inboxGroups.length > 0 ? `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${inboxGroups.map(g => buildDomainCardHtml(g)).join('')}
+              </div>
+            ` : `
+              <div class="py-8 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                No inbox placements found for ${escapeHtml(etFilterVal)}.
+              </div>
+            `}
+          </div>
+
+          <!-- SECTION 2: SPAM PLACEMENTS -->
+          <div class="bg-white border-2 border-rose-300 rounded-2xl p-5 shadow-xs space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-rose-100 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-lg shadow-xs">
+                  🚨
                 </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                  ${ACCOUNTS.map(acc => {
-                    const accData = accountStatusMap[acc.name];
-                    const folder = accData.folder;
-                    const isInbox = folder === 'INBOX';
-                    const isSpam = folder === 'SPAM';
-                    const hasMail = accData.hasMail;
-
-                    let bgCard = "bg-white border-slate-200";
-                    let badge = "bg-slate-100 text-slate-400";
-                    let badgeText = "None";
-
-                    if (isInbox) {
-                      bgCard = "bg-emerald-50/80 border-emerald-300";
-                      badge = "bg-emerald-100 text-emerald-800 font-bold border border-emerald-200";
-                      badgeText = "INBOX ✓";
-                    } else if (isSpam) {
-                      bgCard = "bg-rose-50/80 border-rose-300";
-                      badge = "bg-rose-100 text-rose-800 font-bold border border-rose-200";
-                      badgeText = "SPAM ⚠️";
-                    } else if (hasMail) {
-                      bgCard = "bg-amber-50/80 border-amber-300";
-                      badge = "bg-amber-100 text-amber-800 font-medium";
-                      badgeText = escapeHtml(folder);
-                    }
-
-                    return `
-                      <div class="p-2 rounded-lg border ${bgCard} text-[10px] space-y-1">
-                        <div class="flex items-center justify-between gap-1">
-                          <span class="font-bold text-slate-800 truncate" title="${escapeHtml(acc.name)}">${escapeHtml(acc.name)}</span>
-                          <span class="px-1.5 py-0.2 rounded text-[9px] ${badge}">${badgeText}</span>
-                        </div>
-                        ${accData.records.length > 0 ? `
-                          <div class="text-slate-600 truncate text-[9px]" title="${escapeHtml(accData.records[0].subject)}">
-                            ${escapeHtml(accData.records[0].subject || '(No Subject)')}
-                          </div>
-                          <div class="text-[9px] text-slate-400 font-mono">
-                            ${accData.records[0].detectionTime.toLocaleTimeString()}
-                          </div>
-                        ` : `
-                          <div class="text-slate-400 italic text-[9px]">No emails</div>
-                        `}
-                      </div>
-                    `;
-                  }).join('')}
+                <div>
+                  <h3 class="text-base font-bold text-rose-950 flex items-center gap-2">
+                    Section 2: Spam Placements
+                    <span class="bg-rose-100 text-rose-800 text-xs px-2.5 py-0.5 rounded-full font-bold">${spamGroups.length} Domains</span>
+                  </h3>
+                  <p class="text-xs text-rose-700">Domains triggering spam folders across the seed network for <strong class="text-rose-900">${escapeHtml(etFilterVal)}</strong></p>
                 </div>
               </div>
-            ` : ''}
+
+              <!-- Stat Badges for Spam -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- 4 ACs Spam -->
+                <div class="bg-rose-50 border border-rose-300 px-3 py-1.5 rounded-xl text-center shadow-2xs">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">4 ACs Spam</span>
+                  <span class="text-lg font-black text-rose-800">${spam4Count}</span>
+                </div>
+                <!-- 3 ACs Spam -->
+                <div class="bg-amber-50 border border-amber-300 px-3 py-1.5 rounded-xl text-center shadow-2xs">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">3 ACs Spam</span>
+                  <span class="text-lg font-black text-amber-800">${spam3Count}</span>
+                </div>
+                <!-- 1-2 ACs Spam -->
+                <div class="bg-slate-50 border border-slate-300 px-3 py-1.5 rounded-xl text-center shadow-2xs">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600 block">1-2 ACs Spam</span>
+                  <span class="text-lg font-black text-slate-800">${spamLowCount}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Spam Domain Cards Grid -->
+            ${spamGroups.length > 0 ? `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${spamGroups.map(g => buildDomainCardHtml(g)).join('')}
+              </div>
+            ` : `
+              <div class="py-8 text-center text-xs text-emerald-600 font-semibold bg-emerald-50/50 rounded-xl border border-dashed border-emerald-200">
+                ✓ 0 Spam placements detected! Outstanding deliverability for ${escapeHtml(etFilterVal)}.
+              </div>
+            `}
           </div>
         `;
-      }).join('');
+        return;
+      }
+
+      // --- STANDARD VIEW: 3 CARDS PER LINE GRID ---
+      domainCardsContainer.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${filteredGroups.map(group => buildDomainCardHtml(group)).join('')}
+        </div>
+      `;
     }
 
     function updateStats() {
