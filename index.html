@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>ET Campaign Inbox Matrix | Inbox Sentinel</title>
+  <title>Inbox & Spam Monitor | ET Split-Screen Engine</title>
 
+  <!-- PWA & Mobile Settings -->
+  <meta name="theme-color" content="#020617">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" id="manifest-link" href="#">
+
+  <!-- Tailwind CSS & Google Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,12 +25,6 @@
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
-          },
-          colors: {
-            brand: {
-              500: '#6366f1',
-              600: '#4f46e5',
-            }
           }
         }
       }
@@ -33,7 +34,7 @@
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: #020617; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #334155; }
@@ -43,302 +44,866 @@
 
 <body class="min-h-full flex flex-col bg-slate-950 text-slate-100 pb-16 md:pb-6">
 
-  <!-- Top Bar -->
-  <header class="glass sticky top-0 z-40 border-b border-slate-800 px-4 py-2.5 shadow-xl">
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20 font-black text-sm">
+  <!-- Top Glass Header -->
+  <header class="glass sticky top-0 z-40 border-b border-slate-800 px-3 sm:px-6 py-2.5 shadow-2xl">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-2.5">
+      <!-- Brand & Active Scope -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20 font-black text-xs">
           ET
+          <span class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
         </div>
-        <div>
-          <h1 class="text-xs sm:text-sm font-extrabold tracking-tight text-white flex items-center gap-2">
-            <span>ET Campaign Monitor</span>
-            <span id="badge-scope" class="rounded bg-indigo-500/10 border border-indigo-500/30 px-1.5 py-0.2 text-[10px] font-mono text-indigo-400">TODAY</span>
-          </h1>
-          <div class="text-[10px] text-slate-400 flex items-center gap-1.5">
-            <span>Seeds: <strong class="text-emerald-400 font-mono">4 ACs</strong></span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <h1 class="text-xs sm:text-sm font-extrabold tracking-tight text-white truncate">Inbox & Spam Monitor</h1>
+            <span id="badge-active-scope" class="rounded-full bg-indigo-500/10 border border-indigo-500/30 px-2 py-0.2 text-[10px] font-mono text-indigo-400 font-bold">
+              📅 Today's Mail
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+            <span>Seeds: <strong class="text-emerald-400 font-mono">4/4 Active</strong></span>
             <span class="text-slate-600">•</span>
-            <span id="label-last-sync">Ready</span>
+            <span id="header-last-sync" class="text-slate-400">Initializing...</span>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button id="btn-sync-now" class="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg hover:bg-indigo-500 active:scale-95 transition-all">
-          <svg id="sync-icon" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-          <span>Sync Now</span>
+      <!-- Action Toolbar -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- 30s Countdown Ring -->
+        <div class="flex items-center gap-1.5 rounded-xl bg-slate-900 border border-slate-800 px-2 py-1 shadow-inner">
+          <div class="relative flex h-5 w-5 items-center justify-center">
+            <svg class="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="14" fill="none" stroke="#1e293b" stroke-width="3"></circle>
+              <circle id="countdown-circle" cx="18" cy="18" r="14" fill="none" stroke="#6366f1" stroke-width="3" stroke-dasharray="88" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-1000"></circle>
+            </svg>
+            <span id="countdown-number" class="absolute font-mono text-[9px] font-bold text-indigo-400">30</span>
+          </div>
+          <button id="btn-toggle-timer" class="text-[10px] font-semibold text-slate-400 hover:text-white transition-colors">Pause</button>
+        </div>
+
+        <!-- Alerts Modal Toggle -->
+        <button id="btn-open-alerts-modal" class="flex items-center gap-1 rounded-xl border border-amber-500/30 bg-amber-500/10 px-2 sm:px-2.5 py-1.5 text-[11px] font-bold text-amber-300 hover:bg-amber-500/20 active:scale-95 transition-all">
+          <span>🔔</span>
+          <span class="hidden sm:inline">Alerts</span>
+        </button>
+
+        <!-- Sync Yesterday -->
+        <button id="btn-sync-yesterday" class="flex items-center gap-1 rounded-xl border border-violet-500/30 bg-violet-500/10 px-2.5 py-1.5 text-[11px] font-bold text-violet-300 hover:bg-violet-500/20 active:scale-95 transition-all">
+          <svg id="yesterday-spinner" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span id="yesterday-btn-label">Yesterday</span>
+        </button>
+
+        <!-- Sync Now -->
+        <button id="btn-sync-now" class="flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg shadow-indigo-600/30 hover:brightness-110 active:scale-95 transition-all">
+          <svg id="sync-spinner" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+          <span id="sync-btn-label">Sync</span>
+        </button>
+
+        <!-- Admin Lock Toggle -->
+        <button id="btn-lock-toggle" class="p-1.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white" title="Admin Sheets & Logs Unlock">
+          <span id="lock-icon" class="text-xs">🔒</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Master Split Layout -->
-  <main class="mx-auto max-w-7xl flex-1 w-full p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4">
+  <!-- Secondary Top Navigation Strip (For Protected Sheet & Terminal tabs) -->
+  <div class="border-b border-slate-800 bg-slate-950/80 px-3 sm:px-6">
+    <div class="mx-auto max-w-7xl flex items-center justify-between">
+      <nav class="flex space-x-2 py-1 overflow-x-auto no-scrollbar text-xs">
+        <button data-tab="live" class="tab-btn py-1.5 px-3 font-semibold border-b-2 border-indigo-500 text-indigo-400 transition-colors">
+          ET Matrix
+        </button>
+        <button data-tab="sheet" class="tab-btn py-1.5 px-3 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1">
+          <span class="tab-lock-indicator text-[10px]">🔒</span>
+          <span>Google Sheet</span>
+          <span id="badge-sheet-count" class="rounded bg-slate-900 px-1 py-0.2 text-[9px] font-mono">0</span>
+        </button>
+        <button data-tab="terminal" class="tab-btn py-1.5 px-3 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1">
+          <span class="tab-lock-indicator text-[10px]">🔒</span>
+          <span>Logs</span>
+        </button>
+      </nav>
+      <div class="hidden lg:flex items-center gap-2 text-[10px] text-slate-400">
+        <span>Mapped Domains: <strong id="stat-sheet-count" class="text-indigo-400 font-mono">0</strong></span>
+      </div>
+    </div>
+  </div>
 
-    <!-- LEFT SIDEBAR: ET Names & Domain Mapping (5 cols on Desktop) -->
-    <section class="lg:col-span-4 xl:col-span-4 flex flex-col gap-3">
-      <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-3.5 shadow-xl flex flex-col h-[400px] lg:h-[calc(100vh-120px)]">
-        <!-- Search & Control -->
-        <div class="pb-3 border-b border-slate-800/80 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <span>Campaign ET Names</span>
-              <span id="et-count-badge" class="rounded bg-slate-800 px-1.5 py-0.2 font-mono text-[10px] text-slate-300">0</span>
-            </span>
-            <button id="btn-clear-selection" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold hidden">
-              Show All
-            </button>
+  <!-- Master Content Grid -->
+  <main class="mx-auto max-w-7xl flex-1 w-full p-3 sm:p-4 lg:p-6">
+
+    <!-- VIEW 1: LIVE ET MATRIX (SPLIT SCREEN) -->
+    <div id="tab-content-live" class="tab-pane grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+      <!-- LEFT SIDEBAR: ET Campaign List (5 cols on Desktop) -->
+      <section class="lg:col-span-5 flex flex-col gap-3">
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-3.5 shadow-xl flex flex-col h-[400px] lg:h-[calc(100vh-160px)]">
+          <!-- Filter Header -->
+          <div class="pb-3 border-b border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <span>ET Campaigns</span>
+                <span id="et-count-badge" class="rounded bg-slate-800 px-1.5 py-0.2 font-mono text-[10px] text-indigo-400">0</span>
+              </span>
+              <button id="btn-clear-selection" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold hidden">
+                Show All
+              </button>
+            </div>
+            <div class="relative">
+              <input
+                id="search-et"
+                type="text"
+                placeholder="Search ET name or domain..."
+                class="w-full rounded-xl border border-slate-800 bg-slate-950 py-1.5 pl-8 pr-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              />
+              <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+            </div>
           </div>
-          <div class="relative">
-            <input
-              id="search-et"
-              type="text"
-              placeholder="Search ET Name or Domain..."
-              class="w-full rounded-xl border border-slate-800 bg-slate-950 py-1.5 pl-8 pr-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-            />
-            <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+
+          <!-- Dynamic List of ETs -->
+          <div id="et-list-container" class="flex-1 overflow-y-auto divide-y divide-slate-800/50 pr-1 mt-1 space-y-1">
+            <div class="py-12 text-center text-xs text-slate-500">Scanning seeds & fetching mappings...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT DASHBOARD: Distribution Metrics & Domain Cards (7 cols on Desktop) -->
+      <section class="lg:col-span-7 flex flex-col gap-4">
+
+        <!-- Active ET Heading Card -->
+        <div class="rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 p-4 shadow-xl flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block">Filtered Campaign</span>
+            <h2 id="active-et-heading" class="text-base sm:text-lg font-black text-white mt-0.5">All Campaigns (Aggregated)</h2>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 block">Mapped Domains</span>
+            <span id="active-et-domain-count" class="font-mono text-base font-extrabold text-indigo-300">0</span>
           </div>
         </div>
 
-        <!-- ET Clickable List -->
-        <div id="et-list-container" class="flex-1 overflow-y-auto divide-y divide-slate-800/50 pr-1 mt-1 space-y-1">
-          <!-- Dynamically Rendered ET Items -->
-          <div class="py-8 text-center text-xs text-slate-500">Loading ET campaigns...</div>
+        <!-- 4, 3, 2, 1, 0 ACs DISTRIBUTION GRID -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          <!-- 4 ACs -->
+          <div class="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3 shadow-lg">
+            <div class="flex items-center justify-between text-emerald-400">
+              <span class="text-[10px] font-bold uppercase tracking-wider">4 ACs</span>
+              <span class="text-xs">🏆</span>
+            </div>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span id="metric-4ac" class="font-mono text-2xl font-black text-emerald-400">0</span>
+              <span class="text-[10px] text-emerald-500/80 font-bold">100%</span>
+            </div>
+            <span class="text-[9px] text-slate-400 block mt-0.5">4 of 4 Inbox</span>
+          </div>
+
+          <!-- 3 ACs -->
+          <div class="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-3 shadow-lg">
+            <div class="flex items-center justify-between text-indigo-300">
+              <span class="text-[10px] font-bold uppercase tracking-wider">3 ACs</span>
+              <span class="text-xs">⚡</span>
+            </div>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span id="metric-3ac" class="font-mono text-2xl font-black text-indigo-300">0</span>
+              <span class="text-[10px] text-indigo-400 font-bold">75%</span>
+            </div>
+            <span class="text-[9px] text-slate-400 block mt-0.5">3 of 4 Inbox</span>
+          </div>
+
+          <!-- 2 ACs -->
+          <div class="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3 shadow-lg">
+            <div class="flex items-center justify-between text-amber-300">
+              <span class="text-[10px] font-bold uppercase tracking-wider">2 ACs</span>
+              <span class="text-xs">⚖️</span>
+            </div>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span id="metric-2ac" class="font-mono text-2xl font-black text-amber-300">0</span>
+              <span class="text-[10px] text-amber-400 font-bold">50%</span>
+            </div>
+            <span class="text-[9px] text-slate-400 block mt-0.5">2 of 4 Inbox</span>
+          </div>
+
+          <!-- 1 AC -->
+          <div class="rounded-xl border border-orange-500/30 bg-orange-950/20 p-3 shadow-lg">
+            <div class="flex items-center justify-between text-orange-400">
+              <span class="text-[10px] font-bold uppercase tracking-wider">1 AC</span>
+              <span class="text-xs">⚠️</span>
+            </div>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span id="metric-1ac" class="font-mono text-2xl font-black text-orange-400">0</span>
+              <span class="text-[10px] text-orange-500 font-bold">25%</span>
+            </div>
+            <span class="text-[9px] text-slate-400 block mt-0.5">1 of 4 Inbox</span>
+          </div>
+
+          <!-- 0 ACs -->
+          <div class="rounded-xl border border-rose-500/30 bg-rose-950/20 p-3 shadow-lg col-span-2 sm:col-span-1">
+            <div class="flex items-center justify-between text-rose-400">
+              <span class="text-[10px] font-bold uppercase tracking-wider">0 ACs</span>
+              <span class="text-xs">🚨</span>
+            </div>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span id="metric-0ac" class="font-mono text-2xl font-black text-rose-400">0</span>
+              <span class="text-[10px] text-rose-500 font-bold">0%</span>
+            </div>
+            <span class="text-[9px] text-slate-400 block mt-0.5">Zero Inbox</span>
+          </div>
+        </div>
+
+        <!-- Filter Bar & Cards Container -->
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-xl flex-1 flex flex-col">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Domain Placement Cards</h3>
+            <div class="flex items-center gap-2">
+              <select id="filter-folder" class="rounded-xl border border-slate-800 bg-slate-950 py-1 px-2.5 text-xs text-slate-300 focus:outline-none">
+                <option value="ALL">All Statuses</option>
+                <option value="HAS_SPAM">⚠️ Has Spam</option>
+                <option value="ALL_INBOX">✓ 100% Inboxed (4/4)</option>
+                <option value="ZERO_INBOX">Zero Inbox Placements</option>
+              </select>
+              <button id="btn-export-csv" class="rounded-xl border border-slate-800 bg-slate-950 px-2.5 py-1 text-xs text-slate-300 hover:text-white" title="Export CSV">
+                Export
+              </button>
+            </div>
+          </div>
+
+          <div id="domains-detail-container" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto max-h-[500px] pr-1">
+            <div class="col-span-full py-12 text-center text-xs text-slate-500">No domains matching current selection.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- VIEW 2: GOOGLE SHEET CACHE (Protected) -->
+    <div id="tab-content-sheet" class="tab-pane hidden space-y-4 w-full">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>Google Sheet Feed</span>
+              <span id="badge-sheet-cached-count" class="rounded bg-indigo-500/20 px-1.5 py-0.2 text-[10px] font-mono text-indigo-400">0</span>
+            </h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">Fetches Domain-to-ET mapping every 30s</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-open-paste-modal" class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">Quick Paste</button>
+            <button id="btn-sync-sheet-now" class="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Re-Sync Sheet</button>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <input
+            id="sheet-url-input"
+            type="text"
+            value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=0&single=true&output=csv"
+            class="w-full rounded-xl border border-slate-800 bg-slate-950 p-2 font-mono text-xs text-slate-300 focus:outline-none"
+          />
+        </div>
+
+        <div class="mt-3 overflow-x-auto max-h-80 border border-slate-800 rounded-xl">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="sticky top-0 bg-slate-950 text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-2 px-3 font-semibold">Domain</th>
+                <th class="py-2 px-3 font-semibold">ET Campaign</th>
+                <th class="py-2 px-3 font-semibold">Date</th>
+              </tr>
+            </thead>
+            <tbody id="sheet-mappings-tbody" class="divide-y divide-slate-800/60 text-slate-300">
+              <tr><td colspan="3" class="py-6 text-center text-slate-500">No cached mappings.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- RIGHT DASHBOARD: Distribution Cards & Placement Breakdown (7 cols on Desktop) -->
-    <section class="lg:col-span-8 xl:col-span-8 flex flex-col gap-4">
-
-      <!-- Active Selection Header -->
-      <div class="rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 p-4 shadow-xl flex items-center justify-between">
-        <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block">Filtered ET Campaign</span>
-          <h2 id="active-et-heading" class="text-base sm:text-lg font-black text-white mt-0.5">All Campaigns (Aggregated)</h2>
+    <!-- VIEW 3: TERMINAL LOGS (Protected) -->
+    <div id="tab-content-terminal" class="tab-pane hidden space-y-4 w-full">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2.5">
+          <span class="font-mono text-xs font-bold text-slate-300">Live Poller Diagnostic Logs</span>
+          <button id="btn-clear-logs" class="text-[11px] font-semibold text-slate-500 hover:text-white">Clear</button>
         </div>
-        <div class="text-right">
-          <span class="text-[10px] text-slate-400 block">Mapped Domains</span>
-          <span id="active-et-domain-count" class="font-mono text-base font-extrabold text-indigo-300">0</span>
+        <div id="terminal-logs-container" class="p-4 font-mono text-xs max-h-96 overflow-y-auto space-y-1.5 bg-slate-950 text-slate-300 break-all">
+          <div class="text-slate-500">[System] Poller engine initialized...</div>
         </div>
       </div>
-
-      <!-- INBOX PLACEMENT DISTRIBUTION GRID (4, 3, 2, 1, 0 ACs) -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5">
-        <!-- 4 ACs (100% Inboxed) -->
-        <div class="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3 shadow-lg">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">4 ACs Inbox</span>
-            <span class="text-xs">🏆</span>
-          </div>
-          <div class="mt-2 flex items-baseline justify-between">
-            <span id="metric-4ac" class="font-mono text-2xl font-black text-emerald-400">0</span>
-            <span class="text-[10px] text-emerald-500/80 font-bold">100%</span>
-          </div>
-          <span class="text-[9px] text-slate-400 block mt-0.5">All 4 seeds inboxed</span>
-        </div>
-
-        <!-- 3 ACs Inboxed -->
-        <div class="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-3 shadow-lg">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-300">3 ACs Inbox</span>
-            <span class="text-xs">⚡</span>
-          </div>
-          <div class="mt-2 flex items-baseline justify-between">
-            <span id="metric-3ac" class="font-mono text-2xl font-black text-indigo-300">0</span>
-            <span class="text-[10px] text-indigo-400 font-bold">75%</span>
-          </div>
-          <span class="text-[9px] text-slate-400 block mt-0.5">3 seeds inboxed</span>
-        </div>
-
-        <!-- 2 ACs Inboxed -->
-        <div class="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3 shadow-lg">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">2 ACs Inbox</span>
-            <span class="text-xs">⚖️</span>
-          </div>
-          <div class="mt-2 flex items-baseline justify-between">
-            <span id="metric-2ac" class="font-mono text-2xl font-black text-amber-300">0</span>
-            <span class="text-[10px] text-amber-400 font-bold">50%</span>
-          </div>
-          <span class="text-[9px] text-slate-400 block mt-0.5">2 seeds inboxed</span>
-        </div>
-
-        <!-- 1 AC Inboxed -->
-        <div class="rounded-xl border border-orange-500/30 bg-orange-950/20 p-3 shadow-lg">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-orange-400">1 AC Inbox</span>
-            <span class="text-xs">⚠️</span>
-          </div>
-          <div class="mt-2 flex items-baseline justify-between">
-            <span id="metric-1ac" class="font-mono text-2xl font-black text-orange-400">0</span>
-            <span class="text-[10px] text-orange-500 font-bold">25%</span>
-          </div>
-          <span class="text-[9px] text-slate-400 block mt-0.5">Only 1 seed inboxed</span>
-        </div>
-
-        <!-- 0 ACs (Zero Inbox) -->
-        <div class="rounded-xl border border-rose-500/30 bg-rose-950/20 p-3 shadow-lg col-span-2 sm:col-span-1">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400">0 ACs Inbox</span>
-            <span class="text-xs">🚨</span>
-          </div>
-          <div class="mt-2 flex items-baseline justify-between">
-            <span id="metric-0ac" class="font-mono text-2xl font-black text-rose-400">0</span>
-            <span class="text-[10px] text-rose-500 font-bold">0%</span>
-          </div>
-          <span class="text-[9px] text-slate-400 block mt-0.5">Spam / Missing</span>
-        </div>
-      </div>
-
-      <!-- Domain Breakdown Cards for the Active Selection -->
-      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-xl flex-1 flex flex-col">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Associated Domains & Placement Details</h3>
-          <span id="domain-cards-count" class="text-xs font-mono text-indigo-400">0 Domains</span>
-        </div>
-
-        <div id="domains-detail-container" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto max-h-[500px] pr-1">
-          <!-- Dynamically populated domain placement cards -->
-        </div>
-      </div>
-
-    </section>
-
+    </div>
   </main>
+
+  <!-- ALERTS CONFIGURATION MODAL -->
+  <div id="alerts-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm hidden">
+    <div class="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="rounded-xl bg-amber-500/10 p-2 text-amber-400 font-bold">🔔</div>
+          <h3 class="font-bold text-white text-sm">Spam Alert Controls</h3>
+        </div>
+        <button id="btn-close-alerts-modal" class="text-slate-400 hover:text-white font-bold p-1">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div>
+            <span class="text-xs font-semibold text-slate-200 block">Browser Push Notifications</span>
+            <span class="text-[10px] text-slate-500">Native push popups</span>
+          </div>
+          <input id="toggle-browser-push" type="checkbox" checked class="h-4 w-4 rounded accent-indigo-600" />
+        </div>
+
+        <div class="space-y-2 rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-slate-200 block">Mobile Lock Screen (ntfy.sh)</span>
+              <span class="text-[10px] text-slate-500">Android/iOS native push alert</span>
+            </div>
+            <input id="toggle-mobile-push" type="checkbox" checked class="h-4 w-4 rounded accent-indigo-600" />
+          </div>
+          <input id="input-ntfy-topic" type="text" value="ayush_spam_alerts_seed" class="w-full rounded-lg border border-slate-800 bg-slate-900 p-2 font-mono text-xs text-slate-200 focus:outline-none" />
+        </div>
+
+        <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div>
+            <span class="text-xs font-semibold text-slate-200 block">Audio Siren Chime</span>
+            <span class="text-[10px] text-slate-500">Synthesized 880Hz chime tone</span>
+          </div>
+          <input id="toggle-audio-chime" type="checkbox" checked class="h-4 w-4 rounded accent-indigo-600" />
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+        <button id="btn-test-alert" class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700">Test Chime</button>
+        <button id="btn-save-alerts-modal" class="rounded-xl bg-indigo-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSWORD MODAL (For Sheet & Log Tabs) -->
+  <div id="password-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm hidden">
+    <div class="w-full max-w-xs rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-2xl space-y-3">
+      <div class="flex items-center justify-between">
+        <h4 class="text-xs font-bold text-white">Enter Admin Password</h4>
+        <button id="btn-close-password-modal" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <input id="password-input" type="password" placeholder="Password..." class="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 focus:outline-none" />
+      <p id="password-error-msg" class="text-[10px] text-rose-500 hidden">Incorrect password.</p>
+      <div class="flex justify-end gap-2 pt-1">
+        <button id="btn-submit-password" class="rounded-xl bg-indigo-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK PASTE MODAL -->
+  <div id="paste-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm hidden">
+    <div class="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-2xl space-y-3">
+      <div class="flex items-center justify-between">
+        <h4 class="text-xs font-bold text-white">Quick Paste CSV / TSV</h4>
+        <button id="btn-close-paste-modal" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <p class="text-[10px] text-slate-400">Header format: <code>Domains,ET NAME,DATE</code></p>
+      <textarea id="paste-textarea" rows="6" placeholder="domain.com,Campaign_ET,2026-09-27" class="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs text-slate-200 focus:outline-none"></textarea>
+      <div class="flex justify-end gap-2">
+        <button id="btn-apply-paste" class="rounded-xl bg-indigo-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Apply</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Floating Toast -->
   <div id="toast" class="fixed bottom-4 right-4 z-50 transform translate-y-12 opacity-0 transition-all duration-300 rounded-xl bg-slate-900 border border-slate-700 px-3.5 py-2 text-xs font-bold text-white shadow-2xl flex items-center gap-2 pointer-events-none">
     <span class="text-emerald-400">✓</span>
-    <span id="toast-msg">Copied!</span>
+    <span id="toast-message">Copied!</span>
   </div>
 
+  <!-- ==================== JAVASCRIPT ENGINE ==================== -->
   <script>
-    // --- SEED ACCOUNTS & SHEET URL ---
-    const SEED_ACCOUNTS = [
-      { name: "ashwindelaycheck" },
-      { name: "kartikdelaycheck" },
-      { name: "newnonop5" },
-      { name: "ashwinkartiknonop1710" }
+    // --- AUTH & SEED ACCOUNTS ---
+    const OAUTH_CLIENT_ID = "707901165841-938emg3s0i65g4j1nebqqf33kr65rblp.apps.googleusercontent.com";
+    const OAUTH_CLIENT_SECRET = "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";
+    const ADMIN_PASSWORD = "Ayush9793";
+
+    const ACCOUNTS = [
+      { id: "acc_1", name: "ashwindelaycheck", type: "Opener", token: "1//0gufI0Kvut_L4CgYIARAAGBASNwF-L9IrCP4euif3CzkRhJnPmOiRCGAVFBisqIB1lyS8m_O6a8BwKA71fkbqQ90wnpn_HdLG-NA" },
+      { id: "acc_2", name: "kartikdelaycheck", type: "Opener", token: "1//0gG08sb6H3p89CgYIARAAGBASNwF-L9IrATWaA7E1Z7v1jdg0elGLrPSO4CA7sOtS3nCxoqhZQDK65EKJKdMXXV7gwVJQEas2HYw" },
+      { id: "acc_3", name: "newnonop5", type: "Non-Opener", token: "1//0gnjgHv0wY6UlCgYIARAAGBASNwF-L9IrSBpsc4M9nYr6hfOwSNX8f9kIa1BhONy6iL5OfQTEvYsdRRsYUBM5w6h555fAlc63-7k" },
+      { id: "acc_4", name: "ashwinkartiknonop1710", type: "Non-Opener", token: "1//0gIqfIxrmUeCyCgYIARAAGBASNwF-L9IrZtQJKhrc1ioUlyO95Lb2qyy98kAiNwsaboHBGXj1_kKqkWU7SN-kItXXB-ItUJ2PFe8" }
     ];
 
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=0&single=true&output=csv";
-
-    // Application state
+    // State Variables
+    let isAdminUnlocked = false;
+    let pendingTab = null;
     let emailRecords = [];
-    let domainSheetMap = new Map(); // domain -> etName
-    let selectedEtCampaign = 'ALL';  // 'ALL' or specific ET string
+    const domainLookupMap = new Map(); // domain -> { etName, dateStr }
+    const tokenCache = {};
+    const fetchedMessageCache = new Map();
+    const notifiedSpamIds = new Set(JSON.parse(localStorage.getItem('notified_spam_ids') || '[]'));
+
+    let currentSyncScope = 'TODAY';
+    let selectedEtFilter = 'ALL';
+    let isSyncing = false;
+    let isAutoSyncEnabled = true;
+    let countdown = 30;
+    let countdownInterval = null;
+
+    let alertConfig = {
+      browserPush: true,
+      mobilePush: true,
+      audioChime: true,
+      ntfyTopic: localStorage.getItem('ayush_ntfy_topic') || 'ayush_spam_alerts_seed'
+    };
 
     // DOM Elements
+    const countdownCircle = document.getElementById('countdown-circle');
+    const countdownNumber = document.getElementById('countdown-number');
+    const btnToggleTimer = document.getElementById('btn-toggle-timer');
+    const btnSyncNow = document.getElementById('btn-sync-now');
+    const syncSpinner = document.getElementById('sync-spinner');
+    const syncBtnLabel = document.getElementById('sync-btn-label');
+    const btnSyncYesterday = document.getElementById('btn-sync-yesterday');
+    const yesterdaySpinner = document.getElementById('yesterday-spinner');
+    const yesterdayBtnLabel = document.getElementById('yesterday-btn-label');
+    const badgeActiveScope = document.getElementById('badge-active-scope');
+    const headerLastSync = document.getElementById('header-last-sync');
+    const statSheetCount = document.getElementById('stat-sheet-count');
+
+    // Split Screen Elements
     const etListContainer = document.getElementById('et-list-container');
     const etCountBadge = document.getElementById('et-count-badge');
     const searchEtInput = document.getElementById('search-et');
     const btnClearSelection = document.getElementById('btn-clear-selection');
     const activeEtHeading = document.getElementById('active-et-heading');
     const activeEtDomainCount = document.getElementById('active-et-domain-count');
-    const domainCardsCount = document.getElementById('domain-cards-count');
     const domainsDetailContainer = document.getElementById('domains-detail-container');
+    const filterFolder = document.getElementById('filter-folder');
+
+    // Distribution Counter Badges
     const metric4ac = document.getElementById('metric-4ac');
     const metric3ac = document.getElementById('metric-3ac');
     const metric2ac = document.getElementById('metric-2ac');
     const metric1ac = document.getElementById('metric-1ac');
     const metric0ac = document.getElementById('metric-0ac');
-    const labelLastSync = document.getElementById('label-last-sync');
+
+    // Sheet Table Elements
+    const sheetUrlInput = document.getElementById('sheet-url-input');
+    const sheetMappingsTbody = document.getElementById('sheet-mappings-tbody');
+    const badgeSheetCount = document.getElementById('badge-sheet-count');
+    const badgeSheetCachedCount = document.getElementById('badge-sheet-cached-count');
+    const terminalLogsContainer = document.getElementById('terminal-logs-container');
+
+    // Toast
     const toast = document.getElementById('toast');
-    const toastMsg = document.getElementById('toast-msg');
+    const toastMessage = document.getElementById('toast-message');
 
     function showToast(msg) {
-      toastMsg.textContent = msg;
+      toastMessage.textContent = msg;
       toast.classList.remove('translate-y-12', 'opacity-0');
       toast.classList.add('translate-y-0', 'opacity-100');
       setTimeout(() => {
         toast.classList.add('translate-y-12', 'opacity-0');
         toast.classList.remove('translate-y-0', 'opacity-100');
-      }, 2000);
+      }, 2200);
+    }
+
+    function addLog(msg, level = 'info') {
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'flex items-start gap-1.5 leading-relaxed text-[11px]';
+      let colorClass = 'text-slate-300';
+      if (level === 'error') colorClass = 'text-rose-400 font-semibold';
+      else if (level === 'warn') colorClass = 'text-amber-400';
+      else if (level === 'success') colorClass = 'text-emerald-400 font-semibold';
+
+      div.innerHTML = `<span class="text-slate-600 shrink-0">[${time}]</span><span class="${colorClass}">${escapeHtml(msg)}</span>`;
+      terminalLogsContainer.prepend(div);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function copyDomain(domain) {
       navigator.clipboard.writeText(domain).then(() => showToast(`Copied ${domain}`));
     }
 
-    // --- SHEET SYNC ---
-    async function fetchGoogleSheetData() {
+    // Audio Chime
+    function playChime() {
+      if (!alertConfig.audioChime) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      } catch (e) {}
+    }
+
+    async function dispatchNtfy(title, body) {
+      if (!alertConfig.mobilePush) return;
+      try {
+        await fetch(`https://ntfy.sh/${alertConfig.ntfyTopic}`, {
+          method: 'POST',
+          body: body,
+          headers: { Title: title, Priority: 'urgent', Tags: 'warning,email' }
+        });
+      } catch (e) {}
+    }
+
+    function dispatchBrowserNotification(title, body) {
+      if (!alertConfig.browserPush || !('Notification' in window)) return;
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body: body, icon: '✉' });
+      }
+    }
+
+    function notifySpam(record) {
+      if (notifiedSpamIds.has(record.id)) return;
+      notifiedSpamIds.add(record.id);
+      localStorage.setItem('notified_spam_ids', JSON.stringify(Array.from(notifiedSpamIds).slice(-300)));
+
+      playChime();
+      const title = `🚨 SPAM: ${record.etName} (${record.domain})`;
+      const body = `Mailbox: ${record.accountName}\nSubject: ${record.subject}`;
+      dispatchBrowserNotification(title, body);
+      dispatchNtfy(title, body);
+      addLog(`[Spam Alert] ${record.domain} on ${record.accountName}`, 'warn');
+    }
+
+    // --- GOOGLE OAUTH2 TOKEN GENERATOR ---
+    async function getAccessToken(acc) {
+      const now = Date.now();
+      if (tokenCache[acc.id] && tokenCache[acc.id].expiry > now + 60000) {
+        return tokenCache[acc.id].token;
+      }
+
+      const bodyParams = new URLSearchParams({
+        client_id: OAUTH_CLIENT_ID,
+        client_secret: OAUTH_CLIENT_SECRET,
+        refresh_token: acc.token,
+        grant_type: 'refresh_token'
+      });
+
       const endpoints = [
-        SHEET_URL,
-        `https://corsproxy.io/?url=${encodeURIComponent(SHEET_URL)}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_URL)}`
+        'https://oauth2.googleapis.com/token',
+        `https://corsproxy.io/?url=${encodeURIComponent('https://oauth2.googleapis.com/token')}`
       ];
 
       for (const ep of endpoints) {
         try {
-          const resp = await fetch(ep);
+          const resp = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: bodyParams.toString()
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.access_token) {
+              tokenCache[acc.id] = { token: data.access_token, expiry: now + (data.expires_in || 3600) * 1000 };
+              return data.access_token;
+            }
+          }
+        } catch (e) {}
+      }
+      return null;
+    }
+
+    function formatDateYMD(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}/${m}/${day}`;
+    }
+
+    function getGmailQuery(scope) {
+      const now = new Date();
+      if (scope === 'YESTERDAY') {
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const dayBeforeYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return `after:${formatDateYMD(dayBeforeYesterday)} before:${formatDateYMD(today)} (in:inbox OR in:spam OR in:trash)`;
+      } else {
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        return `after:${formatDateYMD(yesterday)} (in:inbox OR in:spam OR in:trash)`;
+      }
+    }
+
+    function isDateMatchingScope(dateObj, scope) {
+      const now = new Date();
+      if (scope === 'YESTERDAY') {
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        return (
+          dateObj.getDate() === yesterday.getDate() &&
+          dateObj.getMonth() === yesterday.getMonth() &&
+          dateObj.getFullYear() === yesterday.getFullYear()
+        );
+      } else {
+        return (
+          dateObj.getDate() === now.getDate() &&
+          dateObj.getMonth() === now.getMonth() &&
+          dateObj.getFullYear() === now.getFullYear()
+        );
+      }
+    }
+
+    function extractDomain(sender) {
+      if (!sender) return '';
+      const emailMatch = sender.match(/<([^>]+)>/) || sender.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      const email = emailMatch ? emailMatch[1] : sender;
+      const parts = email.split('@');
+      return parts.length > 1 ? parts[1].toLowerCase().trim() : email.toLowerCase().trim();
+    }
+
+    function resolveEtName(domain) {
+      if (!domain) return 'Unmapped';
+      const clean = domain.toLowerCase().trim();
+      if (domainLookupMap.has(clean)) return domainLookupMap.get(clean).etName;
+      const parts = clean.split('.');
+      if (parts.length > 2) {
+        const root = parts.slice(-2).join('.');
+        if (domainLookupMap.has(root)) return domainLookupMap.get(root).etName;
+      }
+      return 'Unmapped';
+    }
+
+    // --- GMAIL SYNC WORKER ---
+    async function syncMailbox(acc, scope = 'TODAY') {
+      const token = await getAccessToken(acc);
+      if (!token) return [];
+
+      try {
+        const query = getGmailQuery(scope);
+        let allSummaries = [];
+        let pageToken = '';
+
+        do {
+          const listUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&includeSpamTrash=true&q=${encodeURIComponent(query)}${pageToken ? `&pageToken=${pageToken}` : ''}`;
+          let listResp = null;
+          try {
+            listResp = await fetch(listUrl, { headers: { Authorization: `Bearer ${token}` } });
+          } catch {
+            listResp = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(listUrl)}`, { headers: { Authorization: `Bearer ${token}` } });
+          }
+
+          if (!listResp || !listResp.ok) break;
+          const listData = await listResp.json();
+          if (listData.messages) allSummaries.push(...listData.messages);
+          pageToken = listData.nextPageToken || '';
+        } while (pageToken);
+
+        const newSummaries = [];
+        const existingRecords = [];
+        for (const msg of allSummaries) {
+          const cacheKey = `${acc.id}_${msg.id}`;
+          if (fetchedMessageCache.has(cacheKey)) {
+            existingRecords.push(fetchedMessageCache.get(cacheKey));
+          } else {
+            newSummaries.push(msg);
+          }
+        }
+
+        const BATCH_SIZE = 25;
+        const newlyFetched = [];
+
+        for (let i = 0; i < newSummaries.length; i += BATCH_SIZE) {
+          const chunk = newSummaries.slice(i, i + BATCH_SIZE);
+          const promises = chunk.map(async (item) => {
+            try {
+              const detailUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`;
+              let r = null;
+              try {
+                r = await fetch(detailUrl, { headers: { Authorization: `Bearer ${token}` } });
+              } catch {
+                r = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(detailUrl)}`, { headers: { Authorization: `Bearer ${token}` } });
+              }
+              return r && r.ok ? await r.json() : null;
+            } catch { return null; }
+          });
+
+          const details = await Promise.all(promises);
+          details.forEach((msg) => {
+            if (!msg) return;
+            const labels = msg.labelIds || [];
+            const isSpam = labels.includes('SPAM');
+            const isInbox = labels.includes('INBOX');
+            const folder = isSpam ? 'SPAM' : isInbox ? 'INBOX' : 'OTHER';
+
+            const headers = msg.payload?.headers || [];
+            const fromVal = headers.find(h => h.name.toLowerCase() === 'from')?.value || 'Unknown';
+            const subjVal = headers.find(h => h.name.toLowerCase() === 'subject')?.value || '(No Subject)';
+            const domain = extractDomain(fromVal);
+            const internalTime = msg.internalDate ? parseInt(msg.internalDate, 10) : Date.now();
+            const emailDate = new Date(internalTime);
+
+            const record = {
+              id: `${acc.id}_${msg.id}`,
+              accountName: acc.name,
+              accountType: acc.type,
+              domain: domain,
+              etName: resolveEtName(domain),
+              subject: subjVal,
+              folder: folder,
+              detectionTime: emailDate
+            };
+
+            fetchedMessageCache.set(record.id, record);
+
+            if (isDateMatchingScope(emailDate, scope)) {
+              if (folder === 'SPAM' && scope === 'TODAY') notifySpam(record);
+              newlyFetched.push(record);
+            }
+          });
+        }
+
+        const validExisting = existingRecords.filter(r => isDateMatchingScope(r.detectionTime, scope));
+        return [...validExisting, ...newlyFetched];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    async function runGlobalSync(scope = 'TODAY') {
+      if (isSyncing) return;
+      isSyncing = true;
+      currentSyncScope = scope;
+
+      if (scope === 'YESTERDAY') {
+        yesterdaySpinner.classList.add('animate-spin');
+        yesterdayBtnLabel.textContent = '...';
+      } else {
+        syncSpinner.classList.add('animate-spin');
+        syncBtnLabel.textContent = '...';
+      }
+
+      badgeActiveScope.textContent = scope === 'YESTERDAY' ? "⏪ Yesterday's Mail" : "📅 Today's Mail";
+
+      try {
+        const promises = ACCOUNTS.map(acc => syncMailbox(acc, scope));
+        const results = await Promise.all(promises);
+        const map = new Map();
+        results.flat().forEach(r => map.set(r.id, r));
+
+        emailRecords = Array.from(map.values()).sort((a,b) => b.detectionTime - a.detectionTime);
+        headerLastSync.textContent = new Date().toLocaleTimeString();
+        addLog(`Loaded ${emailRecords.length} emails (${scope})`, 'success');
+      } catch (err) {
+        addLog(`Sync error: ${err.message}`, 'error');
+      } finally {
+        isSyncing = false;
+        syncSpinner.classList.remove('animate-spin');
+        syncBtnLabel.textContent = 'Sync';
+        yesterdaySpinner.classList.remove('animate-spin');
+        yesterdayBtnLabel.textContent = 'Yesterday';
+        renderMatrix();
+      }
+    }
+
+    // --- GOOGLE SHEETS FEED & PARSER ---
+    async function syncGoogleSheet() {
+      const url = sheetUrlInput.value.trim();
+      const endpoints = [
+        url,
+        `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+      ];
+
+      for (const ep of endpoints) {
+        try {
+          const resp = await fetch(ep, { cache: 'no-store' });
           if (resp.ok) {
             const raw = await resp.text();
-            if (raw && !raw.includes('<!DOCTYPE html>')) {
-              parseSheetCSV(raw);
+            if (raw && !raw.includes('<!DOCTYPE html>') && raw.length > 10) {
+              parseAndCacheSheet(raw);
               return;
             }
           }
         } catch (e) {}
       }
+      addLog('Auto-sheet sync blocked. Use Quick Paste if needed.', 'warn');
     }
 
-    function parseSheetCSV(text) {
-      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+    function parseAndCacheSheet(rawCsv) {
+      const lines = rawCsv.split(/\r?\n/).filter(l => l.trim().length > 0);
       if (lines.length < 2) return;
 
-      domainSheetMap.clear();
+      domainLookupMap.clear();
+      const tbody = sheetMappingsTbody;
+      tbody.innerHTML = '';
 
       for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-        const domain = (cols[0] || '').toLowerCase().trim();
-        const etName = (cols[1] || 'Unmapped').trim();
+        const d = (cols[0] || '').toLowerCase().trim();
+        const et = (cols[1] || 'Unmapped').trim();
+        const dt = (cols[2] || '').trim();
 
-        if (domain && !domain.includes('domain')) {
-          domainSheetMap.set(domain, etName);
+        if (d && !d.includes('domain')) {
+          domainLookupMap.set(d, { etName: et, dateStr: dt });
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-slate-900/50";
+          tr.innerHTML = `<td class="py-1.5 px-3 text-slate-300">${escapeHtml(d)}</td><td class="py-1.5 px-3 font-semibold text-indigo-400">${escapeHtml(et)}</td><td class="py-1.5 px-3 text-slate-500">${escapeHtml(dt)}</td>`;
+          tbody.appendChild(tr);
         }
       }
-      renderAll();
+
+      badgeSheetCount.textContent = domainLookupMap.size;
+      badgeSheetCachedCount.textContent = domainLookupMap.size;
+      statSheetCount.textContent = domainLookupMap.size;
+
+      // Re-map already fetched email ET names
+      emailRecords.forEach(r => { r.etName = resolveEtName(r.domain); });
+      addLog(`Google Sheet refreshed: ${domainLookupMap.size} domains mapped`, 'success');
+      renderMatrix();
     }
 
-    // --- DOMAIN GROUPING LOGIC ---
+    // --- DOMAIN & ET GROUPING LOGIC ---
     function groupEmailsByDomain() {
-      const groups = new Map();
+      const domainMap = new Map();
 
-      // Ensure every domain known in the Google Sheet is accounted for
-      domainSheetMap.forEach((etName, domain) => {
-        groups.set(domain, {
-          domain: domain,
-          etName: etName,
+      // Seed all mapped domains from Google Sheet
+      domainLookupMap.forEach((meta, d) => {
+        domainMap.set(d, {
+          domain: d,
+          etName: meta.etName,
           emails: [],
           inboxAccounts: new Set(),
           spamAccounts: new Set()
         });
       });
 
-      // Map incoming email records into their domains
+      // Populate actual email deliveries
       emailRecords.forEach(rec => {
         const d = (rec.domain || '').toLowerCase().trim();
-        if (!groups.has(d)) {
-          const resolvedEt = domainSheetMap.get(d) || 'Unmapped';
-          groups.set(d, {
+        if (!domainMap.has(d)) {
+          domainMap.set(d, {
             domain: d,
-            etName: resolvedEt,
+            etName: resolveEtName(d),
             emails: [],
             inboxAccounts: new Set(),
             spamAccounts: new Set()
           });
         }
-        const g = groups.get(d);
+        const g = domainMap.get(d);
         g.emails.push(rec);
         if (rec.folder === 'INBOX') g.inboxAccounts.add(rec.accountName);
         if (rec.folder === 'SPAM') g.spamAccounts.add(rec.accountName);
       });
 
-      return Array.from(groups.values());
+      return Array.from(domainMap.values());
     }
 
-    // Group domains under ET Names
     function groupDomainsByET(domainGroups) {
       const etMap = new Map();
 
@@ -359,136 +924,125 @@
         const entry = etMap.get(et);
         entry.domains.push(dg);
 
-        const inCount = dg.inboxAccounts.size;
-        if (inCount === 4) entry.inbox4++;
-        else if (inCount === 3) entry.inbox3++;
-        else if (inCount === 2) entry.inbox2++;
-        else if (inCount === 1) entry.inbox1++;
+        const inboxes = dg.inboxAccounts.size;
+        if (inboxes === 4) entry.inbox4++;
+        else if (inboxes === 3) entry.inbox3++;
+        else if (inboxes === 2) entry.inbox2++;
+        else if (inboxes === 1) entry.inbox1++;
         else entry.inbox0++;
 
         if (dg.spamAccounts.size > 0) entry.hasSpam = true;
       });
 
-      return Array.from(etMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      return Array.from(etMap.values()).sort((a,b) => a.name.localeCompare(b.name));
     }
 
     // --- MAIN RENDER PIPELINE ---
-    function renderAll() {
+    function renderMatrix() {
       const allDomainGroups = groupEmailsByDomain();
       const allEtGroups = groupDomainsByET(allDomainGroups);
 
-      renderETList(allEtGroups);
-      renderRightDashboard(allDomainGroups);
-      labelLastSync.textContent = new Date().toLocaleTimeString();
-    }
-
-    // Render Left ET List
-    function renderETList(etGroups) {
+      // Render Left Sidebar List
       const q = searchEtInput.value.toLowerCase().trim();
-      const filtered = etGroups.filter(g => {
+      const filteredEts = allEtGroups.filter(et => {
         if (!q) return true;
-        const matchName = g.name.toLowerCase().includes(q);
-        const matchDom = g.domains.some(d => d.domain.includes(q));
-        return matchName || matchDom;
+        return et.name.toLowerCase().includes(q) || et.domains.some(d => d.domain.includes(q));
       });
 
-      etCountBadge.textContent = etGroups.length;
+      etCountBadge.textContent = allEtGroups.length;
 
-      if (filtered.length === 0) {
-        etListContainer.innerHTML = `<div class="py-8 text-center text-xs text-slate-500">No ET names found.</div>`;
-        return;
+      if (filteredEts.length === 0) {
+        etListContainer.innerHTML = `<div class="py-12 text-center text-xs text-slate-500">No ET Campaigns found.</div>`;
+      } else {
+        etListContainer.innerHTML = filteredEts.map(et => {
+          const isSelected = selectedEtFilter === et.name;
+          return `
+            <div
+              onclick="selectEt('${encodeURIComponent(et.name)}')"
+              class="group cursor-pointer rounded-xl p-2.5 transition-all select-none ${
+                isSelected 
+                  ? 'bg-indigo-600/20 border border-indigo-500/50 shadow-md' 
+                  : 'hover:bg-slate-800/60 border border-transparent'
+              }"
+            >
+              <div class="flex items-start justify-between gap-1.5">
+                <div class="min-w-0 flex-1">
+                  <span class="text-xs font-bold truncate block ${isSelected ? 'text-indigo-300 font-extrabold' : 'text-slate-200 group-hover:text-white'}">
+                    ${escapeHtml(et.name)}
+                  </span>
+                  <span class="text-[10px] text-slate-400">
+                    ${et.domains.length} domain${et.domains.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+                ${et.hasSpam ? `
+                  <span class="rounded bg-rose-500/20 px-1 py-0.2 text-[9px] font-bold text-rose-400 border border-rose-500/30">
+                    ⚠️ Spam
+                  </span>
+                ` : `
+                  <span class="rounded bg-emerald-500/10 px-1 py-0.2 text-[9px] font-bold text-emerald-400">
+                    ✓ Clean
+                  </span>
+                `}
+              </div>
+
+              <!-- Mini 4/3/2/1/0 Pill Meter -->
+              <div class="mt-2 flex items-center gap-1 font-mono text-[9px]">
+                <span class="rounded bg-emerald-500/20 text-emerald-300 px-1 py-0.2" title="4 ACs">${et.inbox4}</span>
+                <span class="rounded bg-indigo-500/20 text-indigo-300 px-1 py-0.2" title="3 ACs">${et.inbox3}</span>
+                <span class="rounded bg-amber-500/20 text-amber-300 px-1 py-0.2" title="2 ACs">${et.inbox2}</span>
+                <span class="rounded bg-orange-500/20 text-orange-300 px-1 py-0.2" title="1 AC">${et.inbox1}</span>
+                <span class="rounded bg-rose-500/20 text-rose-300 px-1 py-0.2" title="0 AC">${et.inbox0}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
       }
 
-      etListContainer.innerHTML = filtered.map(et => {
-        const isSelected = selectedEtCampaign === et.name;
-        return `
-          <div
-            onclick="selectEt('${encodeURIComponent(et.name)}')"
-            class="group cursor-pointer rounded-xl p-2.5 transition-all select-none ${
-              isSelected 
-                ? 'bg-indigo-600/20 border border-indigo-500/50 shadow-md' 
-                : 'hover:bg-slate-800/60 border border-transparent'
-            }"
-          >
-            <div class="flex items-start justify-between gap-1.5">
-              <div class="min-w-0 flex-1">
-                <span class="text-xs font-bold truncate block ${isSelected ? 'text-indigo-300' : 'text-slate-200 group-hover:text-white'}">
-                  ${et.name}
-                </span>
-                <span class="text-[10px] text-slate-400">
-                  ${et.domains.length} domain${et.domains.length > 1 ? 's' : ''}
-                </span>
-              </div>
-              ${et.hasSpam ? `
-                <span class="rounded bg-rose-500/20 px-1 py-0.2 text-[9px] font-bold text-rose-400 border border-rose-500/30">
-                  ⚠️ Spam
-                </span>
-              ` : `
-                <span class="rounded bg-emerald-500/10 px-1 py-0.2 text-[9px] font-bold text-emerald-400">
-                  ✓ Clean
-                </span>
-              `}
-            </div>
-
-            <!-- Mini meter: 4 / 3 / 2 / 1 / 0 ACs pill -->
-            <div class="mt-2 flex items-center gap-1 font-mono text-[9px]">
-              <span class="rounded bg-emerald-500/20 text-emerald-300 px-1 py-0.2" title="4 ACs">${et.inbox4}</span>
-              <span class="rounded bg-indigo-500/20 text-indigo-300 px-1 py-0.2" title="3 ACs">${et.inbox3}</span>
-              <span class="rounded bg-amber-500/20 text-amber-300 px-1 py-0.2" title="2 ACs">${et.inbox2}</span>
-              <span class="rounded bg-orange-500/20 text-orange-300 px-1 py-0.2" title="1 AC">${et.inbox1}</span>
-              <span class="rounded bg-rose-500/20 text-rose-300 px-1 py-0.2" title="0 AC">${et.inbox0}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Render Right Metrics & Cards
-    function renderRightDashboard(allDomainGroups) {
-      const isFiltered = selectedEtCampaign !== 'ALL';
+      // Render Right Dashboard (Active selection)
+      const isFiltered = selectedEtFilter !== 'ALL';
       btnClearSelection.classList.toggle('hidden', !isFiltered);
 
       const targetDomains = isFiltered
-        ? allDomainGroups.filter(d => d.etName === selectedEtCampaign)
+        ? allDomainGroups.filter(d => d.etName === selectedEtFilter)
         : allDomainGroups;
 
-      activeEtHeading.textContent = isFiltered ? selectedEtCampaign : 'All Campaigns (Aggregated)';
+      activeEtHeading.textContent = isFiltered ? selectedEtFilter : 'All Campaigns (Aggregated)';
       activeEtDomainCount.textContent = targetDomains.length;
-      domainCardsCount.textContent = `${targetDomains.length} Domains`;
 
-      // Calculate the metrics
-      let count4 = 0;
-      let count3 = 0;
-      let count2 = 0;
-      let count1 = 0;
-      let count0 = 0;
-
+      // Calculate 4, 3, 2, 1, 0 ACs Counters
+      let c4 = 0, c3 = 0, c2 = 0, c1 = 0, c0 = 0;
       targetDomains.forEach(d => {
         const inboxes = d.inboxAccounts.size;
-        if (inboxes === 4) count4++;
-        else if (inboxes === 3) count3++;
-        else if (inboxes === 2) count2++;
-        else if (inboxes === 1) count1++;
-        else count0++;
+        if (inboxes === 4) c4++;
+        else if (inboxes === 3) c3++;
+        else if (inboxes === 2) c2++;
+        else if (inboxes === 1) c1++;
+        else c0++;
       });
 
-      metric4ac.textContent = count4;
-      metric3ac.textContent = count3;
-      metric2ac.textContent = count2;
-      metric1ac.textContent = count1;
-      metric0ac.textContent = count0;
+      metric4ac.textContent = c4;
+      metric3ac.textContent = c3;
+      metric2ac.textContent = c2;
+      metric1ac.textContent = c1;
+      metric0ac.textContent = c0;
 
-      // Render Associated Domain Cards
-      if (targetDomains.length === 0) {
-        domainsDetailContainer.innerHTML = `
-          <div class="col-span-full py-12 text-center text-xs text-slate-500">
-            No domains mapped for this selection.
-          </div>
-        `;
+      // Filter Domain Cards by folder dropdown
+      const folderVal = filterFolder.value;
+      const visibleDomains = targetDomains.filter(d => {
+        const hasSpam = d.spamAccounts.size > 0;
+        const inboxes = d.inboxAccounts.size;
+        if (folderVal === 'HAS_SPAM' && !hasSpam) return false;
+        if (folderVal === 'ALL_INBOX' && inboxes !== 4) return false;
+        if (folderVal === 'ZERO_INBOX' && inboxes > 0) return false;
+        return true;
+      });
+
+      if (visibleDomains.length === 0) {
+        domainsDetailContainer.innerHTML = `<div class="col-span-full py-12 text-center text-xs text-slate-500">No domains match the current selection.</div>`;
         return;
       }
 
-      domainsDetailContainer.innerHTML = targetDomains.map(d => {
+      domainsDetailContainer.innerHTML = visibleDomains.map(d => {
         const inboxes = d.inboxAccounts.size;
         const spams = d.spamAccounts.size;
         const hasSpam = spams > 0;
@@ -497,15 +1051,15 @@
           <div class="rounded-xl border ${hasSpam ? 'border-rose-500/30 bg-rose-950/10' : 'border-slate-800 bg-slate-950/40'} p-3 flex flex-col justify-between gap-2.5">
             <div>
               <div class="flex items-center justify-between gap-2">
-                <span class="font-mono text-xs font-bold text-white truncate">${d.domain}</span>
-                <button onclick="copyDomain('${d.domain}')" class="text-slate-500 hover:text-white text-xs" title="Copy Domain">📋</button>
+                <span class="font-mono text-xs font-bold text-white truncate" title="${escapeHtml(d.domain)}">${escapeHtml(d.domain)}</span>
+                <button onclick="copyDomain('${escapeHtml(d.domain)}')" class="text-slate-500 hover:text-white text-xs" title="Copy Domain">📋</button>
               </div>
-              <span class="text-[10px] text-slate-400 block mt-0.5 truncate">ET: ${d.etName}</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5 truncate">ET: ${escapeHtml(d.etName)}</span>
             </div>
 
-            <!-- Seed Placement Status Badges -->
+            <!-- Seed Placement Badges -->
             <div class="grid grid-cols-2 gap-1 pt-2 border-t border-slate-800/60">
-              ${SEED_ACCOUNTS.map(acc => {
+              ${ACCOUNTS.map(acc => {
                 const isInbox = d.inboxAccounts.has(acc.name);
                 const isSpam = d.spamAccounts.has(acc.name);
                 return `
@@ -534,30 +1088,187 @@
       }).join('');
     }
 
-    // Handle ET Selection Click
-    window.selectEt = function(encodedEt) {
-      const et = decodeURIComponent(encodedEt);
-      selectedEtCampaign = (selectedEtCampaign === et) ? 'ALL' : et;
-      renderAll();
+    // Interactive ET Click Handler
+    window.selectEt = function(encodedName) {
+      const et = decodeURIComponent(encodedName);
+      selectedEtFilter = (selectedEtFilter === et) ? 'ALL' : et;
+      renderMatrix();
     };
 
     btnClearSelection.addEventListener('click', () => {
-      selectedEtCampaign = 'ALL';
-      renderAll();
+      selectedEtFilter = 'ALL';
+      renderMatrix();
     });
 
-    searchEtInput.addEventListener('input', () => {
-      renderAll();
+    searchEtInput.addEventListener('input', renderMatrix);
+    filterFolder.addEventListener('change', renderMatrix);
+
+    // --- 30s COUNTDOWN TIMER ENGINE ---
+    function startTimer() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        if (!isAutoSyncEnabled) return;
+        countdown--;
+        if (countdown <= 0) {
+          countdown = 30;
+          syncGoogleSheet().then(() => runGlobalSync('TODAY'));
+        }
+        countdownNumber.textContent = countdown;
+        const offset = 88 - (88 * countdown) / 30;
+        countdownCircle.style.strokeDashoffset = offset;
+      }, 1000);
+    }
+
+    btnToggleTimer.addEventListener('click', () => {
+      isAutoSyncEnabled = !isAutoSyncEnabled;
+      btnToggleTimer.textContent = isAutoSyncEnabled ? 'Pause' : 'Resume';
     });
 
-    document.getElementById('btn-sync-now').addEventListener('click', () => {
-      fetchGoogleSheetData();
-      showToast('Syncing sheets & mail...');
+    btnSyncNow.addEventListener('click', () => {
+      countdown = 30;
+      runGlobalSync('TODAY');
     });
 
-    // Initialize
+    btnSyncYesterday.addEventListener('click', () => {
+      isAutoSyncEnabled = false;
+      btnToggleTimer.textContent = 'Resume';
+      showToast("Syncing yesterday's mail...");
+      runGlobalSync('YESTERDAY');
+    });
+
+    // --- PROTECTED TABS & PASSWORD CONTROLS ---
+    function openPasswordModal(target) {
+      pendingTab = target;
+      document.getElementById('password-input').value = '';
+      document.getElementById('password-error-msg').classList.add('hidden');
+      document.getElementById('password-modal').classList.remove('hidden');
+    }
+
+    function switchTab(target) {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('border-indigo-500', 'text-indigo-400');
+        b.classList.add('border-transparent', 'text-slate-400');
+      });
+      const activeBtn = document.querySelector(`[data-tab="${target}"]`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-400');
+        activeBtn.classList.add('border-indigo-500', 'text-indigo-400');
+      }
+
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`tab-content-${target}`).classList.remove('hidden');
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-tab');
+        if (target === 'live') {
+          switchTab('live');
+        } else {
+          if (isAdminUnlocked) switchTab(target);
+          else openPasswordModal(target);
+        }
+      });
+    });
+
+    document.getElementById('btn-submit-password').addEventListener('click', () => {
+      const pwd = document.getElementById('password-input').value;
+      if (pwd === ADMIN_PASSWORD) {
+        isAdminUnlocked = true;
+        document.querySelectorAll('.tab-lock-indicator').forEach(el => el.textContent = '🔓');
+        document.getElementById('lock-icon').textContent = '🔓';
+        document.getElementById('password-modal').classList.add('hidden');
+        showToast('Admin tabs unlocked');
+        if (pendingTab) switchTab(pendingTab);
+      } else {
+        document.getElementById('password-error-msg').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('btn-close-password-modal').addEventListener('click', () => {
+      document.getElementById('password-modal').classList.add('hidden');
+    });
+
+    document.getElementById('btn-lock-toggle').addEventListener('click', () => {
+      if (isAdminUnlocked) {
+        isAdminUnlocked = false;
+        document.querySelectorAll('.tab-lock-indicator').forEach(el => el.textContent = '🔒');
+        document.getElementById('lock-icon').textContent = '🔒';
+        switchTab('live');
+        showToast('Admin locked');
+      } else {
+        openPasswordModal(null);
+      }
+    });
+
+    // --- QUICK PASTE ---
+    document.getElementById('btn-open-paste-modal').addEventListener('click', () => {
+      document.getElementById('paste-modal').classList.remove('hidden');
+    });
+    document.getElementById('btn-close-paste-modal').addEventListener('click', () => {
+      document.getElementById('paste-modal').classList.add('hidden');
+    });
+    document.getElementById('btn-apply-paste').addEventListener('click', () => {
+      const text = document.getElementById('paste-textarea').value;
+      if (text) {
+        parseAndCacheSheet(text);
+        document.getElementById('paste-modal').classList.add('hidden');
+        showToast('Mappings applied!');
+      }
+    });
+
+    // --- ALERTS MODAL ---
+    document.getElementById('btn-open-alerts-modal').addEventListener('click', () => {
+      document.getElementById('alerts-modal').classList.remove('hidden');
+    });
+    document.getElementById('btn-close-alerts-modal').addEventListener('click', () => {
+      document.getElementById('alerts-modal').classList.add('hidden');
+    });
+    document.getElementById('btn-test-alert').addEventListener('click', () => {
+      playChime();
+      showToast('880Hz synthesized chime tested');
+    });
+    document.getElementById('btn-save-alerts-modal').addEventListener('click', () => {
+      alertConfig.ntfyTopic = document.getElementById('input-ntfy-topic').value.trim() || 'ayush_spam_alerts_seed';
+      alertConfig.browserPush = document.getElementById('toggle-browser-push').checked;
+      alertConfig.mobilePush = document.getElementById('toggle-mobile-push').checked;
+      alertConfig.audioChime = document.getElementById('toggle-audio-chime').checked;
+      localStorage.setItem('ayush_ntfy_topic', alertConfig.ntfyTopic);
+
+      if (alertConfig.browserPush && 'Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+      document.getElementById('alerts-modal').classList.add('hidden');
+      showToast('Settings saved!');
+    });
+
+    document.getElementById('btn-sync-sheet-now').addEventListener('click', () => syncGoogleSheet());
+    document.getElementById('btn-clear-logs').addEventListener('click', () => {
+      terminalLogsContainer.innerHTML = '';
+    });
+
+    // --- CSV EXPORT ---
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      if (emailRecords.length === 0) return;
+      const headers = ['Domain', 'ET Name', 'Mailbox', 'Status', 'Subject', 'Date'];
+      const rows = emailRecords.map(r => [
+        `"${r.domain}"`, `"${r.etName}"`, `"${r.accountName}"`, `"${r.folder}"`, `"${(r.subject || '').replace(/"/g, '""')}"`, `"${r.detectionTime.toISOString()}"`
+      ]);
+      const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const link = document.createElement('a');
+      link.setAttribute('href', encodeURI(csv));
+      link.setAttribute('download', `${currentSyncScope}_Report.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // --- STARTUP ---
     window.addEventListener('load', () => {
-      fetchGoogleSheetData();
+      startTimer();
+      syncGoogleSheet().then(() => {
+        runGlobalSync('TODAY');
+      });
     });
   </script>
 </body>
