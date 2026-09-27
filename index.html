@@ -2,7 +2,7 @@
 <html lang="en" class="overflow-x-hidden">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Gmail Inbox & Spam Monitor | Live Dashboard</title>
   <!-- Mobile & PWA Configuration -->
   <meta name="theme-color" content="#4f46e5">
@@ -39,28 +39,41 @@
       stroke-width: 26;
       opacity: 0.9;
     }
+    /* Background Canvas for Lightweight Snow */
+    #snow-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden w-full max-w-full">
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden w-full max-w-full relative">
+
+  <!-- Background Snowflake Canvas (0% UI interference, pointer-events: none) -->
+  <canvas id="snow-canvas"></canvas>
 
   <!-- Browser Push Notification Permission Banner -->
-  <div id="browser-notif-banner" class="hidden bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 sm:px-4 py-2 text-xs font-medium flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-sm sticky top-0 z-50">
+  <div id="browser-notif-banner" class="hidden bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 sm:px-4 py-2.5 text-xs font-medium flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-sm sticky top-0 z-50">
     <div class="flex items-center gap-2 max-w-4xl">
       <span class="text-base shrink-0">🔔</span>
       <span class="leading-tight"><strong>Push Alerts:</strong> Native notifications showing <strong>ET Name &amp; Domain</strong> on Spam.</span>
     </div>
     <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
-      <button id="btn-banner-enable-notif" class="px-2.5 py-1 bg-white text-amber-900 hover:bg-amber-50 font-bold rounded-lg shadow-xs text-[11px] transition-colors">
+      <button id="btn-banner-enable-notif" class="min-h-[36px] px-3 py-1 bg-white text-amber-900 hover:bg-amber-50 font-bold rounded-lg shadow-xs text-xs transition-colors">
         Allow
       </button>
-      <button id="btn-banner-dismiss-notif" class="px-2 py-1 text-white/80 hover:text-white font-bold" title="Dismiss">
+      <button id="btn-banner-dismiss-notif" class="min-h-[36px] min-w-[36px] px-2 py-1 text-white/80 hover:text-white font-bold flex items-center justify-center" title="Dismiss">
         ✕
       </button>
     </div>
   </div>
 
   <!-- Top Navigation Header -->
-  <header class="border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-40 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 shadow-xs w-full">
+  <header class="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 shadow-xs w-full">
     <div class="max-w-[1600px] mx-auto flex flex-col gap-2.5">
       <!-- Row 1: Brand & Status -->
       <div class="flex items-center justify-between gap-2">
@@ -74,28 +87,28 @@
           <div class="min-w-0">
             <h1 class="text-sm sm:text-base md:text-lg font-bold text-slate-900 tracking-tight truncate">Inbox &amp; Spam Monitor</h1>
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span id="badge-active-scope" class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
+              <span id="badge-active-scope" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
                 📅 Today's Mail
               </span>
-              <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
-                ⚡ Filter: Today/Yest
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                ⚡ 1 Domain = 1 Mail
               </span>
             </div>
           </div>
         </div>
 
         <!-- Lock Button -->
-        <button id="btn-lock-toggle" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium flex items-center gap-1 shrink-0" title="Admin Security Toggle">
+        <button id="btn-lock-toggle" class="min-h-[40px] px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium flex items-center gap-1.5 shrink-0" title="Admin Security Toggle">
           <span id="lock-icon" class="text-xs">🔒</span>
           <span id="lock-status-label" class="hidden sm:inline text-[11px] font-medium text-slate-600">Locked</span>
         </button>
       </div>
 
       <!-- Row 2: Action Controls Toolbar -->
-      <div class="flex items-center justify-between gap-1.5 sm:gap-2 flex-wrap">
-        <div class="flex items-center gap-1.5">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <!-- Push Alert Config -->
-          <button id="btn-open-alerts-modal" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-semibold shadow-xs transition-colors shrink-0">
+          <button id="btn-open-alerts-modal" class="min-h-[38px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-semibold shadow-xs transition-colors shrink-0">
             <span class="relative flex h-2 w-2">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
@@ -104,7 +117,7 @@
           </button>
 
           <!-- Circular Countdown Timer -->
-          <div class="flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 shadow-xs shrink-0">
+          <div class="min-h-[38px] flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs shrink-0">
             <div class="relative w-5 h-5 flex items-center justify-center">
               <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                 <circle cx="18" cy="18" r="14" fill="none" stroke="#e2e8f0" stroke-width="3"></circle>
@@ -116,21 +129,21 @@
           </div>
 
           <!-- Pause / Resume Button -->
-          <button id="btn-toggle-timer" class="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-semibold flex items-center gap-1 shadow-xs transition-colors shrink-0">
+          <button id="btn-toggle-timer" class="min-h-[38px] px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-semibold flex items-center gap-1 shadow-xs transition-colors shrink-0">
             <span id="timer-btn-icon">⏸</span>
             <span id="timer-btn-text" class="hidden sm:inline">Pause</span>
           </button>
         </div>
 
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5 sm:gap-2">
           <!-- Install PWA -->
-          <button id="btn-install-app" class="hidden px-2 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold flex items-center gap-1 shadow-xs">
+          <button id="btn-install-app" class="hidden min-h-[38px] px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold flex items-center gap-1 shadow-xs">
             <span>Install</span>
           </button>
 
           <!-- Sync Yesterday -->
-          <button id="btn-sync-yesterday" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-violet-300 bg-violet-50 hover:bg-violet-100 text-violet-800 text-[11px] font-semibold shadow-xs transition-all active:scale-95 shrink-0" title="Fetch yesterday's mail">
-            <svg id="yesterday-spinner" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button id="btn-sync-yesterday" class="min-h-[38px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-300 bg-violet-50 hover:bg-violet-100 text-violet-800 text-[11px] font-semibold shadow-xs transition-all active:scale-95 shrink-0" title="Fetch yesterday's mail">
+            <svg id="yesterday-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
@@ -138,8 +151,8 @@
           </button>
 
           <!-- Sync Now -->
-          <button id="btn-sync-now" class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold shadow-xs shadow-indigo-600/30 transition-all active:scale-95 shrink-0">
-            <svg id="sync-spinner" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button id="btn-sync-now" class="min-h-[38px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold shadow-xs shadow-indigo-600/30 transition-all active:scale-95 shrink-0">
+            <svg id="sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path>
             </svg>
             <span id="sync-btn-label">Sync</span>
@@ -150,46 +163,46 @@
   </header>
 
   <!-- Navigation Tab Strip -->
-  <div class="border-b border-slate-200 bg-white px-3 sm:px-6 w-full">
+  <div class="border-b border-slate-200 bg-white/95 backdrop-blur-md px-3 sm:px-6 w-full z-20">
     <div class="max-w-[1600px] mx-auto flex items-center justify-between">
-      <nav class="flex space-x-1 sm:space-x-3 py-1 overflow-x-auto no-scrollbar w-full">
+      <nav class="flex space-x-1 sm:space-x-3 py-1.5 overflow-x-auto no-scrollbar w-full">
         <!-- Live Monitor -->
-        <button data-tab="live" class="tab-btn py-2 px-2.5 text-xs font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
+        <button data-tab="live" class="tab-btn min-h-[40px] py-2 px-3 text-xs font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
           <svg class="w-3.5 h-3.5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
           <span id="tab-label-monitor">Cards</span>
-          <span id="badge-records-count" class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-1 py-0.2 rounded text-[10px] font-mono">0</span>
+          <span id="badge-records-count" class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-1.5 py-0.2 rounded text-[10px] font-mono">0</span>
         </button>
 
         <!-- Google Sheet (Protected) -->
-        <button data-tab="sheet" class="tab-btn py-2 px-2.5 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors">
+        <button data-tab="sheet" class="tab-btn min-h-[40px] py-2 px-3 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
           <span class="tab-lock-indicator text-[10px]">🔒</span>
           <span>Sheet1</span>
-          <span id="badge-sheet-count" class="bg-slate-100 text-slate-600 px-1 py-0.2 rounded text-[10px] font-mono">0</span>
+          <span id="badge-sheet-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[10px] font-mono">0</span>
         </button>
 
         <!-- it.com Sheet Tab (Protected) -->
-        <button data-tab="itcom" class="tab-btn py-2 px-2.5 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors">
+        <button data-tab="itcom" class="tab-btn min-h-[40px] py-2 px-3 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
           <span class="tab-lock-indicator text-[10px]">🔒</span>
           <span>it.com</span>
-          <span id="badge-itcom-count" class="bg-slate-100 text-slate-600 px-1 py-0.2 rounded text-[10px] font-mono">0</span>
+          <span id="badge-itcom-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[10px] font-mono">0</span>
         </button>
 
         <!-- Extra Sheet Tab (Protected) -->
-        <button data-tab="extrasheet" class="tab-btn py-2 px-2.5 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors">
+        <button data-tab="extrasheet" class="tab-btn min-h-[40px] py-2 px-3 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
           <span class="tab-lock-indicator text-[10px]">🔒</span>
           <span>Extra</span>
-          <span id="badge-extrasheet-count" class="bg-slate-100 text-slate-600 px-1 py-0.2 rounded text-[10px] font-mono">0</span>
+          <span id="badge-extrasheet-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[10px] font-mono">0</span>
         </button>
 
         <!-- Sync Terminal (Protected) -->
-        <button data-tab="terminal" class="tab-btn py-2 px-2.5 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors">
+        <button data-tab="terminal" class="tab-btn min-h-[40px] py-2 px-3 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
           <span class="tab-lock-indicator text-[10px]">🔒</span>
           <span>Logs</span>
           <span id="terminal-live-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
         </button>
 
         <!-- Backend Reference (Protected) -->
-        <button data-tab="backend" class="tab-btn py-2 px-2.5 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors">
+        <button data-tab="backend" class="tab-btn min-h-[40px] py-2 px-3 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
           <span class="tab-lock-indicator text-[10px]">🔒</span>
           <span>Daemon</span>
         </button>
@@ -203,22 +216,22 @@
   </div>
 
   <!-- Main Container -->
-  <main class="flex-1 p-3 sm:p-5 lg:p-6 max-w-[1600px] w-full mx-auto space-y-4 overflow-x-hidden">
+  <main class="flex-1 p-3 sm:p-5 lg:p-6 max-w-[1600px] w-full mx-auto space-y-4 overflow-x-hidden relative z-10">
 
-    <!-- Metric Summary Cards -->
+    <!-- Metric Summary Cards (2 cols on phone, 5 on desktop) -->
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4 w-full">
-      <!-- Total Scanned -->
-      <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
-        <span id="stat-total-title" class="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider block truncate">Today's Mail</span>
+      <!-- Total Mails (Unique Domains) -->
+      <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
+        <span id="stat-total-title" class="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider block truncate">Total Mails</span>
         <div class="mt-1 sm:mt-2 flex items-baseline justify-between">
           <span id="stat-total" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">0</span>
-          <span class="text-[10px] text-slate-400 font-medium">Total</span>
+          <span class="text-[10px] text-slate-400 font-medium">Unique</span>
         </div>
-        <p id="stat-total-subtitle" class="text-[10px] text-slate-400 mt-0.5 truncate">Across 4 mailboxes</p>
+        <p id="stat-total-subtitle" class="text-[10px] text-slate-400 mt-0.5 truncate">1 Domain = 1 Mail</p>
       </div>
 
       <!-- Inbox Placements -->
-      <div class="bg-emerald-50/50 border border-emerald-200/80 rounded-xl p-3 sm:p-4 shadow-xs">
+      <div class="bg-emerald-50/70 backdrop-blur-xs border border-emerald-200/80 rounded-xl p-3 sm:p-4 shadow-xs">
         <span class="text-[10px] sm:text-xs font-semibold text-emerald-700 uppercase tracking-wider flex items-center gap-1 truncate">
           <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
           Inbox
@@ -233,7 +246,7 @@
       </div>
 
       <!-- Spam Placements -->
-      <div class="bg-rose-50/60 border border-rose-200 rounded-xl p-3 sm:p-4 shadow-xs">
+      <div class="bg-rose-50/70 backdrop-blur-xs border border-rose-200 rounded-xl p-3 sm:p-4 shadow-xs">
         <span class="text-[10px] sm:text-xs font-semibold text-rose-700 uppercase tracking-wider flex items-center gap-1 truncate">
           <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
           Spam
@@ -248,7 +261,7 @@
       </div>
 
       <!-- Cached Domains -->
-      <div class="bg-indigo-50/50 border border-indigo-200/80 rounded-xl p-3 sm:p-4 shadow-xs">
+      <div class="bg-indigo-50/70 backdrop-blur-xs border border-indigo-200/80 rounded-xl p-3 sm:p-4 shadow-xs">
         <span class="text-[10px] sm:text-xs font-semibold text-indigo-700 uppercase tracking-wider flex items-center gap-1 truncate">
           <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
           Domains
@@ -261,7 +274,7 @@
       </div>
 
       <!-- Active Seed Accounts -->
-      <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs col-span-2 sm:col-span-2 lg:col-span-1">
+      <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs col-span-2 sm:col-span-2 lg:col-span-1">
         <span class="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider block truncate">Seeds (4 ACs)</span>
         <div class="mt-1 sm:mt-2 flex items-baseline justify-between">
           <span class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">4 / 4</span>
@@ -276,10 +289,10 @@
       </div>
     </div>
 
-    <!-- TAB 1: LIVE MONITOR VIEW (3-PANEL LAYOUT) -->
+    <!-- TAB 1: LIVE MONITOR VIEW (Responsive 3-Panel Architecture) -->
     <div id="tab-content-live" class="tab-pane space-y-3.5 w-full max-w-full">
       <!-- Top Filter Bar -->
-      <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 w-full">
+      <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 w-full">
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 w-full">
           <!-- Search Input -->
           <div class="relative flex-1 w-full min-w-0">
@@ -290,13 +303,13 @@
               id="search-input"
               type="text"
               placeholder="Search domain, ET, subject..."
-              class="w-full bg-white border border-slate-300 rounded-lg pl-8 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors shadow-xs"
+              class="w-full min-h-[40px] bg-white border border-slate-300 rounded-lg pl-8 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors shadow-xs"
             />
           </div>
 
           <!-- ET Name Filter Dropdown (Synced with sidebar) -->
           <div class="w-full sm:w-auto min-w-0 sm:min-w-[170px]">
-            <select id="filter-et" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs truncate">
+            <select id="filter-et" class="w-full min-h-[40px] bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs truncate">
               <option value="ALL">All ET Names</option>
               <option value="MAPPED">Mapped ETs Only</option>
               <option value="UNMAPPED">Unmapped Only</option>
@@ -305,7 +318,7 @@
 
           <!-- Inboxing & Spam Filter -->
           <div class="w-full sm:w-auto min-w-0 sm:min-w-[160px]">
-            <select id="filter-folder" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs truncate">
+            <select id="filter-folder" class="w-full min-h-[40px] bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs truncate">
               <option value="ALL">All Statuses</option>
               <option value="HAS_SPAM">⚠️ Has Spam Placement</option>
               <option value="ALL_INBOX">✓ 100% Inboxed (4 of 4)</option>
@@ -317,18 +330,18 @@
 
         <!-- Export CSV Button -->
         <div class="flex items-center justify-end w-full md:w-auto shrink-0 pt-1 md:pt-0">
-          <button id="btn-export-csv" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 shadow-xs transition-colors w-full md:w-auto">
+          <button id="btn-export-csv" class="min-h-[40px] flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 shadow-xs transition-colors w-full md:w-auto">
             <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             <span>Export CSV</span>
           </button>
         </div>
       </div>
 
-      <!-- 3-PANEL GRID LAYOUT -->
+      <!-- 3-PANEL RESPONSIVE GRID LAYOUT -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start w-full">
         
-        <!-- LEFT PANEL: ET SIDEBAR (Col 1 to 3) -->
-        <aside class="lg:col-span-3 bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col max-h-[820px] sticky top-24">
+        <!-- LEFT PANEL: ET SIDEBAR (Col 1 to 3 on desktop, top/stacked on mobile) -->
+        <aside class="lg:col-span-3 bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col max-h-[360px] lg:max-h-[820px] lg:sticky lg:top-24 w-full">
           <div class="p-3 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
               <span class="text-sm">🏷️</span>
@@ -343,7 +356,7 @@
               id="sidebar-et-search"
               type="text"
               placeholder="Search ET name..."
-              class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              class="w-full min-h-[38px] bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 
@@ -353,10 +366,10 @@
           </div>
         </aside>
 
-        <!-- CENTER PANEL: DOMAIN CARDS & ET VIEW (Col 4 to 9) -->
-        <section class="lg:col-span-6 space-y-4 min-w-0">
+        <!-- CENTER PANEL: DOMAIN CARDS & ET VIEW (Col 4 to 9 on desktop, order-last or middle on mobile) -->
+        <section class="lg:col-span-6 space-y-4 min-w-0 w-full">
           <div id="domain-cards-container" class="space-y-4 w-full max-w-full">
-            <div class="bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center text-slate-500 shadow-xs">
+            <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-8 sm:p-12 text-center text-slate-500 shadow-xs">
               <div class="flex flex-col items-center justify-center gap-2">
                 <svg class="w-6 h-6 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
                 <span class="text-xs text-slate-600 font-medium">Scanning mailboxes...</span>
@@ -365,8 +378,8 @@
           </div>
         </section>
 
-        <!-- RIGHT PANEL: CIRCULAR DONUT CHART (Col 10 to 12) -->
-        <aside class="lg:col-span-3 bg-white border border-slate-200 rounded-xl shadow-xs p-4 space-y-4 sticky top-24">
+        <!-- RIGHT PANEL: CIRCULAR DONUT CHART (Col 10 to 12 on desktop, stacked on mobile) -->
+        <aside class="lg:col-span-3 bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl shadow-xs p-4 space-y-4 lg:sticky lg:top-24 w-full">
           <div class="border-b border-slate-100 pb-2.5 flex items-center justify-between">
             <div>
               <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -375,18 +388,18 @@
               </h3>
               <p id="chart-et-title" class="text-[11px] text-slate-500 font-medium truncate mt-0.5">All Campaigns</p>
             </div>
-            <span id="chart-total-count" class="bg-slate-100 text-slate-700 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full">0 emails</span>
+            <span id="chart-total-count" class="bg-slate-100 text-slate-700 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full">0 mails</span>
           </div>
 
           <!-- SVG Donut Chart Container -->
           <div class="relative flex items-center justify-center py-2">
-            <svg id="inbox-donut-svg" class="w-48 h-48 transform -rotate-90" viewBox="0 0 200 200">
+            <svg id="inbox-donut-svg" class="w-44 h-44 sm:w-48 sm:h-48 transform -rotate-90" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r="70" fill="none" stroke="#f1f5f9" stroke-width="22"></circle>
               <!-- Dynamic Segments rendered by JS -->
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-              <span id="chart-center-val" class="text-xl font-black text-slate-900">0</span>
-              <span id="chart-center-sub" class="text-[10px] text-slate-400 font-semibold uppercase">Total Emails</span>
+              <span id="chart-center-val" class="text-xl sm:text-2xl font-black text-slate-900">0</span>
+              <span id="chart-center-sub" class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Unique Mails</span>
             </div>
           </div>
 
@@ -401,7 +414,7 @@
 
     <!-- TAB 2: GOOGLE SHEET CACHE (Sheet1) (Protected) -->
     <div id="tab-content-sheet" class="tab-pane hidden space-y-4 w-full">
-      <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
           <div>
             <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
@@ -414,10 +427,10 @@
           </div>
 
           <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button id="btn-open-paste-modal" class="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-[11px] font-semibold text-slate-700 shadow-xs">
+            <button id="btn-open-paste-modal" class="min-h-[38px] flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 shadow-xs">
               Quick Paste
             </button>
-            <button id="btn-sync-sheet-now" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold shadow-xs">
+            <button id="btn-sync-sheet-now" class="min-h-[38px] flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs">
               <svg id="sheet-sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
               <span>Sync Now</span>
             </button>
@@ -430,7 +443,7 @@
             id="sheet-url-input"
             type="text"
             value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=0&amp;single=true&amp;output=csv"
-            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none"
+            class="w-full min-h-[38px] bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none"
           />
           <div class="mt-1.5 flex flex-col sm:flex-row sm:items-center justify-between text-[10px] text-slate-500 gap-1">
             <span class="truncate">Status: <strong id="sheet-status-text" class="text-slate-800">Ready</strong></span>
@@ -439,18 +452,18 @@
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached (<span id="sheet-table-count">0</span>)</span>
           <span class="text-[10px] text-slate-500">Today/Yesterday</span>
         </div>
-        <div class="max-h-80 overflow-x-auto w-full">
-          <table class="w-full text-left text-xs min-w-[360px]">
+        <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
+          <table class="w-full text-left text-xs min-w-[320px]">
             <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b border-slate-200">
               <tr>
-                <th class="py-2 px-3 font-semibold">Domains</th>
-                <th class="py-2 px-3 font-semibold">ET NAME</th>
-                <th class="py-2 px-3 font-semibold">DATE</th>
+                <th class="py-2.5 px-3 font-semibold">Domains</th>
+                <th class="py-2.5 px-3 font-semibold">ET NAME</th>
+                <th class="py-2.5 px-3 font-semibold">DATE</th>
               </tr>
             </thead>
             <tbody id="sheet-mappings-tbody" class="divide-y divide-slate-200">
@@ -465,7 +478,7 @@
 
     <!-- TAB 3: it.com SHEET (Protected) -->
     <div id="tab-content-itcom" class="tab-pane hidden space-y-4 w-full">
-      <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
           <div>
             <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
@@ -476,10 +489,10 @@
           </div>
 
           <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button id="btn-open-itcom-paste-modal" class="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-[11px] font-semibold text-slate-700 shadow-xs">
+            <button id="btn-open-itcom-paste-modal" class="min-h-[38px] flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 shadow-xs">
               Quick Paste
             </button>
-            <button id="btn-sync-itcom-now" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold shadow-xs">
+            <button id="btn-sync-itcom-now" class="min-h-[38px] flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs">
               <svg id="itcom-sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
               <span>Sync it.com</span>
             </button>
@@ -492,7 +505,7 @@
             id="itcom-url-input"
             type="text"
             value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=1471980528&amp;single=true&amp;output=csv"
-            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none"
+            class="w-full min-h-[38px] bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none"
           />
           <div class="mt-1.5 flex flex-col sm:flex-row sm:items-center justify-between text-[10px] text-slate-500 gap-1">
             <span class="truncate">Status: <strong id="itcom-status-text" class="text-slate-800">Ready</strong></span>
@@ -508,9 +521,9 @@
               id="itcom-checker-input"
               type="text"
               placeholder="Enter domain (e.g. acme.it.com)..."
-              class="flex-1 min-w-0 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
+              class="flex-1 min-w-0 min-h-[38px] bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none"
             />
-            <button id="btn-check-itcom-domain" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs shrink-0">
+            <button id="btn-check-itcom-domain" class="min-h-[38px] px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs shrink-0">
               Check
             </button>
           </div>
@@ -518,18 +531,18 @@
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached it.com (<span id="itcom-table-count">0</span>)</span>
           <span class="text-[10px] text-slate-500">Today/Yesterday</span>
         </div>
-        <div class="max-h-80 overflow-x-auto w-full">
-          <table class="w-full text-left text-xs min-w-[360px]">
+        <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
+          <table class="w-full text-left text-xs min-w-[320px]">
             <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b border-slate-200">
               <tr>
-                <th class="py-2 px-3 font-semibold">Domains</th>
-                <th class="py-2 px-3 font-semibold">ET NAME</th>
-                <th class="py-2 px-3 font-semibold">DATE</th>
+                <th class="py-2.5 px-3 font-semibold">Domains</th>
+                <th class="py-2.5 px-3 font-semibold">ET NAME</th>
+                <th class="py-2.5 px-3 font-semibold">DATE</th>
               </tr>
             </thead>
             <tbody id="itcom-mappings-tbody" class="divide-y divide-slate-200">
@@ -544,7 +557,7 @@
 
     <!-- TAB 4: EXTRA SHEET (Protected) -->
     <div id="tab-content-extrasheet" class="tab-pane hidden space-y-4 w-full">
-      <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
           <div>
             <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
@@ -555,10 +568,10 @@
           </div>
 
           <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button id="btn-open-extrasheet-paste-modal" class="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-[11px] font-semibold text-slate-700 shadow-xs">
+            <button id="btn-open-extrasheet-paste-modal" class="min-h-[38px] flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 shadow-xs">
               Quick Paste
             </button>
-            <button id="btn-sync-extrasheet-now" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-semibold shadow-xs">
+            <button id="btn-sync-extrasheet-now" class="min-h-[38px] flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-xs">
               <svg id="extrasheet-sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
               <span>Sync Extra</span>
             </button>
@@ -571,7 +584,7 @@
             id="extrasheet-url-input"
             type="text"
             value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=1798344486&amp;single=true&amp;output=csv"
-            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none"
+            class="w-full min-h-[38px] bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none"
           />
           <div class="mt-1.5 flex flex-col sm:flex-row sm:items-center justify-between text-[10px] text-slate-500 gap-1">
             <span class="truncate">Status: <strong id="extrasheet-status-text" class="text-slate-800">Ready</strong></span>
@@ -580,18 +593,18 @@
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached Extra (<span id="extrasheet-table-count">0</span>)</span>
           <span class="text-[10px] text-slate-500">Today/Yesterday</span>
         </div>
-        <div class="max-h-80 overflow-x-auto w-full">
-          <table class="w-full text-left text-xs min-w-[360px]">
+        <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
+          <table class="w-full text-left text-xs min-w-[320px]">
             <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b border-slate-200">
               <tr>
-                <th class="py-2 px-3 font-semibold">Domains</th>
-                <th class="py-2 px-3 font-semibold">ET NAME</th>
-                <th class="py-2 px-3 font-semibold">DATE</th>
+                <th class="py-2.5 px-3 font-semibold">Domains</th>
+                <th class="py-2.5 px-3 font-semibold">ET NAME</th>
+                <th class="py-2.5 px-3 font-semibold">DATE</th>
               </tr>
             </thead>
             <tbody id="extrasheet-mappings-tbody" class="divide-y divide-slate-200">
@@ -606,10 +619,10 @@
 
     <!-- TAB 5: DIAGNOSTIC TERMINAL (Protected) -->
     <div id="tab-content-terminal" class="tab-pane hidden space-y-4 w-full">
-      <div class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div class="p-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
           <span class="text-xs font-bold text-slate-800">Live Diagnostic Logs</span>
-          <button id="btn-clear-logs" class="text-[11px] text-slate-600 hover:text-slate-900 underline font-medium">Clear</button>
+          <button id="btn-clear-logs" class="min-h-[36px] px-2 text-xs text-slate-600 hover:text-slate-900 underline font-medium">Clear</button>
         </div>
         <div id="terminal-logs-container" class="p-3 font-mono text-xs max-h-96 overflow-y-auto space-y-1.5 bg-slate-900 text-slate-200 break-all">
           <div class="text-slate-400 italic">Monitoring diagnostics initialized...</div>
@@ -619,7 +632,7 @@
 
     <!-- TAB 6: BACKEND REFERENCE (Protected) -->
     <div id="tab-content-backend" class="tab-pane hidden space-y-4 w-full">
-      <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
         <h3 class="text-sm sm:text-base font-bold text-slate-900">24/7 Cloud Background Daemon</h3>
         <p class="text-xs text-slate-500">Deploy this node daemon to Render, Railway, or VPS to keep monitoring active 24/7.</p>
         <pre class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed max-h-80">
@@ -639,7 +652,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
           <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm">🔔</div>
           <h4 class="text-sm sm:text-base font-bold text-slate-900">Alerts Configuration</h4>
         </div>
-        <button id="btn-close-alerts-modal" class="text-slate-400 hover:text-slate-600 text-base font-bold p-1">✕</button>
+        <button id="btn-close-alerts-modal" class="min-h-[36px] min-w-[36px] text-slate-400 hover:text-slate-600 text-base font-bold p-1 flex items-center justify-center">✕</button>
       </div>
 
       <!-- Channel 1: Native Browser Push -->
@@ -649,9 +662,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
             <span class="text-xs font-bold text-slate-800 block">Browser Push Notifications</span>
             <p class="text-[10px] text-slate-500">Desktop &amp; mobile banner popups</p>
           </div>
-          <input id="toggle-browser-push" type="checkbox" class="w-4 h-4 text-indigo-600 rounded cursor-pointer" checked />
+          <input id="toggle-browser-push" type="checkbox" class="w-5 h-5 text-indigo-600 rounded cursor-pointer" checked />
         </div>
-        <button id="btn-request-browser-notif-modal" class="w-full py-1.5 px-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold">
+        <button id="btn-request-browser-notif-modal" class="min-h-[38px] w-full py-1.5 px-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">
           Enable / Verify Permission
         </button>
       </div>
@@ -663,7 +676,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
             <span class="text-xs font-bold text-slate-800 block">ntfy Lock Screen Push</span>
             <p class="text-[10px] text-slate-500">Android/iOS native lock screen alert</p>
           </div>
-          <input id="toggle-mobile-push" type="checkbox" class="w-4 h-4 text-amber-600 rounded cursor-pointer" checked />
+          <input id="toggle-mobile-push" type="checkbox" class="w-5 h-5 text-amber-600 rounded cursor-pointer" checked />
         </div>
 
         <div class="space-y-1">
@@ -674,7 +687,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
               id="input-ntfy-topic"
               type="text"
               value="ayush_spam_alerts_seed"
-              class="flex-1 min-w-0 bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-mono text-slate-800"
+              class="flex-1 min-w-0 min-h-[36px] bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-mono text-slate-800"
             />
           </div>
         </div>
@@ -686,20 +699,20 @@ const CLIENT_ID = process.env.CLIENT_ID;
           <span class="text-xs font-bold text-slate-800 block">Audio Chime</span>
           <p class="text-[10px] text-slate-500">Instant audio tone on spam detection</p>
         </div>
-        <input id="toggle-audio-chime" type="checkbox" class="w-4 h-4 text-indigo-600 rounded cursor-pointer" checked />
+        <input id="toggle-audio-chime" type="checkbox" class="w-5 h-5 text-indigo-600 rounded cursor-pointer" checked />
       </div>
 
       <!-- Buttons -->
       <div class="flex items-center justify-between pt-2 border-t border-slate-200 gap-2 flex-wrap">
         <div class="flex items-center gap-1.5">
-          <button id="btn-test-browser-notification" class="px-2 py-1 rounded-lg bg-indigo-100 text-[10px] font-semibold text-indigo-900">
+          <button id="btn-test-browser-notification" class="min-h-[36px] px-2.5 py-1 rounded-lg bg-indigo-100 text-xs font-semibold text-indigo-900">
             Test Browser
           </button>
-          <button id="btn-test-notification" class="px-2 py-1 rounded-lg bg-amber-100 text-[10px] font-semibold text-amber-900">
+          <button id="btn-test-notification" class="min-h-[36px] px-2.5 py-1 rounded-lg bg-amber-100 text-xs font-semibold text-amber-900">
             Test Mobile
           </button>
         </div>
-        <button id="btn-save-alerts-modal" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white">
+        <button id="btn-save-alerts-modal" class="min-h-[36px] px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white">
           Save Settings
         </button>
       </div>
@@ -716,7 +729,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
           <p id="spam-popup-et" class="text-xs sm:text-sm font-bold text-white truncate">ET: Example</p>
         </div>
       </div>
-      <button id="btn-close-spam-popup" class="text-white/80 hover:text-white text-sm font-bold p-1">✕</button>
+      <button id="btn-close-spam-popup" class="min-h-[36px] min-w-[36px] text-white/80 hover:text-white text-sm font-bold p-1 flex items-center justify-center">✕</button>
     </div>
     <div class="mt-2 text-xs bg-rose-700/60 p-2 rounded-xl border border-rose-500/50 space-y-0.5">
       <div class="truncate"><strong>Domain:</strong> <span id="spam-popup-domain" class="font-mono text-rose-100">example.com</span></div>
@@ -736,7 +749,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
     <div class="bg-white border border-slate-200 rounded-2xl max-w-xs sm:max-w-sm w-full p-5 space-y-3.5 shadow-xl">
       <div class="flex items-center justify-between">
         <h4 class="text-sm font-bold text-slate-900">Protected Tab Access</h4>
-        <button id="btn-close-password-modal" class="text-slate-400 text-sm font-bold p-1">✕</button>
+        <button id="btn-close-password-modal" class="min-h-[36px] min-w-[36px] text-slate-400 text-sm font-bold p-1 flex items-center justify-center">✕</button>
       </div>
       <div>
         <label class="block text-[11px] font-semibold text-slate-700 mb-1">Enter Password</label>
@@ -744,13 +757,13 @@ const CLIENT_ID = process.env.CLIENT_ID;
           id="password-input"
           type="password"
           placeholder="Password..."
-          class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none"
+          class="w-full min-h-[40px] bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none"
         />
         <p id="password-error-msg" class="text-[11px] text-rose-600 mt-1 hidden font-medium">Incorrect password.</p>
       </div>
       <div class="flex justify-end gap-2 pt-1">
-        <button id="btn-cancel-password" class="px-3 py-1.5 rounded-lg bg-slate-100 text-xs font-semibold text-slate-700">Cancel</button>
-        <button id="btn-submit-password" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white shadow-xs">Unlock</button>
+        <button id="btn-cancel-password" class="min-h-[38px] px-3.5 py-1.5 rounded-lg bg-slate-100 text-xs font-semibold text-slate-700">Cancel</button>
+        <button id="btn-submit-password" class="min-h-[38px] px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white shadow-xs">Unlock</button>
       </div>
     </div>
   </div>
@@ -760,7 +773,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
     <div class="bg-white border border-slate-200 rounded-2xl max-w-sm sm:max-w-md w-full p-4 space-y-3 shadow-xl">
       <div class="flex items-center justify-between">
         <h4 id="paste-modal-title" class="text-xs sm:text-sm font-bold text-slate-900">Quick Paste CSV / TSV Data</h4>
-        <button id="btn-close-paste-modal" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+        <button id="btn-close-paste-modal" class="min-h-[36px] min-w-[36px] text-slate-400 hover:text-slate-600 text-sm font-bold flex items-center justify-center">✕</button>
       </div>
       <p class="text-[11px] text-slate-500">Headers: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">Domains</code>, <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">ET NAME</code>, <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">DATE</code></p>
       <textarea
@@ -770,8 +783,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
         class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-xs text-slate-800 focus:outline-none"
       ></textarea>
       <div class="flex justify-end gap-2">
-        <button id="btn-cancel-paste" class="px-3 py-1.5 rounded-lg bg-slate-100 text-xs font-semibold text-slate-700">Cancel</button>
-        <button id="btn-apply-paste" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white shadow-xs">Apply</button>
+        <button id="btn-cancel-paste" class="min-h-[38px] px-3.5 py-1.5 rounded-lg bg-slate-100 text-xs font-semibold text-slate-700">Cancel</button>
+        <button id="btn-apply-paste" class="min-h-[38px] px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white shadow-xs">Apply</button>
       </div>
     </div>
   </div>
@@ -801,7 +814,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
     const tokenCache = {};
 
     let currentSyncScope = 'TODAY';
-    let selectedNormalizedET = 'ALL'; // Active ET filter state
+    let selectedNormalizedET = 'ALL';
     const expandedDomainCards = new Set();
     const fetchedMessageCache = new Map();
     const notifiedSpamIds = new Set(JSON.parse(localStorage.getItem('notified_spam_ids') || '[]'));
@@ -819,14 +832,18 @@ const CLIENT_ID = process.env.CLIENT_ID;
     let countdownInterval = null;
     let lastGlobalSync = null;
 
-    // --- ET NORMALIZATION & DISPLAY HELPERS ---
+    // --- DOMAIN & ET NORMALIZATION HELPERS ---
+    function normalizeDomain(domain) {
+      if (!domain) return '';
+      return String(domain).replace(/\s+/g, '').toLowerCase().trim();
+    }
+
     function normalizeETName(name) {
       if (!name) return 'UNMAPPED';
       const clean = String(name).replace(/\s+/g, '').toUpperCase().trim();
       return clean === '' ? 'UNMAPPED' : clean;
     }
 
-    // Store mapping from normalized key -> canonical clean display string
     const etDisplayMap = new Map();
 
     function registerETDisplay(name) {
@@ -843,6 +860,62 @@ const CLIENT_ID = process.env.CLIENT_ID;
       if (normKey === 'MAPPED') return 'Mapped ETs Only';
       if (normKey === 'UNMAPPED') return 'Unmapped ETs';
       return etDisplayMap.get(normKey) || normKey;
+    }
+
+    // --- CORE ENGINE: 1 DOMAIN = 1 MAIL DEDUPLICATION ---
+    function getUniqueDomainUnits(recordsList, filterNormET = 'ALL') {
+      const targetRecords = recordsList.filter(rec => {
+        if (!rec.domain) return false;
+        const norm = rec.normalizedET || normalizeETName(rec.etName);
+        if (filterNormET === 'ALL') return true;
+        if (filterNormET === 'MAPPED') return norm !== 'UNMAPPED';
+        if (filterNormET === 'UNMAPPED') return norm === 'UNMAPPED';
+        return norm === filterNormET;
+      });
+
+      const domainMap = new Map();
+
+      targetRecords.forEach(rec => {
+        const normDom = rec.normalizedDomain || normalizeDomain(rec.domain);
+        if (!normDom) return;
+
+        if (!domainMap.has(normDom)) {
+          domainMap.set(normDom, {
+            domain: rec.domain || normDom,
+            normalizedDomain: normDom,
+            etName: rec.etName || 'Unmapped',
+            normalizedET: rec.normalizedET || normalizeETName(rec.etName),
+            latestTime: rec.detectionTime,
+            emails: [],
+            inboxAccounts: new Set(),
+            spamAccounts: new Set(),
+            hasSpam: false,
+            hasInbox: false
+          });
+        }
+
+        const unit = domainMap.get(normDom);
+        unit.emails.push(rec);
+
+        if (rec.detectionTime > unit.latestTime) {
+          unit.latestTime = rec.detectionTime;
+        }
+
+        if (rec.etName && rec.etName !== 'Unmapped') {
+          unit.etName = rec.etName;
+          unit.normalizedET = normalizeETName(rec.etName);
+        }
+
+        if (rec.folder === 'INBOX') {
+          unit.inboxAccounts.add(rec.accountName);
+          unit.hasInbox = true;
+        } else if (rec.folder === 'SPAM') {
+          unit.spamAccounts.add(rec.accountName);
+          unit.hasSpam = true;
+        }
+      });
+
+      return Array.from(domainMap.values()).sort((a, b) => b.latestTime.getTime() - a.latestTime.getTime());
     }
 
     // --- DATE VALIDATION ---
@@ -1006,6 +1079,69 @@ const CLIENT_ID = process.env.CLIENT_ID;
     const btnInstallApp = document.getElementById('btn-install-app');
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
+
+    // --- LIGHTWEIGHT CANVAS SNOWFLAKES ---
+    function initSnowBackground() {
+      const canvas = document.getElementById('snow-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      // Scale snowflake count based on mobile vs desktop (Ultra-lightweight: 20 on phone, 45 on desktop)
+      const isMobile = width < 768;
+      const flakeCount = isMobile ? 20 : 45;
+
+      const flakes = [];
+      for (let i = 0; i < flakeCount; i++) {
+        flakes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: Math.random() * 2 + 1,
+          speed: Math.random() * 0.6 + 0.3,
+          wind: (Math.random() - 0.5) * 0.3,
+          opacity: Math.random() * 0.4 + 0.15
+        });
+      }
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      let animationFrameId;
+      function renderSnow() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.4)'; // Subtle slate-indigo snowflake tint
+
+        for (let i = 0; i < flakeCount; i++) {
+          const f = flakes[i];
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(148, 163, 184, ${f.opacity})`;
+          ctx.fill();
+
+          f.y += f.speed;
+          f.x += f.wind;
+
+          if (f.y > height) {
+            f.y = -5;
+            f.x = Math.random() * width;
+          }
+          if (f.x > width) f.x = 0;
+          if (f.x < 0) f.x = width;
+        }
+
+        animationFrameId = requestAnimationFrame(renderSnow);
+      }
+
+      renderSnow();
+    }
 
     // --- PWA SETUP ---
     function setupPwa() {
@@ -1380,12 +1516,12 @@ const CLIENT_ID = process.env.CLIENT_ID;
       const emailMatch = sender.match(/<([^>]+)>/) || sender.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
       const email = emailMatch ? emailMatch[1] : sender;
       const parts = email.split('@');
-      return parts.length > 1 ? parts[1].toLowerCase().trim() : email.toLowerCase().trim();
+      return normalizeDomain(parts.length > 1 ? parts[1] : email);
     }
 
     function resolveEtName(domain) {
       if (!domain) return 'Unmapped';
-      const clean = domain.toLowerCase().trim();
+      const clean = normalizeDomain(domain);
       
       if (domainLookupMap.has(clean)) return domainLookupMap.get(clean).etName;
       if (extraSheetLookupMap.has(clean)) return `${extraSheetLookupMap.get(clean).etName} (Extra)`;
@@ -1401,27 +1537,28 @@ const CLIENT_ID = process.env.CLIENT_ID;
       return 'Unmapped';
     }
 
-    // --- POPULATE SIDEBAR & SYNC WITH TOP DROPDOWN ---
+    // --- POPULATE SIDEBAR (1 Unique Domain = 1 Mail) ---
     function renderETSidebar() {
       if (!etSidebarList) return;
       const filterSearch = (sidebarEtSearch ? sidebarEtSearch.value : '').toLowerCase().trim();
 
-      // Aggregate counts by normalized ET
-      const etCounts = new Map();
-      let totalMappedEmails = 0;
-      let unmappedEmails = 0;
+      // Aggregate UNIQUE DOMAINS by normalized ET
+      const etUniqueDomainCount = new Map();
+      const allUniqueDomains = getUniqueDomainUnits(emailRecords, 'ALL');
+      let totalMappedUniqueDomains = 0;
+      let unmappedUniqueDomains = 0;
 
-      emailRecords.forEach(rec => {
-        const norm = rec.normalizedET || normalizeETName(rec.etName);
+      allUniqueDomains.forEach(unit => {
+        const norm = unit.normalizedET;
         if (norm === 'UNMAPPED') {
-          unmappedEmails++;
+          unmappedUniqueDomains++;
         } else {
-          totalMappedEmails++;
-          etCounts.set(norm, (etCounts.get(norm) || 0) + 1);
+          totalMappedUniqueDomains++;
+          etUniqueDomainCount.set(norm, (etUniqueDomainCount.get(norm) || 0) + 1);
         }
       });
 
-      const sortedNormETs = Array.from(etCounts.keys()).sort((a, b) => {
+      const sortedNormETs = Array.from(etUniqueDomainCount.keys()).sort((a, b) => {
         return getETDisplayName(a).localeCompare(getETDisplayName(b));
       });
 
@@ -1431,21 +1568,21 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       // Preset buttons: ALL and MAPPED
       html += `
-        <button type="button" data-et-norm="ALL" class="et-sidebar-item w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${selectedNormalizedET === 'ALL' ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
+        <button type="button" data-et-norm="ALL" class="et-sidebar-item min-h-[44px] w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${selectedNormalizedET === 'ALL' ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
           <span class="truncate">🌟 All ET Campaigns</span>
-          <span class="bg-slate-100 text-slate-600 text-[10px] font-mono px-1.5 py-0.2 rounded-full">${emailRecords.length}</span>
+          <span class="bg-slate-100 text-slate-600 text-[10px] font-mono px-2 py-0.5 rounded-full">${allUniqueDomains.length}</span>
         </button>
-        <button type="button" data-et-norm="MAPPED" class="et-sidebar-item w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${selectedNormalizedET === 'MAPPED' ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
+        <button type="button" data-et-norm="MAPPED" class="et-sidebar-item min-h-[44px] w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${selectedNormalizedET === 'MAPPED' ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
           <span class="truncate">📌 Mapped ETs Only</span>
-          <span class="bg-indigo-100 text-indigo-700 text-[10px] font-mono px-1.5 py-0.2 rounded-full">${totalMappedEmails}</span>
+          <span class="bg-indigo-100 text-indigo-700 text-[10px] font-mono px-2 py-0.5 rounded-full">${totalMappedUniqueDomains}</span>
         </button>
       `;
 
-      if (unmappedEmails > 0) {
+      if (unmappedUniqueDomains > 0) {
         html += `
-          <button type="button" data-et-norm="UNMAPPED" class="et-sidebar-item w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${selectedNormalizedET === 'UNMAPPED' ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
+          <button type="button" data-et-norm="UNMAPPED" class="et-sidebar-item min-h-[44px] w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${selectedNormalizedET === 'UNMAPPED' ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
             <span class="truncate text-slate-500 italic">Unmapped Domains</span>
-            <span class="bg-slate-100 text-slate-500 text-[10px] font-mono px-1.5 py-0.2 rounded-full">${unmappedEmails}</span>
+            <span class="bg-slate-100 text-slate-500 text-[10px] font-mono px-2 py-0.5 rounded-full">${unmappedUniqueDomains}</span>
           </button>
         `;
       }
@@ -1457,21 +1594,21 @@ const CLIENT_ID = process.env.CLIENT_ID;
       });
 
       if (filteredNorms.length > 0) {
-        html += `<div class="p-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50">Campaigns (${filteredNorms.length})</div>`;
+        html += `<div class="p-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50">Campaigns (${filteredNorms.length})</div>`;
         filteredNorms.forEach(norm => {
-          const count = etCounts.get(norm);
+          const count = etUniqueDomainCount.get(norm);
           const displayName = getETDisplayName(norm);
           const isSelected = selectedNormalizedET === norm;
 
           html += `
-            <button type="button" data-et-norm="${escapeHtml(norm)}" class="et-sidebar-item w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${isSelected ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
-              <span class="truncate text-[11px]" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>
-              <span class="bg-slate-100 text-slate-600 text-[10px] font-mono px-1.5 py-0.2 rounded-full shrink-0 ml-1">${count}</span>
+            <button type="button" data-et-norm="${escapeHtml(norm)}" class="et-sidebar-item min-h-[44px] w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${isSelected ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
+              <span class="truncate text-xs" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>
+              <span class="bg-slate-100 text-slate-600 text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ml-1.5">${count}</span>
             </button>
           `;
         });
       } else if (filterSearch) {
-        html += `<div class="p-3 text-center text-slate-400 text-xs">No matching ET names.</div>`;
+        html += `<div class="p-4 text-center text-slate-400 text-xs">No matching ET names.</div>`;
       }
 
       etSidebarList.innerHTML = html;
@@ -1544,33 +1681,17 @@ const CLIENT_ID = process.env.CLIENT_ID;
       });
     }
 
-    // --- CIRCULAR / DONUT STATUS CHART ---
+    // --- CIRCULAR / DONUT STATUS CHART (1 Domain = 1 Mail Deduplicated) ---
     function renderInboxDonutChart() {
       if (!inboxDonutSvg || !chartLegendContainer) return;
 
-      // Filter records according to the active normalized ET
-      const targetEmails = emailRecords.filter(rec => {
-        if (selectedNormalizedET === 'ALL') return true;
-        if (selectedNormalizedET === 'MAPPED') return rec.normalizedET !== 'UNMAPPED';
-        if (selectedNormalizedET === 'UNMAPPED') return rec.normalizedET === 'UNMAPPED';
-        return rec.normalizedET === selectedNormalizedET;
-      });
+      // Base calculation on UNIQUE DOMAINS for selected ET
+      const targetUnits = getUniqueDomainUnits(emailRecords, selectedNormalizedET);
 
-      // Update Header Title
       const activeTitle = getETDisplayName(selectedNormalizedET);
       chartEtTitle.textContent = activeTitle;
-      chartTotalCount.textContent = `${targetEmails.length} email${targetEmails.length === 1 ? '' : 's'}`;
-      chartCenterVal.textContent = targetEmails.length;
-
-      // Group domains to compute distribution
-      const domainGroups = new Map();
-      targetEmails.forEach(rec => {
-        const d = (rec.domain || 'unknown').toLowerCase().trim();
-        if (!domainGroups.has(d)) {
-          domainGroups.set(d, []);
-        }
-        domainGroups.get(d).push(rec);
-      });
+      chartTotalCount.textContent = `${targetUnits.length} mail${targetUnits.length === 1 ? '' : 's'}`;
+      chartCenterVal.textContent = targetUnits.length;
 
       let count4Acs = 0;
       let count3Acs = 0;
@@ -1578,20 +1699,13 @@ const CLIENT_ID = process.env.CLIENT_ID;
       let count1Acs = 0;
       let countOverallSpam = 0;
 
-      domainGroups.forEach(emails => {
-        const inboxAccs = new Set();
-        let domainHasSpam = false;
-
-        emails.forEach(e => {
-          if (e.folder === 'INBOX') inboxAccs.add(e.accountName);
-          if (e.folder === 'SPAM') domainHasSpam = true;
-        });
-
-        if (domainHasSpam) countOverallSpam++;
-        if (inboxAccs.size === 4) count4Acs++;
-        else if (inboxAccs.size === 3) count3Acs++;
-        else if (inboxAccs.size === 2) count2Acs++;
-        else if (inboxAccs.size === 1) count1Acs++;
+      targetUnits.forEach(unit => {
+        if (unit.hasSpam) countOverallSpam++;
+        const inboxSize = unit.inboxAccounts.size;
+        if (inboxSize === 4) count4Acs++;
+        else if (inboxSize === 3) count3Acs++;
+        else if (inboxSize === 2) count2Acs++;
+        else if (inboxSize === 1) count1Acs++;
       });
 
       const categories = [
@@ -1642,9 +1756,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       // Render Legend with interactive highlight
       chartLegendContainer.innerHTML = categories.map(cat => {
-        const pct = totalDistributionCount > 0 ? ((cat.count / totalDistributionCount) * 100).toFixed(0) : 0;
+        const pct = targetUnits.length > 0 ? ((cat.count / targetUnits.length) * 100).toFixed(0) : 0;
         return `
-          <div class="legend-row flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer" data-cat-key="${cat.key}">
+          <div class="legend-row flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer" data-cat-key="${cat.key}">
             <div class="flex items-center gap-2 min-w-0">
               <span class="w-2.5 h-2.5 rounded-full ${cat.ringBg} shrink-0"></span>
               <span class="text-slate-700 font-medium truncate text-[11px]">${cat.label}</span>
@@ -1657,7 +1771,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         `;
       }).join('');
 
-      // Add interactive tooltips/hover states
+      // Interactive hover states
       inboxDonutSvg.querySelectorAll('.donut-segment').forEach(seg => {
         seg.addEventListener('mouseenter', () => {
           const count = seg.getAttribute('data-cat-count');
@@ -1666,8 +1780,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
           chartCenterSub.textContent = label;
         });
         seg.addEventListener('mouseleave', () => {
-          chartCenterVal.textContent = targetEmails.length;
-          chartCenterSub.textContent = 'Total Emails';
+          chartCenterVal.textContent = targetUnits.length;
+          chartCenterSub.textContent = 'Unique Mails';
         });
       });
 
@@ -1683,8 +1797,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
         });
         row.addEventListener('mouseleave', () => {
           inboxDonutSvg.querySelectorAll('.donut-segment').forEach(s => s.setAttribute('stroke-width', '22'));
-          chartCenterVal.textContent = targetEmails.length;
-          chartCenterSub.textContent = 'Total Emails';
+          chartCenterVal.textContent = targetUnits.length;
+          chartCenterSub.textContent = 'Unique Mails';
         });
       });
     }
@@ -1704,7 +1818,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       for (let i = 1; i < lines.length; i++) {
         const cols = parseCsvLine(lines[i]);
-        const d = (cols[domainIdx] || '').toLowerCase().trim();
+        const d = normalizeDomain(cols[domainIdx] || '');
         const et = (cols[etIdx] || '').trim();
         const dateStr = dateIdx !== -1 ? (cols[dateIdx] || '').trim() : '';
 
@@ -1772,9 +1886,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       sheetMappingsTbody.innerHTML = mappings.map(m => `
         <tr class="hover:bg-slate-50">
-          <td class="py-2 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
-          <td class="py-2 px-3 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
+          <td class="py-2.5 px-3 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
         </tr>
       `).join('');
     }
@@ -1834,9 +1948,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       itcomMappingsTbody.innerHTML = mappings.map(m => `
         <tr class="hover:bg-slate-50">
-          <td class="py-2 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
-          <td class="py-2 px-3 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
+          <td class="py-2.5 px-3 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
         </tr>
       `).join('');
     }
@@ -1896,9 +2010,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       extraSheetMappingsTbody.innerHTML = mappings.map(m => `
         <tr class="hover:bg-slate-50">
-          <td class="py-2 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
-          <td class="py-2 px-3 font-semibold text-violet-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
+          <td class="py-2.5 px-3 font-semibold text-violet-700">${escapeHtml(m.etName)}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
         </tr>
       `).join('');
     }
@@ -1928,7 +2042,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
     // Quick Checker
     if (btnCheckItcomDomain && itcomCheckerInput) {
       btnCheckItcomDomain.addEventListener('click', () => {
-        const query = itcomCheckerInput.value.trim().toLowerCase();
+        const query = normalizeDomain(itcomCheckerInput.value);
         if (!query) return;
 
         const inSheet1 = domainLookupMap.has(query);
@@ -1936,7 +2050,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         const inExtra = extraSheetLookupMap.has(query);
         const resolved = resolveEtName(query);
 
-        const matching = emailRecords.filter(r => (r.domain || '').toLowerCase() === query);
+        const matching = emailRecords.filter(r => normalizeDomain(r.domain) === query);
         const inInbox = matching.filter(r => r.folder === 'INBOX').length;
         const inSpam = matching.filter(r => r.folder === 'SPAM').length;
 
@@ -2111,6 +2225,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
             const dateVal = headers.find(h => h.name.toLowerCase() === 'date')?.value;
 
             const domain = extractDomain(fromVal);
+            const normalizedDomain = normalizeDomain(domain);
             const etName = resolveEtName(domain);
             const normalizedET = normalizeETName(etName);
             registerETDisplay(etName);
@@ -2125,6 +2240,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
               accountType: acc.type,
               from: fromVal,
               domain: domain,
+              normalizedDomain: normalizedDomain,
               etName: etName,
               normalizedET: normalizedET,
               subject: subjVal,
@@ -2185,6 +2301,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
         // Refresh ET names and normalizations
         emailRecords.forEach(rec => {
+          rec.domain = normalizeDomain(rec.domain);
+          rec.normalizedDomain = normalizeDomain(rec.domain);
           rec.etName = resolveEtName(rec.domain);
           rec.normalizedET = normalizeETName(rec.etName);
           registerETDisplay(rec.etName);
@@ -2192,7 +2310,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
         populateEtFilterDropdown();
         renderETSidebar();
-        addLog(`[Sync] Loaded ${emailRecords.length} emails (${targetScope})`, 'success');
+        addLog(`[Sync] Loaded mail data (${targetScope})`, 'success');
       } catch (err) {
         addLog(`[Sync Error] ${err.message}`, 'error');
       } finally {
@@ -2214,13 +2332,13 @@ const CLIENT_ID = process.env.CLIENT_ID;
     function updateScopeUI() {
       if (currentSyncScope === 'YESTERDAY') {
         badgeActiveScope.textContent = "⏪ Yesterday";
-        badgeActiveScope.className = "inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-violet-100 text-violet-800 border border-violet-300";
-        statTotalTitle.textContent = "Yesterday's Mail";
+        badgeActiveScope.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-100 text-violet-800 border border-violet-300";
+        statTotalTitle.textContent = "Yesterday's Mails";
         tabLabelMonitor.textContent = "Cards (Yest)";
       } else {
         badgeActiveScope.textContent = "📅 Today";
-        badgeActiveScope.className = "inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200";
-        statTotalTitle.textContent = "Today's Mail";
+        badgeActiveScope.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200";
+        statTotalTitle.textContent = "Today's Mails";
         tabLabelMonitor.textContent = "Cards";
       }
     }
@@ -2233,34 +2351,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         expandedDomainCards.add(domain);
       }
       renderRecords();
-    }
-
-    function groupRecordsByDomain() {
-      const domainGroups = new Map();
-
-      emailRecords.forEach(rec => {
-        const d = (rec.domain || 'unknown').toLowerCase().trim();
-        if (!domainGroups.has(d)) {
-          domainGroups.set(d, {
-            domain: d,
-            etName: rec.etName || 'Unmapped',
-            normalizedET: rec.normalizedET || normalizeETName(rec.etName),
-            latestTime: rec.detectionTime,
-            emails: []
-          });
-        }
-        const group = domainGroups.get(d);
-        group.emails.push(rec);
-        if (rec.detectionTime > group.latestTime) {
-          group.latestTime = rec.detectionTime;
-        }
-        if (rec.etName && rec.etName !== 'Unmapped') {
-          group.etName = rec.etName;
-          group.normalizedET = normalizeETName(rec.etName);
-        }
-      });
-
-      return Array.from(domainGroups.values()).sort((a, b) => b.latestTime.getTime() - a.latestTime.getTime());
     }
 
     // --- RESPONSIVE CARD BUILDER ---
@@ -2319,10 +2409,10 @@ const CLIENT_ID = process.env.CLIENT_ID;
       }
 
       return `
-        <div class="bg-white border ${borderClass} rounded-xl shadow-xs overflow-hidden flex flex-col justify-between w-full max-w-full">
+        <div class="bg-white/95 backdrop-blur-xs border ${borderClass} rounded-xl shadow-xs overflow-hidden flex flex-col justify-between w-full max-w-full">
           <div 
             onclick="toggleDomainCard('${encodedDomain}')"
-            class="p-3 sm:p-4 cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors flex-1 flex flex-col justify-between gap-2.5 w-full"
+            class="p-3 sm:p-4 cursor-pointer select-none bg-white/50 hover:bg-slate-50/70 transition-colors flex-1 flex flex-col justify-between gap-2.5 w-full"
           >
             <div>
               <div class="flex items-start justify-between gap-1.5 w-full">
@@ -2335,7 +2425,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
                       ${escapeHtml(group.domain)}
                     </div>
                     <div class="text-[10px] text-slate-400 truncate">
-                      ${group.latestTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} · ${group.emails.length} msg${group.emails.length > 1 ? 's' : ''}
+                      ${group.latestTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} · 1 Unique Mail
                     </div>
                   </div>
                 </div>
@@ -2343,7 +2433,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
                 <button 
                   type="button" 
                   onclick="event.stopPropagation(); copyDomainText('${escapeHtml(group.domain)}', this)"
-                  class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-[10px] font-medium shadow-2xs shrink-0"
+                  class="min-h-[32px] inline-flex items-center gap-1 px-2 py-1 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-[10px] font-medium shadow-2xs shrink-0"
                 >
                   <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                   <span>Copy</span>
@@ -2352,7 +2442,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
               <div class="mt-2">
                 ${group.etName !== 'Unmapped' ? `
-                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 truncate max-w-full" title="${escapeHtml(group.etName)}">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 truncate max-w-full" title="${escapeHtml(group.etName)}">
                     ${escapeHtml(group.etName)}
                   </span>
                 ` : `
@@ -2362,13 +2452,13 @@ const CLIENT_ID = process.env.CLIENT_ID;
             </div>
 
             <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1 flex-wrap w-full">
-              <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] border ${statusBadgeClass}">
+              <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] sm:text-[11px] border ${statusBadgeClass}">
                 <span class="w-1.5 h-1.5 rounded-full ${inboxCount === 4 ? 'bg-emerald-500 animate-pulse' : inboxCount > 0 ? 'bg-indigo-500' : 'bg-rose-500'}"></span>
                 <span><strong>${inboxCount}/4 Inbox</strong></span>
               </div>
 
               ${totalSpams > 0 ? `
-                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
                   <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
                   <span>${totalSpams} Spam (${spamCount} AC)</span>
                 </span>
@@ -2376,7 +2466,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
                 <span class="text-[10px] text-emerald-600 font-semibold">✓ 0 Spam</span>
               `}
 
-              <div class="w-4 h-4 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transform transition-transform duration-200 ${isExpanded ? 'rotate-180 bg-indigo-100 text-indigo-600' : ''}">
+              <div class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transform transition-transform duration-200 ${isExpanded ? 'rotate-180 bg-indigo-100 text-indigo-600' : ''}">
                 <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
               </div>
             </div>
@@ -2389,7 +2479,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
                 <span class="text-indigo-600 font-mono truncate max-w-[150px]">${group.domain}</span>
               </div>
 
-              <div class="grid grid-cols-2 gap-1.5 w-full">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 w-full">
                 ${ACCOUNTS.map(acc => {
                   const accData = accountStatusMap[acc.name];
                   const folder = accData.folder;
@@ -2416,10 +2506,10 @@ const CLIENT_ID = process.env.CLIENT_ID;
                   }
 
                   return `
-                    <div class="p-1.5 rounded-lg border ${bgCard} text-[10px] space-y-0.5 w-full min-w-0">
+                    <div class="p-2 rounded-lg border ${bgCard} text-[10px] space-y-0.5 w-full min-w-0">
                       <div class="flex items-center justify-between gap-1">
                         <span class="font-bold text-slate-800 truncate text-[9px]">${escapeHtml(acc.name)}</span>
-                        <span class="px-1 py-0.2 rounded text-[8px] ${badge} shrink-0">${badgeText}</span>
+                        <span class="px-1.5 py-0.2 rounded text-[8px] ${badge} shrink-0">${badgeText}</span>
                       </div>
                       ${accData.records.length > 0 ? `
                         <div class="text-slate-600 truncate text-[8px]" title="${escapeHtml(accData.records[0].subject)}">
@@ -2438,41 +2528,27 @@ const CLIENT_ID = process.env.CLIENT_ID;
       `;
     }
 
-    // --- MAIN RENDER ---
+    // --- MAIN RENDER (Strict 1 Domain = 1 Mail) ---
     function renderRecords() {
       const q = searchInput.value.toLowerCase().trim();
       const filterVal = filterFolder.value;
-      const groups = groupRecordsByDomain();
+      
+      // Get deduplicated domain units for current selected ET
+      const domainUnits = getUniqueDomainUnits(emailRecords, selectedNormalizedET);
 
       const isSpecificEtSelected = selectedNormalizedET !== 'ALL' && selectedNormalizedET !== 'MAPPED' && selectedNormalizedET !== 'UNMAPPED';
 
-      const filteredGroups = groups.filter(group => {
+      const filteredUnits = domainUnits.filter(unit => {
         if (q) {
-          const matchDomain = group.domain.includes(q);
-          const matchEt = group.etName.toLowerCase().includes(q) || group.normalizedET.toLowerCase().includes(q);
-          const matchSubj = group.emails.some(e => (e.subject || '').toLowerCase().includes(q));
+          const matchDomain = unit.domain.includes(q);
+          const matchEt = unit.etName.toLowerCase().includes(q) || unit.normalizedET.toLowerCase().includes(q);
+          const matchSubj = unit.emails.some(e => (e.subject || '').toLowerCase().includes(q));
           if (!matchDomain && !matchEt && !matchSubj) return false;
         }
 
-        if (selectedNormalizedET === 'MAPPED') {
-          if (group.normalizedET === 'UNMAPPED') return false;
-        } else if (selectedNormalizedET === 'UNMAPPED') {
-          if (group.normalizedET !== 'UNMAPPED') return false;
-        } else if (selectedNormalizedET !== 'ALL') {
-          if (group.normalizedET !== selectedNormalizedET) return false;
-        }
+        const inboxCount = unit.inboxAccounts.size;
 
-        const inboxAccounts = new Set();
-        let hasSpam = false;
-
-        group.emails.forEach(e => {
-          if (e.folder === 'INBOX') inboxAccounts.add(e.accountName);
-          if (e.folder === 'SPAM') hasSpam = true;
-        });
-
-        const inboxCount = inboxAccounts.size;
-
-        if (filterVal === 'HAS_SPAM' && !hasSpam) return false;
+        if (filterVal === 'HAS_SPAM' && !unit.hasSpam) return false;
         if (filterVal === 'ALL_INBOX' && inboxCount !== 4) return false;
         if (filterVal === 'PARTIAL_INBOX' && (inboxCount === 0 || inboxCount === 4)) return false;
         if (filterVal === 'ZERO_INBOX' && inboxCount !== 0) return false;
@@ -2480,11 +2556,11 @@ const CLIENT_ID = process.env.CLIENT_ID;
         return true;
       });
 
-      badgeRecordsCount.textContent = `${groups.length}`;
+      badgeRecordsCount.textContent = `${filteredUnits.length}`;
 
-      if (filteredGroups.length === 0) {
+      if (filteredUnits.length === 0) {
         domainCardsContainer.innerHTML = `
-          <div class="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-500 shadow-xs w-full">
+          <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-8 text-center text-slate-500 shadow-xs w-full">
             <p class="text-xs font-semibold text-slate-700">No domain records found</p>
             <p class="text-[11px] text-slate-400 mt-0.5">Check search, date or ET filters.</p>
           </div>
@@ -2494,7 +2570,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       // Specific ET View: 2 Distinct Sections
       if (isSpecificEtSelected) {
-        const etEmails = emailRecords.filter(r => r.normalizedET === selectedNormalizedET);
         const displayName = getETDisplayName(selectedNormalizedET);
         
         let inbox4Count = 0;
@@ -2508,25 +2583,20 @@ const CLIENT_ID = process.env.CLIENT_ID;
         const inboxGroups = [];
         const spamGroups = [];
 
-        filteredGroups.forEach(group => {
-          const inboxAccs = new Set();
-          const spamAccs = new Set();
+        filteredUnits.forEach(unit => {
+          const inboxAccCount = unit.inboxAccounts.size;
+          const spamAccCount = unit.spamAccounts.size;
 
-          group.emails.forEach(e => {
-            if (e.folder === 'INBOX') inboxAccs.add(e.accountName);
-            if (e.folder === 'SPAM') spamAccs.add(e.accountName);
-          });
+          if (inboxAccCount === 4) inbox4Count++;
+          else if (inboxAccCount === 3) inbox3Count++;
+          else if (inboxAccCount === 2) inbox2Count++;
 
-          if (inboxAccs.size === 4) inbox4Count++;
-          else if (inboxAccs.size === 3) inbox3Count++;
-          else if (inboxAccs.size === 2) inbox2Count++;
+          if (spamAccCount === 4) spam4Count++;
+          else if (spamAccCount === 3) spam3Count++;
+          else if (spamAccCount > 0) spamLowCount++;
 
-          if (spamAccs.size === 4) spam4Count++;
-          else if (spamAccs.size === 3) spam3Count++;
-          else if (spamAccs.size > 0) spamLowCount++;
-
-          if (inboxAccs.size > 0) inboxGroups.push(group);
-          if (spamAccs.size > 0) spamGroups.push(group);
+          if (unit.hasInbox) inboxGroups.push(unit);
+          if (unit.hasSpam) spamGroups.push(unit);
         });
 
         domainCardsContainer.innerHTML = `
@@ -2537,32 +2607,32 @@ const CLIENT_ID = process.env.CLIENT_ID;
                 <span class="text-[10px] uppercase tracking-wider text-indigo-300 font-bold block">Selected ET Campaign</span>
                 <h2 class="text-base sm:text-xl font-black text-white tracking-tight break-all">${escapeHtml(displayName)}</h2>
               </div>
-              <div class="flex items-center gap-2 text-xs flex-wrap">
-                <div class="bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 flex-1 text-center">
+              <div class="grid grid-cols-3 gap-2 text-xs w-full sm:w-auto">
+                <div class="bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 text-center">
                   <div class="text-[9px] text-slate-300">Total</div>
-                  <div class="text-sm font-black text-white">${etEmails.length}</div>
+                  <div class="text-sm font-black text-white">${filteredUnits.length}</div>
                 </div>
-                <div class="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-400/30 flex-1 text-center">
+                <div class="bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-400/30 text-center">
                   <div class="text-[9px] text-emerald-200">Inbox</div>
-                  <div class="text-sm font-black text-emerald-300">${etEmails.filter(e => e.folder === 'INBOX').length}</div>
+                  <div class="text-sm font-black text-emerald-300">${inboxGroups.length}</div>
                 </div>
-                <div class="bg-rose-500/20 px-2.5 py-1 rounded-lg border border-rose-400/30 flex-1 text-center">
+                <div class="bg-rose-500/20 px-3 py-1.5 rounded-lg border border-rose-400/30 text-center">
                   <div class="text-[9px] text-rose-200">Spam</div>
-                  <div class="text-sm font-black text-rose-300">${etEmails.filter(e => e.folder === 'SPAM').length}</div>
+                  <div class="text-sm font-black text-rose-300">${spamGroups.length}</div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- SECTION 1: OPENER / INBOX -->
-          <div class="bg-white border-2 border-emerald-300 rounded-xl p-3.5 sm:p-5 shadow-xs space-y-3.5 w-full max-w-full">
+          <div class="bg-white/95 backdrop-blur-xs border-2 border-emerald-300 rounded-xl p-3.5 sm:p-5 shadow-xs space-y-3.5 w-full max-w-full">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-emerald-100 pb-3">
               <div class="flex items-center gap-2">
                 <span class="text-lg">📬</span>
                 <div>
                   <h3 class="text-xs sm:text-sm font-bold text-emerald-950 flex items-center gap-1.5">
                     Section 1: Opener &amp; Inbox
-                    <span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">${inboxGroups.length} Dom</span>
+                    <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">${inboxGroups.length} Dom</span>
                   </h3>
                   <p class="text-[10px] text-emerald-700">Inbox distribution for ${escapeHtml(displayName)}</p>
                 </div>
@@ -2570,15 +2640,15 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
               <!-- Counter Badges -->
               <div class="grid grid-cols-3 gap-1.5 w-full sm:w-auto">
-                <div class="bg-emerald-50 border border-emerald-300 px-2 py-1 rounded-lg text-center">
+                <div class="bg-emerald-50 border border-emerald-300 px-2.5 py-1 rounded-lg text-center">
                   <span class="text-[9px] font-bold text-emerald-700 block truncate">4 ACs</span>
                   <span class="text-sm font-black text-emerald-800">${inbox4Count}</span>
                 </div>
-                <div class="bg-indigo-50 border border-indigo-300 px-2 py-1 rounded-lg text-center">
+                <div class="bg-indigo-50 border border-indigo-300 px-2.5 py-1 rounded-lg text-center">
                   <span class="text-[9px] font-bold text-indigo-700 block truncate">3 ACs</span>
                   <span class="text-sm font-black text-indigo-800">${inbox3Count}</span>
                 </div>
-                <div class="bg-amber-50 border border-amber-300 px-2 py-1 rounded-lg text-center">
+                <div class="bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-lg text-center">
                   <span class="text-[9px] font-bold text-amber-700 block truncate">2 ACs</span>
                   <span class="text-sm font-black text-amber-800">${inbox2Count}</span>
                 </div>
@@ -2587,7 +2657,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
             <!-- Inbox Domain Cards Grid -->
             ${inboxGroups.length > 0 ? `
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                 ${inboxGroups.map(g => buildDomainCardHtml(g)).join('')}
               </div>
             ` : `
@@ -2598,14 +2668,14 @@ const CLIENT_ID = process.env.CLIENT_ID;
           </div>
 
           <!-- SECTION 2: SPAM PLACEMENTS -->
-          <div class="bg-white border-2 border-rose-300 rounded-xl p-3.5 sm:p-5 shadow-xs space-y-3.5 w-full max-w-full">
+          <div class="bg-white/95 backdrop-blur-xs border-2 border-rose-300 rounded-xl p-3.5 sm:p-5 shadow-xs space-y-3.5 w-full max-w-full">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-rose-100 pb-3">
               <div class="flex items-center gap-2">
                 <span class="text-lg">🚨</span>
                 <div>
                   <h3 class="text-xs sm:text-sm font-bold text-rose-950 flex items-center gap-1.5">
                     Section 2: Spam Placements
-                    <span class="bg-rose-100 text-rose-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">${spamGroups.length} Dom</span>
+                    <span class="bg-rose-100 text-rose-800 text-[10px] px-2 py-0.5 rounded-full font-bold">${spamGroups.length} Dom</span>
                   </h3>
                   <p class="text-[10px] text-rose-700">Spam landings across accounts</p>
                 </div>
@@ -2613,15 +2683,15 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
               <!-- Counter Badges -->
               <div class="grid grid-cols-3 gap-1.5 w-full sm:w-auto">
-                <div class="bg-rose-50 border border-rose-300 px-2 py-1 rounded-lg text-center">
+                <div class="bg-rose-50 border border-rose-300 px-2.5 py-1 rounded-lg text-center">
                   <span class="text-[9px] font-bold text-rose-700 block truncate">4 ACs</span>
                   <span class="text-sm font-black text-rose-800">${spam4Count}</span>
                 </div>
-                <div class="bg-amber-50 border border-amber-300 px-2 py-1 rounded-lg text-center">
+                <div class="bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-lg text-center">
                   <span class="text-[9px] font-bold text-amber-700 block truncate">3 ACs</span>
                   <span class="text-sm font-black text-amber-800">${spam3Count}</span>
                 </div>
-                <div class="bg-slate-50 border border-slate-300 px-2 py-1 rounded-lg text-center">
+                <div class="bg-slate-50 border border-slate-300 px-2.5 py-1 rounded-lg text-center">
                   <span class="text-[9px] font-bold text-slate-600 block truncate">1-2 ACs</span>
                   <span class="text-sm font-black text-slate-800">${spamLowCount}</span>
                 </div>
@@ -2630,7 +2700,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
             <!-- Spam Domain Cards Grid -->
             ${spamGroups.length > 0 ? `
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                 ${spamGroups.map(g => buildDomainCardHtml(g)).join('')}
               </div>
             ` : `
@@ -2645,25 +2715,20 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       // Default Overview Grid
       domainCardsContainer.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-          ${filteredGroups.map(group => buildDomainCardHtml(group)).join('')}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+          ${filteredUnits.map(unit => buildDomainCardHtml(unit)).join('')}
         </div>
       `;
     }
 
     function updateStats() {
-      // Calculate metrics based on selected ET
-      const targetEmails = emailRecords.filter(rec => {
-        if (selectedNormalizedET === 'ALL') return true;
-        if (selectedNormalizedET === 'MAPPED') return rec.normalizedET !== 'UNMAPPED';
-        if (selectedNormalizedET === 'UNMAPPED') return rec.normalizedET === 'UNMAPPED';
-        return rec.normalizedET === selectedNormalizedET;
-      });
+      // 1 Domain = 1 Mail Deduplicated Units for the selected ET
+      const targetUnits = getUniqueDomainUnits(emailRecords, selectedNormalizedET);
 
-      const total = targetEmails.length;
-      const inbox = targetEmails.filter(r => r.folder === 'INBOX').length;
-      const spam = targetEmails.filter(r => r.folder === 'SPAM').length;
-      const mapped = targetEmails.filter(r => r.normalizedET !== 'UNMAPPED').length;
+      const total = targetUnits.length;
+      const inbox = targetUnits.filter(u => u.hasInbox).length;
+      const spam = targetUnits.filter(u => u.hasSpam).length;
+      const mapped = targetUnits.filter(u => u.normalizedET !== 'UNMAPPED').length;
 
       const inboxRate = total > 0 ? ((inbox / total) * 100).toFixed(1) : '0.0';
       const spamRate = total > 0 ? ((spam / total) * 100).toFixed(1) : '0.0';
@@ -2818,23 +2883,22 @@ const CLIENT_ID = process.env.CLIENT_ID;
     filterFolder.addEventListener('change', renderRecords);
 
     btnExportCsv.addEventListener('click', () => {
-      if (emailRecords.length === 0) return;
-      const headers = ['ET Name', 'Domain', 'Email Account', 'Account Type', 'Folder Status', 'Subject', 'From', 'Detection Time'];
-      const rows = emailRecords.map(r => [
-        `"${r.etName}"`,
-        `"${r.domain}"`,
-        `"${r.accountName}"`,
-        `"${r.accountType}"`,
-        `"${r.folder}"`,
-        `"${(r.subject || '').replace(/"/g, '""')}"`,
-        `"${(r.from || '').replace(/"/g, '""')}"`,
-        `"${r.detectionTime.toISOString()}"`
+      const units = getUniqueDomainUnits(emailRecords, selectedNormalizedET);
+      if (units.length === 0) return;
+      const headers = ['ET Name', 'Domain', 'Folder Status', 'Inbox Accounts', 'Spam Accounts', 'Total Messages'];
+      const rows = units.map(u => [
+        `"${u.etName}"`,
+        `"${u.domain}"`,
+        `"${u.hasSpam ? 'HAS_SPAM' : u.hasInbox ? 'INBOX' : 'OTHER'}"`,
+        `"${Array.from(u.inboxAccounts).join(', ')}"`,
+        `"${Array.from(u.spamAccounts).join(', ')}"`,
+        `"${u.emails.length}"`
       ]);
       const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
       const uri = encodeURI(csv);
       const link = document.createElement('a');
       link.setAttribute('href', uri);
-      link.setAttribute('download', `${currentSyncScope}_Report.csv`);
+      link.setAttribute('download', `${currentSyncScope}_Unique_Domains_Report.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -2870,6 +2934,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
     // --- INIT ---
     window.addEventListener('load', () => {
+      initSnowBackground();
       setupPwa();
       updateLockUI();
       checkBrowserNotificationPermission();
