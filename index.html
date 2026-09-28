@@ -812,6 +812,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
     let currentSyncScope = 'TODAY';
     let selectedNormalizedET = 'ALL';
+    let selectedDonutCategory = 'ALL'; // Interactive filter triggered from chart/legend
     const expandedDomainCards = new Set();
     const fetchedMessageCache = new Map();
     const notifiedSpamIds = new Set(JSON.parse(localStorage.getItem('notified_spam_ids') || '[]'));
@@ -915,7 +916,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       return Array.from(domainMap.values()).sort((a, b) => b.latestTime.getTime() - a.latestTime.getTime());
     }
 
-    // --- DATE VALIDATION (UPDATED: Checks and preserves all dates) ---
+    // --- DATE VALIDATION (Preserves all dates) ---
     function isDateTodayOrYesterday(dateStr) {
       return true;
     }
@@ -1587,10 +1588,21 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
     function selectET(normET) {
       selectedNormalizedET = normET;
+      selectedDonutCategory = 'ALL'; // Reset donut selection when switching ET campaign
       if (filterEt) filterEt.value = normET;
       renderETSidebar();
       renderRecords();
       updateStats();
+      renderInboxDonutChart();
+    }
+
+    function toggleDonutCategoryFilter(catKey) {
+      if (selectedDonutCategory === catKey) {
+        selectedDonutCategory = 'ALL';
+      } else {
+        selectedDonutCategory = catKey;
+      }
+      renderRecords();
       renderInboxDonutChart();
     }
 
@@ -1693,15 +1705,20 @@ const CLIENT_ID = process.env.CLIENT_ID;
           const strokeDasharray = `${sliceLength} ${circumference - sliceLength}`;
           const currentOffset = strokeDashoffsetAccumulator;
 
+          const isSelected = selectedDonutCategory === cat.key;
+          const strokeW = isSelected ? '28' : '22';
+          const opacityVal = (selectedDonutCategory !== 'ALL' && !isSelected) ? '0.35' : '1';
+
           svgSegmentsHtml += `
             <circle
               cx="100" cy="100" r="${radius}"
               fill="none"
               stroke="${cat.color}"
-              stroke-width="22"
+              stroke-width="${strokeW}"
               stroke-dasharray="${strokeDasharray}"
               stroke-dashoffset="${-currentOffset}"
               stroke-linecap="butt"
+              opacity="${opacityVal}"
               class="donut-segment"
               data-cat-key="${cat.key}"
               data-cat-label="${escapeHtml(cat.label)}"
@@ -1715,13 +1732,18 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       inboxDonutSvg.innerHTML = svgSegmentsHtml;
 
+      // Render Legend with Click Filter Indicator
       chartLegendContainer.innerHTML = categories.map(cat => {
         const pct = targetUnits.length > 0 ? ((cat.count / targetUnits.length) * 100).toFixed(0) : 0;
+        const isSelected = selectedDonutCategory === cat.key;
+        const activeStyles = isSelected ? 'bg-indigo-50 border-indigo-300 ring-1 ring-indigo-400 font-bold' : 'hover:bg-slate-50 border-transparent';
+        
         return `
-          <div class="legend-row flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer" data-cat-key="${cat.key}">
+          <div class="legend-row border flex items-center justify-between p-2 rounded-lg transition-all cursor-pointer ${activeStyles}" data-cat-key="${cat.key}" title="Click to filter by ${escapeHtml(cat.label)}">
             <div class="flex items-center gap-2 min-w-0">
               <span class="w-2.5 h-2.5 rounded-full ${cat.ringBg} shrink-0"></span>
               <span class="text-slate-700 font-medium truncate text-[11px]">${cat.label}</span>
+              ${isSelected ? `<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.2 rounded-full font-bold ml-1">Filtered</span>` : ''}
             </div>
             <div class="flex items-center gap-1.5 font-mono text-[11px]">
               <span class="font-bold text-slate-900">${cat.count}</span>
@@ -1731,7 +1753,14 @@ const CLIENT_ID = process.env.CLIENT_ID;
         `;
       }).join('');
 
+      // Click to filter on SVG segments
       inboxDonutSvg.querySelectorAll('.donut-segment').forEach(seg => {
+        const key = seg.getAttribute('data-cat-key');
+        seg.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleDonutCategoryFilter(key);
+        });
+
         seg.addEventListener('mouseenter', () => {
           const count = seg.getAttribute('data-cat-count');
           const label = seg.getAttribute('data-cat-label');
@@ -1744,9 +1773,14 @@ const CLIENT_ID = process.env.CLIENT_ID;
         });
       });
 
+      // Click to filter on Legend rows
       chartLegendContainer.querySelectorAll('.legend-row').forEach(row => {
+        const key = row.getAttribute('data-cat-key');
+        row.addEventListener('click', () => {
+          toggleDonutCategoryFilter(key);
+        });
+
         row.addEventListener('mouseenter', () => {
-          const key = row.getAttribute('data-cat-key');
           const seg = inboxDonutSvg.querySelector(`[data-cat-key="${key}"]`);
           if (seg) {
             seg.setAttribute('stroke-width', '28');
@@ -1755,7 +1789,10 @@ const CLIENT_ID = process.env.CLIENT_ID;
           }
         });
         row.addEventListener('mouseleave', () => {
-          inboxDonutSvg.querySelectorAll('.donut-segment').forEach(s => s.setAttribute('stroke-width', '22'));
+          inboxDonutSvg.querySelectorAll('.donut-segment').forEach(s => {
+            const isSel = selectedDonutCategory === s.getAttribute('data-cat-key');
+            s.setAttribute('stroke-width', isSel ? '28' : '22');
+          });
           chartCenterVal.textContent = targetUnits.length;
           chartCenterSub.textContent = 'Unique Mails';
         });
@@ -2486,7 +2523,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       `;
     }
 
-    // --- MAIN RENDER (Strict 1 Domain = 1 Mail) ---
+    // --- MAIN RENDER (Filtered by Legend & Inputs) ---
     function renderRecords() {
       const q = searchInput.value.toLowerCase().trim();
       const filterVal = filterFolder.value;
@@ -2509,16 +2546,50 @@ const CLIENT_ID = process.env.CLIENT_ID;
         if (filterVal === 'PARTIAL_INBOX' && (inboxCount === 0 || inboxCount === 4)) return false;
         if (filterVal === 'ZERO_INBOX' && inboxCount !== 0) return false;
 
+        // Apply interactive donut/legend category selection
+        if (selectedDonutCategory !== 'ALL') {
+          if (selectedDonutCategory === '4_acs' && inboxCount !== 4) return false;
+          if (selectedDonutCategory === '3_acs' && inboxCount !== 3) return false;
+          if (selectedDonutCategory === '2_acs' && inboxCount !== 2) return false;
+          if (selectedDonutCategory === '1_acs' && inboxCount !== 1) return false;
+          if (selectedDonutCategory === 'spam' && !unit.hasSpam) return false;
+        }
+
         return true;
       });
 
       badgeRecordsCount.textContent = `${filteredUnits.length}`;
 
+      // Reset prompt badge if filtered by donut
+      let filterBannerHtml = '';
+      if (selectedDonutCategory !== 'ALL') {
+        const catMap = {
+          '4_acs': '4 ACs Inboxed',
+          '3_acs': '3 ACs Inboxed',
+          '2_acs': '2 ACs Inboxed',
+          '1_acs': '1 AC Inboxed',
+          'spam': 'Overall Spam'
+        };
+        filterBannerHtml = `
+          <div class="flex items-center justify-between p-2.5 px-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900 w-full mb-3 shadow-xs">
+            <span class="flex items-center gap-1.5 font-medium">
+              <span>Showing:</span>
+              <strong class="text-indigo-700">${catMap[selectedDonutCategory]}</strong>
+              <span class="text-slate-500 font-mono">(${filteredUnits.length} found)</span>
+            </span>
+            <button onclick="toggleDonutCategoryFilter('${selectedDonutCategory}')" class="px-2 py-0.5 text-[11px] font-bold bg-white text-indigo-600 border border-indigo-300 rounded hover:bg-indigo-50">
+              Clear Filter ✕
+            </button>
+          </div>
+        `;
+      }
+
       if (filteredUnits.length === 0) {
         domainCardsContainer.innerHTML = `
+          ${filterBannerHtml}
           <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-8 text-center text-slate-500 shadow-xs w-full">
             <p class="text-xs font-semibold text-slate-700">No domain records found</p>
-            <p class="text-[11px] text-slate-400 mt-0.5">Check search, date or ET filters.</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">No emails matched the current status filter.</p>
           </div>
         `;
         return;
@@ -2555,6 +2626,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         });
 
         domainCardsContainer.innerHTML = `
+          ${filterBannerHtml}
           <!-- ET Overview Header -->
           <div class="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 border border-indigo-700/40 rounded-xl p-3.5 sm:p-5 text-white shadow-md space-y-2.5 w-full">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -2617,7 +2689,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
               </div>
             ` : `
               <div class="py-6 text-center text-xs text-slate-500 bg-slate-50 rounded-lg">
-                No inbox placements found for this ET.
+                No inbox placements found for this selection.
               </div>
             `}
           </div>
@@ -2660,7 +2732,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
               </div>
             ` : `
               <div class="py-6 text-center text-xs text-emerald-600 font-semibold bg-emerald-50/50 rounded-lg">
-                ✓ 0 Spam placements detected! Excellent delivery.
+                ✓ 0 Spam placements detected!
               </div>
             `}
           </div>
@@ -2669,6 +2741,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       }
 
       domainCardsContainer.innerHTML = `
+        ${filterBannerHtml}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
           ${filteredUnits.map(unit => buildDomainCardHtml(unit)).join('')}
         </div>
