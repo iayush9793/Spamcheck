@@ -218,7 +218,7 @@
   <!-- Main Container -->
   <main class="flex-1 p-3 sm:p-5 lg:p-6 max-w-[1600px] w-full mx-auto space-y-4 overflow-x-hidden relative z-10">
 
-    <!-- Metric Summary Cards (2 cols on phone, 5 on desktop) -->
+    <!-- Metric Summary Cards -->
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4 w-full">
       <!-- Total Mails (Unique Domains) -->
       <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
@@ -289,7 +289,7 @@
       </div>
     </div>
 
-    <!-- TAB 1: LIVE MONITOR VIEW (Responsive 3-Panel Architecture) -->
+    <!-- TAB 1: LIVE MONITOR VIEW -->
     <div id="tab-content-live" class="tab-pane space-y-3.5 w-full max-w-full">
       <!-- Top Filter Bar -->
       <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 w-full">
@@ -307,7 +307,7 @@
             />
           </div>
 
-          <!-- ET Name Filter Dropdown (Synced with sidebar) -->
+          <!-- ET Name Filter Dropdown -->
           <div class="w-full sm:w-auto min-w-0 sm:min-w-[170px]">
             <select id="filter-et" class="w-full min-h-[40px] bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs truncate">
               <option value="ALL">All ET Names</option>
@@ -340,7 +340,7 @@
       <!-- 3-PANEL RESPONSIVE GRID LAYOUT -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start w-full">
         
-        <!-- LEFT PANEL: ET SIDEBAR (Col 1 to 3 on desktop, top/stacked on mobile) -->
+        <!-- LEFT PANEL: ET SIDEBAR -->
         <aside class="lg:col-span-3 bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col max-h-[360px] lg:max-h-[820px] lg:sticky lg:top-24 w-full">
           <div class="p-3 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
@@ -366,7 +366,7 @@
           </div>
         </aside>
 
-        <!-- CENTER PANEL: DOMAIN CARDS & ET VIEW (Col 4 to 9 on desktop, order-last or middle on mobile) -->
+        <!-- CENTER PANEL: DOMAIN CARDS & ET VIEW -->
         <section class="lg:col-span-6 space-y-4 min-w-0 w-full">
           <div id="domain-cards-container" class="space-y-4 w-full max-w-full">
             <div class="bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl p-8 sm:p-12 text-center text-slate-500 shadow-xs">
@@ -378,7 +378,7 @@
           </div>
         </section>
 
-        <!-- RIGHT PANEL: CIRCULAR DONUT CHART (Col 10 to 12 on desktop, stacked on mobile) -->
+        <!-- RIGHT PANEL: CIRCULAR DONUT CHART -->
         <aside class="lg:col-span-3 bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl shadow-xs p-4 space-y-4 lg:sticky lg:top-24 w-full">
           <div class="border-b border-slate-100 pb-2.5 flex items-center justify-between">
             <div>
@@ -395,7 +395,6 @@
           <div class="relative flex items-center justify-center py-2">
             <svg id="inbox-donut-svg" class="w-44 h-44 sm:w-48 sm:h-48 transform -rotate-90" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r="70" fill="none" stroke="#f1f5f9" stroke-width="22"></circle>
-              <!-- Dynamic Segments rendered by JS -->
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
               <span id="chart-center-val" class="text-xl sm:text-2xl font-black text-slate-900">0</span>
@@ -404,15 +403,13 @@
           </div>
 
           <!-- Dynamic Legend with Counts -->
-          <div id="chart-legend-container" class="space-y-2 text-xs pt-2 border-t border-slate-100">
-            <!-- Populated dynamically with hover highlights -->
-          </div>
+          <div id="chart-legend-container" class="space-y-2 text-xs pt-2 border-t border-slate-100"></div>
         </aside>
 
       </div>
     </div>
 
-    <!-- TAB 2: GOOGLE SHEET CACHE (Sheet1) (Protected) -->
+    <!-- TAB 2: GOOGLE SHEET CACHE (Sheet1) -->
     <div id="tab-content-sheet" class="tab-pane hidden space-y-4 w-full">
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
@@ -422,7 +419,7 @@
               <span>Sheet1 Cache</span>
             </h3>
             <p class="text-[11px] text-slate-500 mt-0.5">
-              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">Sheet1</code> (Today/Yesterday)
+              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">Sheet1</code> (All Dates)
             </p>
           </div>
 
@@ -455,7 +452,7 @@
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached (<span id="sheet-table-count">0</span>)</span>
-          <span class="text-[10px] text-slate-500">Today/Yesterday</span>
+          <span class="text-[10px] text-slate-500">All Dates Active</span>
         </div>
         <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
           <table class="w-full text-left text-xs min-w-[320px]">
@@ -476,7 +473,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: it.com SHEET (Protected) -->
+    <!-- TAB 3: it.com SHEET -->
     <div id="tab-content-itcom" class="tab-pane hidden space-y-4 w-full">
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
@@ -485,7 +482,7 @@
               <svg class="w-4 h-4 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
               <span>it.com Sheet Cache</span>
             </h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">it.com</code></p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">it.com</code> (All Dates)</p>
           </div>
 
           <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -534,7 +531,7 @@
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached it.com (<span id="itcom-table-count">0</span>)</span>
-          <span class="text-[10px] text-slate-500">Today/Yesterday</span>
+          <span class="text-[10px] text-slate-500">All Dates Active</span>
         </div>
         <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
           <table class="w-full text-left text-xs min-w-[320px]">
@@ -555,7 +552,7 @@
       </div>
     </div>
 
-    <!-- TAB 4: EXTRA SHEET (Protected) -->
+    <!-- TAB 4: EXTRA SHEET -->
     <div id="tab-content-extrasheet" class="tab-pane hidden space-y-4 w-full">
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
@@ -564,7 +561,7 @@
               <svg class="w-4 h-4 text-violet-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
               <span>Extra Sheet Cache</span>
             </h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-violet-600 font-semibold bg-violet-50 px-1 py-0.2 rounded">gid=1798344486</code></p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-violet-600 font-semibold bg-violet-50 px-1 py-0.2 rounded">gid=1798344486</code> (All Dates)</p>
           </div>
 
           <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -596,7 +593,7 @@
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached Extra (<span id="extrasheet-table-count">0</span>)</span>
-          <span class="text-[10px] text-slate-500">Today/Yesterday</span>
+          <span class="text-[10px] text-slate-500">All Dates Active</span>
         </div>
         <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
           <table class="w-full text-left text-xs min-w-[320px]">
@@ -617,7 +614,7 @@
       </div>
     </div>
 
-    <!-- TAB 5: DIAGNOSTIC TERMINAL (Protected) -->
+    <!-- TAB 5: DIAGNOSTIC TERMINAL -->
     <div id="tab-content-terminal" class="tab-pane hidden space-y-4 w-full">
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div class="p-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
@@ -630,7 +627,7 @@
       </div>
     </div>
 
-    <!-- TAB 6: BACKEND REFERENCE (Protected) -->
+    <!-- TAB 6: BACKEND REFERENCE -->
     <div id="tab-content-backend" class="tab-pane hidden space-y-4 w-full">
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
         <h3 class="text-sm sm:text-base font-bold text-slate-900">24/7 Cloud Background Daemon</h3>
@@ -918,33 +915,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
       return Array.from(domainMap.values()).sort((a, b) => b.latestTime.getTime() - a.latestTime.getTime());
     }
 
-    // --- DATE VALIDATION ---
+    // --- DATE VALIDATION (UPDATED: Checks and preserves all dates) ---
     function isDateTodayOrYesterday(dateStr) {
-      if (!dateStr) return true;
-      const trimmed = dateStr.trim();
-      if (!trimmed) return true;
-
-      let parsed = Date.parse(trimmed);
-      if (isNaN(parsed)) {
-        const parts = trimmed.split(/[\/\-\.]/);
-        if (parts.length === 3) {
-          if (parts[0].length === 4) {
-            parsed = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
-          } else {
-            parsed = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
-          }
-        }
-      }
-
-      if (isNaN(parsed)) return true;
-
-      const d = new Date(parsed);
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-      return target.getTime() === today.getTime() || target.getTime() === yesterday.getTime();
+      return true;
     }
 
     // --- DOM REFERENCES ---
@@ -1093,7 +1066,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
       let width = (canvas.width = window.innerWidth);
       let height = (canvas.height = window.innerHeight);
 
-      // Scale snowflake count based on mobile vs desktop (Ultra-lightweight: 20 on phone, 45 on desktop)
       const isMobile = width < 768;
       const flakeCount = isMobile ? 20 : 45;
 
@@ -1114,11 +1086,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
         height = canvas.height = window.innerHeight;
       });
 
-      let animationFrameId;
       function renderSnow() {
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = 'rgba(99, 102, 241, 0.4)'; // Subtle slate-indigo snowflake tint
-
         for (let i = 0; i < flakeCount; i++) {
           const f = flakes[i];
           ctx.beginPath();
@@ -1136,10 +1105,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
           if (f.x > width) f.x = 0;
           if (f.x < 0) f.x = width;
         }
-
-        animationFrameId = requestAnimationFrame(renderSnow);
+        requestAnimationFrame(renderSnow);
       }
-
       renderSnow();
     }
 
@@ -1542,7 +1509,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
       if (!etSidebarList) return;
       const filterSearch = (sidebarEtSearch ? sidebarEtSearch.value : '').toLowerCase().trim();
 
-      // Aggregate UNIQUE DOMAINS by normalized ET
       const etUniqueDomainCount = new Map();
       const allUniqueDomains = getUniqueDomainUnits(emailRecords, 'ALL');
       let totalMappedUniqueDomains = 0;
@@ -1566,7 +1532,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       let html = '';
 
-      // Preset buttons: ALL and MAPPED
       html += `
         <button type="button" data-et-norm="ALL" class="et-sidebar-item min-h-[44px] w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${selectedNormalizedET === 'ALL' ? 'bg-indigo-50 font-bold text-indigo-700 border-l-4 border-indigo-600' : 'hover:bg-slate-50 text-slate-700'}">
           <span class="truncate">🌟 All ET Campaigns</span>
@@ -1587,7 +1552,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         `;
       }
 
-      // Filtered specific ET list
       const filteredNorms = sortedNormETs.filter(norm => {
         const display = getETDisplayName(norm).toLowerCase();
         return !filterSearch || display.includes(filterSearch) || norm.toLowerCase().includes(filterSearch);
@@ -1613,7 +1577,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       etSidebarList.innerHTML = html;
 
-      // Attach click events
       etSidebarList.querySelectorAll('.et-sidebar-item').forEach(item => {
         item.addEventListener('click', () => {
           const norm = item.getAttribute('data-et-norm');
@@ -1681,11 +1644,10 @@ const CLIENT_ID = process.env.CLIENT_ID;
       });
     }
 
-    // --- CIRCULAR / DONUT STATUS CHART (1 Domain = 1 Mail Deduplicated) ---
+    // --- CIRCULAR / DONUT STATUS CHART ---
     function renderInboxDonutChart() {
       if (!inboxDonutSvg || !chartLegendContainer) return;
 
-      // Base calculation on UNIQUE DOMAINS for selected ET
       const targetUnits = getUniqueDomainUnits(emailRecords, selectedNormalizedET);
 
       const activeTitle = getETDisplayName(selectedNormalizedET);
@@ -1718,9 +1680,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       const totalDistributionCount = categories.reduce((sum, c) => sum + c.count, 0);
 
-      // SVG Donut calculation
       const radius = 70;
-      const circumference = 2 * Math.PI * radius; // ~439.82
+      const circumference = 2 * Math.PI * radius;
       let strokeDashoffsetAccumulator = 0;
 
       let svgSegmentsHtml = `<circle cx="100" cy="100" r="${radius}" fill="none" stroke="#f1f5f9" stroke-width="22"></circle>`;
@@ -1754,7 +1715,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       inboxDonutSvg.innerHTML = svgSegmentsHtml;
 
-      // Render Legend with interactive highlight
       chartLegendContainer.innerHTML = categories.map(cat => {
         const pct = targetUnits.length > 0 ? ((cat.count / targetUnits.length) * 100).toFixed(0) : 0;
         return `
@@ -1771,7 +1731,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         `;
       }).join('');
 
-      // Interactive hover states
       inboxDonutSvg.querySelectorAll('.donut-segment').forEach(seg => {
         seg.addEventListener('mouseenter', () => {
           const count = seg.getAttribute('data-cat-count');
@@ -1888,7 +1847,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
           <td class="py-2.5 px-3 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'All Dates')}</td>
         </tr>
       `).join('');
     }
@@ -1950,7 +1909,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
           <td class="py-2.5 px-3 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'All Dates')}</td>
         </tr>
       `).join('');
     }
@@ -2012,7 +1971,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
           <td class="py-2.5 px-3 font-semibold text-violet-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Current')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'All Dates')}</td>
         </tr>
       `).join('');
     }
@@ -2299,7 +2258,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         emailRecords = Array.from(map.values())
           .sort((a, b) => b.detectionTime.getTime() - a.detectionTime.getTime());
 
-        // Refresh ET names and normalizations
         emailRecords.forEach(rec => {
           rec.domain = normalizeDomain(rec.domain);
           rec.normalizedDomain = normalizeDomain(rec.domain);
@@ -2533,9 +2491,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       const q = searchInput.value.toLowerCase().trim();
       const filterVal = filterFolder.value;
       
-      // Get deduplicated domain units for current selected ET
       const domainUnits = getUniqueDomainUnits(emailRecords, selectedNormalizedET);
-
       const isSpecificEtSelected = selectedNormalizedET !== 'ALL' && selectedNormalizedET !== 'MAPPED' && selectedNormalizedET !== 'UNMAPPED';
 
       const filteredUnits = domainUnits.filter(unit => {
@@ -2568,7 +2524,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         return;
       }
 
-      // Specific ET View: 2 Distinct Sections
       if (isSpecificEtSelected) {
         const displayName = getETDisplayName(selectedNormalizedET);
         
@@ -2713,7 +2668,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         return;
       }
 
-      // Default Overview Grid
       domainCardsContainer.innerHTML = `
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
           ${filteredUnits.map(unit => buildDomainCardHtml(unit)).join('')}
@@ -2722,7 +2676,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
     }
 
     function updateStats() {
-      // 1 Domain = 1 Mail Deduplicated Units for the selected ET
       const targetUnits = getUniqueDomainUnits(emailRecords, selectedNormalizedET);
 
       const total = targetUnits.length;
@@ -2928,7 +2881,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         pasteTextarea.value = '';
         showToast(`Loaded ${parsed.length} mappings`);
       } else {
-        showToast("No rows match Today or Yesterday's DATE");
+        showToast("No valid domain rows found in pasted data");
       }
     });
 
