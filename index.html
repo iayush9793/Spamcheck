@@ -93,6 +93,9 @@
               <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
                 ⚡ 1 Domain = 1 Mail
               </span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                ⏳ Filter: Last 4 Days
+              </span>
             </div>
           </div>
         </div>
@@ -194,6 +197,13 @@
           <span id="badge-extrasheet-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[10px] font-mono">0</span>
         </button>
 
+        <!-- NEW TAB: Feed Sheet Tab (Protected - gid=784037764) -->
+        <button data-tab="feedsheet" class="tab-btn min-h-[40px] py-2 px-3 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
+          <span class="tab-lock-indicator text-[10px]">🔒</span>
+          <span>Feed (784037764)</span>
+          <span id="badge-feedsheet-count" class="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[10px] font-mono">0</span>
+        </button>
+
         <!-- Sync Terminal (Protected) -->
         <button data-tab="terminal" class="tab-btn min-h-[40px] py-2 px-3 text-xs font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors">
           <span class="tab-lock-indicator text-[10px]">🔒</span>
@@ -264,13 +274,13 @@
       <div class="bg-indigo-50/70 backdrop-blur-xs border border-indigo-200/80 rounded-xl p-3 sm:p-4 shadow-xs">
         <span class="text-[10px] sm:text-xs font-semibold text-indigo-700 uppercase tracking-wider flex items-center gap-1 truncate">
           <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-          Domains
+          Domains (4d)
         </span>
         <div class="mt-1 sm:mt-2 flex items-baseline justify-between">
           <span id="stat-sheet-count" class="text-xl sm:text-2xl font-black text-indigo-600 tracking-tight">0</span>
           <span id="stat-mapped" class="text-[10px] font-semibold text-indigo-700 bg-indigo-100 px-1.5 py-0.2 rounded-full truncate">0 Map</span>
         </div>
-        <p class="text-[10px] text-slate-400 mt-0.5 truncate">From Google Sheets</p>
+        <p class="text-[10px] text-slate-400 mt-0.5 truncate">Across 4 Sheets</p>
       </div>
 
       <!-- Active Seed Accounts -->
@@ -419,7 +429,7 @@
               <span>Sheet1 Cache</span>
             </h3>
             <p class="text-[11px] text-slate-500 mt-0.5">
-              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">Sheet1</code> (All Dates)
+              Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">Sheet1</code> (Last 4 Days Filtered)
             </p>
           </div>
 
@@ -452,7 +462,7 @@
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached (<span id="sheet-table-count">0</span>)</span>
-          <span class="text-[10px] text-slate-500">All Dates Active</span>
+          <span class="text-[10px] text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Last 4 Days Active</span>
         </div>
         <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
           <table class="w-full text-left text-xs min-w-[320px]">
@@ -482,7 +492,7 @@
               <svg class="w-4 h-4 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
               <span>it.com Sheet Cache</span>
             </h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">it.com</code> (All Dates)</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded">it.com</code> (Last 4 Days Filtered)</p>
           </div>
 
           <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -531,7 +541,7 @@
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached it.com (<span id="itcom-table-count">0</span>)</span>
-          <span class="text-[10px] text-slate-500">All Dates Active</span>
+          <span class="text-[10px] text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Last 4 Days Active</span>
         </div>
         <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
           <table class="w-full text-left text-xs min-w-[320px]">
@@ -561,7 +571,7 @@
               <svg class="w-4 h-4 text-violet-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
               <span>Extra Sheet Cache</span>
             </h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-violet-600 font-semibold bg-violet-50 px-1 py-0.2 rounded">gid=1798344486</code> (All Dates)</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-violet-600 font-semibold bg-violet-50 px-1 py-0.2 rounded">gid=1798344486</code> (Last 4 Days Filtered)</p>
           </div>
 
           <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -593,7 +603,7 @@
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <span class="text-xs font-bold text-slate-800">Cached Extra (<span id="extrasheet-table-count">0</span>)</span>
-          <span class="text-[10px] text-slate-500">All Dates Active</span>
+          <span class="text-[10px] text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Last 4 Days Active</span>
         </div>
         <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
           <table class="w-full text-left text-xs min-w-[320px]">
@@ -614,7 +624,69 @@
       </div>
     </div>
 
-    <!-- TAB 5: DIAGNOSTIC TERMINAL -->
+    <!-- TAB 5: FEED SHEET (NEW - gid=784037764) -->
+    <div id="tab-content-feedsheet" class="tab-pane hidden space-y-4 w-full">
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+              <span>Feed Sheet Cache</span>
+            </h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">Tab: <code class="text-emerald-600 font-semibold bg-emerald-50 px-1 py-0.2 rounded">gid=784037764</code> (Last 4 Days Filtered)</p>
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button id="btn-open-feedsheet-paste-modal" class="min-h-[38px] flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 shadow-xs">
+              Quick Paste
+            </button>
+            <button id="btn-sync-feedsheet-now" class="min-h-[38px] flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs">
+              <svg id="feedsheet-sync-spinner" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+              <span>Sync Feed</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Feed Sheet CSV URL</label>
+          <input
+            id="feedsheet-url-input"
+            type="text"
+            value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjA8aNW5lpl6B2zqdR3CtMdVEv_hCkfkwWbyWIkZAc3tbQxgxE67g6jO5QkLftCZL_nBSPSDtHMmud/pub?gid=784037764&amp;single=true&amp;output=csv"
+            class="w-full min-h-[38px] bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none"
+          />
+          <div class="mt-1.5 flex flex-col sm:flex-row sm:items-center justify-between text-[10px] text-slate-500 gap-1">
+            <span class="truncate">Status: <strong id="feedsheet-status-text" class="text-slate-800">Ready</strong></span>
+            <span id="feedsheet-sync-time">Never synced</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+        <div class="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <span class="text-xs font-bold text-slate-800">Cached Feed (<span id="feedsheet-table-count">0</span>)</span>
+          <span class="text-[10px] text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Last 4 Days Active</span>
+        </div>
+        <div class="max-h-80 overflow-x-auto w-full no-scrollbar">
+          <table class="w-full text-left text-xs min-w-[320px]">
+            <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-3 font-semibold">Domains</th>
+                <th class="py-2.5 px-3 font-semibold">ET NAME</th>
+                <th class="py-2.5 px-3 font-semibold">DATE</th>
+              </tr>
+            </thead>
+            <tbody id="feedsheet-mappings-tbody" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="3" class="py-6 text-center text-slate-500">No cached Feed mappings.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: DIAGNOSTIC TERMINAL -->
     <div id="tab-content-terminal" class="tab-pane hidden space-y-4 w-full">
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div class="p-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
@@ -627,7 +699,7 @@
       </div>
     </div>
 
-    <!-- TAB 6: BACKEND REFERENCE -->
+    <!-- TAB 7: BACKEND REFERENCE -->
     <div id="tab-content-backend" class="tab-pane hidden space-y-4 w-full">
       <div class="bg-white/95 backdrop-blur-xs border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
         <h3 class="text-sm sm:text-base font-bold text-slate-900">24/7 Cloud Background Daemon</h3>
@@ -776,7 +848,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       <textarea
         id="paste-textarea"
         rows="6"
-        placeholder="Domains,ET NAME,DATE&#10;example.com,Example Tech,2026-09-24"
+        placeholder="Domains,ET NAME,DATE&#10;example.com,Example Tech,2026-09-27"
         class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-xs text-slate-800 focus:outline-none"
       ></textarea>
       <div class="flex justify-end gap-2">
@@ -808,11 +880,12 @@ const CLIENT_ID = process.env.CLIENT_ID;
     const domainLookupMap = new Map();
     const itcomLookupMap = new Map();
     const extraSheetLookupMap = new Map();
+    const feedSheetLookupMap = new Map(); // New Tab gid=784037764 Map
     const tokenCache = {};
 
     let currentSyncScope = 'TODAY';
     let selectedNormalizedET = 'ALL';
-    let selectedDonutCategory = 'ALL'; // Interactive filter triggered from chart/legend
+    let selectedDonutCategory = 'ALL';
     const expandedDomainCards = new Set();
     const fetchedMessageCache = new Map();
     const notifiedSpamIds = new Set(JSON.parse(localStorage.getItem('notified_spam_ids') || '[]'));
@@ -858,6 +931,39 @@ const CLIENT_ID = process.env.CLIENT_ID;
       if (normKey === 'MAPPED') return 'Mapped ETs Only';
       if (normKey === 'UNMAPPED') return 'Unmapped ETs';
       return etDisplayMap.get(normKey) || normKey;
+    }
+
+    // --- NEW: LAST 4 DAYS DATE VALIDATION ---
+    function isDateWithinLast4Days(dateStr) {
+      if (!dateStr || !dateStr.trim()) return true; // keep undated if present
+
+      const clean = dateStr.trim();
+      let parsedDate = null;
+
+      // Format check: YYYY-MM-DD or YYYY/MM/DD
+      if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(clean)) {
+        parsedDate = new Date(clean);
+      }
+      // Format check: DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY
+      else if (/^\d{1,2}[-/.]\d{1,2}[-/.]\d{4}/.test(clean)) {
+        const parts = clean.split(/[-/.]/);
+        parsedDate = new Date(parts[2], parseInt(parts[1], 10) - 1, parts[0]);
+      } else {
+        parsedDate = new Date(clean);
+      }
+
+      if (isNaN(parsedDate.getTime())) {
+        return true; // fail-safe: keep if date cannot be strictly parsed
+      }
+
+      // Today midnight
+      const now = new Date();
+      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      
+      // 4 days boundary (Today, Yesterday, -2, -3 days = 4 full days)
+      const fourDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3, 0, 0, 0, 0);
+
+      return parsedDate >= fourDaysAgo && parsedDate <= endOfToday;
     }
 
     // --- CORE ENGINE: 1 DOMAIN = 1 MAIL DEDUPLICATION ---
@@ -914,11 +1020,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
       });
 
       return Array.from(domainMap.values()).sort((a, b) => b.latestTime.getTime() - a.latestTime.getTime());
-    }
-
-    // --- DATE VALIDATION (Preserves all dates) ---
-    function isDateTodayOrYesterday(dateStr) {
-      return true;
     }
 
     // --- DOM REFERENCES ---
@@ -1003,6 +1104,17 @@ const CLIENT_ID = process.env.CLIENT_ID;
     const extraSheetMappingsTbody = document.getElementById('extrasheet-mappings-tbody');
     const extraSheetTableCount = document.getElementById('extrasheet-table-count');
     const btnOpenExtraSheetPasteModal = document.getElementById('btn-open-extrasheet-paste-modal');
+
+    // Feed Sheet Elements (NEW gid=784037764)
+    const badgeFeedSheetCount = document.getElementById('badge-feedsheet-count');
+    const feedSheetUrlInput = document.getElementById('feedsheet-url-input');
+    const feedSheetStatusText = document.getElementById('feedsheet-status-text');
+    const feedSheetSyncTime = document.getElementById('feedsheet-sync-time');
+    const btnSyncFeedSheetNow = document.getElementById('btn-sync-feedsheet-now');
+    const feedSheetSyncSpinner = document.getElementById('feedsheet-sync-spinner');
+    const feedSheetMappingsTbody = document.getElementById('feedsheet-mappings-tbody');
+    const feedSheetTableCount = document.getElementById('feedsheet-table-count');
+    const btnOpenFeedSheetPasteModal = document.getElementById('btn-open-feedsheet-paste-modal');
 
     const terminalLogsContainer = document.getElementById('terminal-logs-container');
     const btnClearLogs = document.getElementById('btn-clear-logs');
@@ -1491,15 +1603,19 @@ const CLIENT_ID = process.env.CLIENT_ID;
       if (!domain) return 'Unmapped';
       const clean = normalizeDomain(domain);
       
+      // Strict 4-source cascade priority
       if (domainLookupMap.has(clean)) return domainLookupMap.get(clean).etName;
       if (extraSheetLookupMap.has(clean)) return `${extraSheetLookupMap.get(clean).etName} (Extra)`;
+      if (feedSheetLookupMap.has(clean)) return `${feedSheetLookupMap.get(clean).etName} (Feed)`;
       if (itcomLookupMap.has(clean)) return `${itcomLookupMap.get(clean).etName} (it.com)`;
 
+      // Sub-domain matching
       const parts = clean.split('.');
       if (parts.length > 2) {
         const root = parts.slice(-2).join('.');
         if (domainLookupMap.has(root)) return domainLookupMap.get(root).etName;
         if (extraSheetLookupMap.has(root)) return `${extraSheetLookupMap.get(root).etName} (Extra)`;
+        if (feedSheetLookupMap.has(root)) return `${feedSheetLookupMap.get(root).etName} (Feed)`;
         if (itcomLookupMap.has(root)) return `${itcomLookupMap.get(root).etName} (it.com)`;
       }
       return 'Unmapped';
@@ -1588,7 +1704,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
     function selectET(normET) {
       selectedNormalizedET = normET;
-      selectedDonutCategory = 'ALL'; // Reset donut selection when switching ET campaign
+      selectedDonutCategory = 'ALL';
       if (filterEt) filterEt.value = normET;
       renderETSidebar();
       renderRecords();
@@ -1732,7 +1848,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       inboxDonutSvg.innerHTML = svgSegmentsHtml;
 
-      // Render Legend with Click Filter Indicator
       chartLegendContainer.innerHTML = categories.map(cat => {
         const pct = targetUnits.length > 0 ? ((cat.count / targetUnits.length) * 100).toFixed(0) : 0;
         const isSelected = selectedDonutCategory === cat.key;
@@ -1753,7 +1868,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         `;
       }).join('');
 
-      // Click to filter on SVG segments
       inboxDonutSvg.querySelectorAll('.donut-segment').forEach(seg => {
         const key = seg.getAttribute('data-cat-key');
         seg.addEventListener('click', (e) => {
@@ -1773,7 +1887,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         });
       });
 
-      // Click to filter on Legend rows
       chartLegendContainer.querySelectorAll('.legend-row').forEach(row => {
         const key = row.getAttribute('data-cat-key');
         row.addEventListener('click', () => {
@@ -1799,6 +1912,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       });
     }
 
+    // --- CSV PARSING ENFORCING LAST 4 DAYS ---
     function parseSheetCsvData(rawText) {
       const parsed = [];
       const lines = rawText.split(/\r?\n/).filter(l => l.trim().length > 0);
@@ -1819,7 +1933,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
         const dateStr = dateIdx !== -1 ? (cols[dateIdx] || '').trim() : '';
 
         if (d && et && !d.includes('domain')) {
-          if (isDateTodayOrYesterday(dateStr)) {
+          // STRICT FILTER: Accept only if date falls within last 4 days
+          if (isDateWithinLast4Days(dateStr)) {
             registerETDisplay(et);
             parsed.push({ domain: d, etName: et, dateStr: dateStr });
           }
@@ -1861,12 +1976,12 @@ const CLIENT_ID = process.env.CLIENT_ID;
           registerETDisplay(p.etName);
           domainLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr });
         });
-        sheetStatusText.textContent = `Active: ${parsed.length} cached`;
+        sheetStatusText.textContent = `Active: ${parsed.length} (4d)`;
         sheetSyncTime.textContent = new Date().toLocaleTimeString();
         renderSheetTable(parsed);
         refreshAllRecordEtNames();
       } else {
-        sheetStatusText.textContent = 'Fetch blocked. Use Quick Paste.';
+        sheetStatusText.textContent = 'Fetch blocked or no records within 4 days.';
       }
     }
 
@@ -1876,7 +1991,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       updateTotalCachedDomainStats();
 
       if (mappings.length === 0) {
-        sheetMappingsTbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-500">No cached mappings.</td></tr>`;
+        sheetMappingsTbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-500">No cached mappings in last 4 days.</td></tr>`;
         return;
       }
 
@@ -1884,7 +1999,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
           <td class="py-2.5 px-3 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'All Dates')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Undated')}</td>
         </tr>
       `).join('');
     }
@@ -1922,12 +2037,12 @@ const CLIENT_ID = process.env.CLIENT_ID;
           registerETDisplay(p.etName);
           itcomLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr });
         });
-        itcomStatusText.textContent = `Active: ${parsed.length} cached`;
+        itcomStatusText.textContent = `Active: ${parsed.length} (4d)`;
         itcomSyncTime.textContent = new Date().toLocaleTimeString();
         renderItcomTable(parsed);
         refreshAllRecordEtNames();
       } else {
-        itcomStatusText.textContent = 'Fetch blocked. Use Quick Paste.';
+        itcomStatusText.textContent = 'Fetch blocked or no records within 4 days.';
       }
     }
 
@@ -1938,7 +2053,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       updateTotalCachedDomainStats();
 
       if (mappings.length === 0) {
-        itcomMappingsTbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-500">No cached it.com mappings.</td></tr>`;
+        itcomMappingsTbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-500">No cached it.com mappings in last 4 days.</td></tr>`;
         return;
       }
 
@@ -1946,7 +2061,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
           <td class="py-2.5 px-3 font-semibold text-indigo-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'All Dates')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Undated')}</td>
         </tr>
       `).join('');
     }
@@ -1984,12 +2099,12 @@ const CLIENT_ID = process.env.CLIENT_ID;
           registerETDisplay(p.etName);
           extraSheetLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr });
         });
-        extraSheetStatusText.textContent = `Active: ${parsed.length} cached`;
+        extraSheetStatusText.textContent = `Active: ${parsed.length} (4d)`;
         extraSheetSyncTime.textContent = new Date().toLocaleTimeString();
         renderExtraSheetTable(parsed);
         refreshAllRecordEtNames();
       } else {
-        extraSheetStatusText.textContent = 'Fetch blocked. Use Quick Paste.';
+        extraSheetStatusText.textContent = 'Fetch blocked or no records within 4 days.';
       }
     }
 
@@ -2000,7 +2115,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       updateTotalCachedDomainStats();
 
       if (mappings.length === 0) {
-        extraSheetMappingsTbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-500">No cached Extra mappings.</td></tr>`;
+        extraSheetMappingsTbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-500">No cached Extra mappings in last 4 days.</td></tr>`;
         return;
       }
 
@@ -2008,7 +2123,70 @@ const CLIENT_ID = process.env.CLIENT_ID;
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
           <td class="py-2.5 px-3 font-semibold text-violet-700">${escapeHtml(m.etName)}</td>
-          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'All Dates')}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Undated')}</td>
+        </tr>
+      `).join('');
+    }
+
+    // --- NEW: FEED SHEET SYNC (gid=784037764) ---
+    async function syncFeedSheet() {
+      if (!feedSheetSyncSpinner) return;
+      feedSheetSyncSpinner.classList.add('animate-spin');
+      feedSheetStatusText.textContent = 'Fetching Feed...';
+      const targetUrl = feedSheetUrlInput.value.trim();
+      const endpoints = [
+        targetUrl,
+        `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+      ];
+
+      let parsed = [];
+      for (const ep of endpoints) {
+        try {
+          const resp = await fetch(ep, { cache: 'no-store' });
+          if (resp.ok) {
+            const raw = await resp.text();
+            if (raw && !raw.includes('<!DOCTYPE html>') && raw.length > 10) {
+              parsed = parseSheetCsvData(raw);
+              if (parsed.length > 0) break;
+            }
+          }
+        } catch (err) {}
+      }
+
+      feedSheetSyncSpinner.classList.remove('animate-spin');
+
+      if (parsed.length > 0) {
+        feedSheetLookupMap.clear();
+        parsed.forEach(p => {
+          registerETDisplay(p.etName);
+          feedSheetLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr });
+        });
+        feedSheetStatusText.textContent = `Active: ${parsed.length} (4d)`;
+        feedSheetSyncTime.textContent = new Date().toLocaleTimeString();
+        renderFeedSheetTable(parsed);
+        refreshAllRecordEtNames();
+      } else {
+        feedSheetStatusText.textContent = 'Fetch blocked or no records within 4 days.';
+      }
+    }
+
+    function renderFeedSheetTable(mappings) {
+      if (!feedSheetTableCount || !badgeFeedSheetCount || !feedSheetMappingsTbody) return;
+      feedSheetTableCount.textContent = mappings.length;
+      badgeFeedSheetCount.textContent = mappings.length;
+      updateTotalCachedDomainStats();
+
+      if (mappings.length === 0) {
+        feedSheetMappingsTbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-500">No cached Feed mappings in last 4 days.</td></tr>`;
+        return;
+      }
+
+      feedSheetMappingsTbody.innerHTML = mappings.map(m => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-mono text-slate-700">${escapeHtml(m.domain)}</td>
+          <td class="py-2.5 px-3 font-semibold text-emerald-700">${escapeHtml(m.etName)}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-500 text-[10px]">${escapeHtml(m.dateStr || 'Undated')}</td>
         </tr>
       `).join('');
     }
@@ -2017,7 +2195,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
       const totalUniqueDomains = new Set([
         ...domainLookupMap.keys(),
         ...itcomLookupMap.keys(),
-        ...extraSheetLookupMap.keys()
+        ...extraSheetLookupMap.keys(),
+        ...feedSheetLookupMap.keys()
       ]);
       statSheetCount.textContent = totalUniqueDomains.size;
     }
@@ -2044,6 +2223,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
         const inSheet1 = domainLookupMap.has(query);
         const inItcom = itcomLookupMap.has(query);
         const inExtra = extraSheetLookupMap.has(query);
+        const inFeed = feedSheetLookupMap.has(query);
         const resolved = resolveEtName(query);
 
         const matching = emailRecords.filter(r => normalizeDomain(r.domain) === query);
@@ -2055,10 +2235,11 @@ const CLIENT_ID = process.env.CLIENT_ID;
           <div class="space-y-1">
             <div class="font-bold text-slate-900 truncate">Domain: ${escapeHtml(query)}</div>
             <div>ET: <strong>${escapeHtml(resolved)}</strong></div>
-            <div class="flex gap-2 text-[10px]">
+            <div class="flex gap-2 text-[10px] flex-wrap">
               <span>Sheet1: ${inSheet1 ? '✓' : '✗'}</span>
               <span>it.com: ${inItcom ? '✓' : '✗'}</span>
               <span>Extra: ${inExtra ? '✓' : '✗'}</span>
+              <span>Feed: ${inFeed ? '✓' : '✗'}</span>
             </div>
             <div class="text-[10px] text-slate-600">Emails: ${matching.length} (Inbox: ${inInbox}, Spam: ${inSpam})</div>
           </div>
@@ -2523,7 +2704,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
       `;
     }
 
-    // --- MAIN RENDER (Filtered by Legend & Inputs) ---
+    // --- MAIN RENDER ---
     function renderRecords() {
       const q = searchInput.value.toLowerCase().trim();
       const filterVal = filterFolder.value;
@@ -2546,7 +2727,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
         if (filterVal === 'PARTIAL_INBOX' && (inboxCount === 0 || inboxCount === 4)) return false;
         if (filterVal === 'ZERO_INBOX' && inboxCount !== 0) return false;
 
-        // Apply interactive donut/legend category selection
         if (selectedDonutCategory !== 'ALL') {
           if (selectedDonutCategory === '4_acs' && inboxCount !== 4) return false;
           if (selectedDonutCategory === '3_acs' && inboxCount !== 3) return false;
@@ -2560,7 +2740,6 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
       badgeRecordsCount.textContent = `${filteredUnits.length}`;
 
-      // Reset prompt badge if filtered by donut
       let filterBannerHtml = '';
       if (selectedDonutCategory !== 'ALL') {
         const catMap = {
@@ -2831,6 +3010,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
     btnSyncSheetNow.addEventListener('click', () => syncGoogleSheet());
     if (btnSyncItcomNow) btnSyncItcomNow.addEventListener('click', () => syncItcomSheet());
     if (btnSyncExtraSheetNow) btnSyncExtraSheetNow.addEventListener('click', () => syncExtraSheet());
+    if (btnSyncFeedSheetNow) btnSyncFeedSheetNow.addEventListener('click', () => syncFeedSheet());
     btnClearLogs.addEventListener('click', () => { terminalLogsContainer.innerHTML = ''; });
 
     btnOpenPasteModal.addEventListener('click', () => {
@@ -2853,6 +3033,15 @@ const CLIENT_ID = process.env.CLIENT_ID;
       btnOpenExtraSheetPasteModal.addEventListener('click', () => {
         currentPasteTarget = 'extrasheet';
         pasteModalTitle.textContent = 'Quick Paste Extra';
+        pasteTextarea.value = '';
+        pasteModal.classList.remove('hidden');
+      });
+    }
+
+    if (btnOpenFeedSheetPasteModal) {
+      btnOpenFeedSheetPasteModal.addEventListener('click', () => {
+        currentPasteTarget = 'feedsheet';
+        pasteModalTitle.textContent = 'Quick Paste Feed (784037764)';
         pasteTextarea.value = '';
         pasteModal.classList.remove('hidden');
       });
@@ -2944,6 +3133,10 @@ const CLIENT_ID = process.env.CLIENT_ID;
           extraSheetLookupMap.clear();
           parsed.forEach(p => extraSheetLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
           renderExtraSheetTable(parsed);
+        } else if (currentPasteTarget === 'feedsheet') {
+          feedSheetLookupMap.clear();
+          parsed.forEach(p => feedSheetLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
+          renderFeedSheetTable(parsed);
         } else {
           domainLookupMap.clear();
           parsed.forEach(p => domainLookupMap.set(p.domain, { etName: p.etName, dateStr: p.dateStr }));
@@ -2952,9 +3145,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
         refreshAllRecordEtNames();
         pasteModal.classList.add('hidden');
         pasteTextarea.value = '';
-        showToast(`Loaded ${parsed.length} mappings`);
+        showToast(`Loaded ${parsed.length} mappings (last 4 days)`);
       } else {
-        showToast("No valid domain rows found in pasted data");
+        showToast("No valid rows matching last 4 days in pasted data");
       }
     });
 
@@ -2968,7 +3161,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
       syncGoogleSheet().then(() => {
         syncItcomSheet().then(() => {
           syncExtraSheet().then(() => {
-            runGlobalSync('TODAY');
+            syncFeedSheet().then(() => {
+              runGlobalSync('TODAY');
+            });
           });
         });
       });
